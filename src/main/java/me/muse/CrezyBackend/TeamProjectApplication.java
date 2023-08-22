@@ -1,4 +1,4 @@
-package me.teamproject.teamproject;
+package me.muse.CrezyBackend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
