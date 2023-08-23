@@ -25,16 +25,16 @@ public class PlaylistServiceImpl implements PlaylistService{
 
         List<PlaylistResponseForm> responseForms = new ArrayList<>();
         for (Playlist playlist : playlists) {
-            String thumbnail = playlist.getThumbnailName();
+            String thumbnailName = playlist.getThumbnailName();
 
             // 썸네일을 등록하지 않았다면 유튜브 링크의 썸네일을 가져오도록
-            if (thumbnail == null && !playlist.getSongList().isEmpty()) {
-                thumbnail = playlist.getSongList().get(0).getLink();
+            if (thumbnailName == null && !playlist.getSongList().isEmpty()) {
+                thumbnailName = playlist.getSongList().get(0).getLink();
             }
 
             PlaylistResponseForm responseForm = new PlaylistResponseForm(
-                    playlist.getId(), playlist.getPlaylistName(), playlist.getWriter(),
-                    playlist.getLikers().size(), playlist.getSongList().size(), thumbnail);
+                    playlist.getPlaylistId(), playlist.getPlaylistName(), playlist.getWriter(),
+                    playlist.getLikers().size(), playlist.getSongList().size(), thumbnailName);
 
             responseForms.add(responseForm);
         }

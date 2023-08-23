@@ -17,8 +17,9 @@ import java.util.List;
 public class Playlist {
 
     @Id
+    @Column(name = "playlistId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long playlistId;
     private String playlistName;
     private String writer; // 추후 Account로 수정
     private List<Integer> likers; // 추후 Account로 수정

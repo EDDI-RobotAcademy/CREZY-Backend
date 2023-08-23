@@ -11,5 +11,5 @@ public class PlaylistResponseForm {
     final private String writer;
     final private int likeCount;
     final private int songCount;
-    final private String thumbNail;
+    final private String thumbnailName;
 }

@@ -14,8 +14,9 @@ import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 public class Song {
 
     @Id
+    @Column(name = "songId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long songId;
     private String title;
     private String singer;
     private String genre;
