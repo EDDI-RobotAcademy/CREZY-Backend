@@ -90,9 +90,8 @@ public class GoogleServiceImpl implements GoogleService {
         Optional<Account> maybeAccount = accountRepository.findByEmail(email);
         Account savedAccount;
         if(maybeAccount.isEmpty()) {
-            String name = (String) jsonMap.get("name");
             String nickname = (String) jsonMap.get("name");
-            savedAccount = accountRepository.save(new Account(name, nickname, email));
+            savedAccount = accountRepository.save(new Account(nickname, email));
         } else {
             savedAccount = maybeAccount.get();
         }
