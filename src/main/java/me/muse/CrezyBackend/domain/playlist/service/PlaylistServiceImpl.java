@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.playlist.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -39,5 +42,21 @@ public class PlaylistServiceImpl implements PlaylistService{
             responseForms.add(responseForm);
         }
         return responseForms;
+    }
+
+    @Override
+    public PlaylistReadResponseForm read(Long playlistId) {
+        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
+        if (maybePlaylist.isPresent()) {
+            Playlist playlist = maybePlaylist.get();
+            return new PlaylistReadResponseForm(playlist.getPlaylistName(),
+                    playlist.getWriter(),
+                    playlist.getThumbnailName(),
+                    playlist.getSongList().stream().map((pl) -> PlaylistReadResponseForm.builder()
+                                            .title(pl.getTitle())
+                                            .singer(pl.getSinger())
+                            .build()).toList());
+        }
+        return null;
     }
 }
