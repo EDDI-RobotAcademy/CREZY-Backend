@@ -29,4 +29,10 @@ public class Playlist {
     private List<Song> songList = new ArrayList<>();
 
     private String thumbnailName;
+
+    public Playlist(String playlistName, String writer, String thumbnailName) {
+        this.playlistName = playlistName;
+        this.writer = writer;
+        this.thumbnailName = thumbnailName;
+    }
 }

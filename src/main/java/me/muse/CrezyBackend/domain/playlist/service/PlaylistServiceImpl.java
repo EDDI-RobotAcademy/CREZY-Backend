@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
@@ -53,10 +54,16 @@ public class PlaylistServiceImpl implements PlaylistService{
                     playlist.getWriter(),
                     playlist.getThumbnailName(),
                     playlist.getSongList().stream().map((pl) -> PlaylistReadResponseForm.builder()
-                                            .title(pl.getTitle())
-                                            .singer(pl.getSinger())
+                            .title(pl.getTitle())
+                            .singer(pl.getSinger())
                             .build()).toList());
         }
         return null;
+    }
+
+    public long register(PlaylistRegisterRequestForm requestForm) {
+        final Playlist playlist = playlistRepository.save(requestForm.toPlaylist());
+
+        return playlistRepository.save(playlist).getPlaylistId();
     }
 }
