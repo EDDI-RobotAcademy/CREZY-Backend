@@ -44,3 +44,5 @@ bin/
 
 application.yaml
 .idea
+
+*.properties
