@@ -8,6 +8,7 @@ import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequ
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import me.muse.CrezyBackend.domain.song.entity.Song;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -46,17 +47,19 @@ public class PlaylistServiceImpl implements PlaylistService{
     }
 
     @Override
+    @Transactional
     public PlaylistReadResponseForm read(Long playlistId) {
         Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
         if (maybePlaylist.isPresent()) {
             Playlist playlist = maybePlaylist.get();
+
+            List<Song> resultList = playlist.getSongList();
+            List<Song> distinctResult = resultList.stream().distinct().collect(Collectors.toList());
+
             return new PlaylistReadResponseForm(playlist.getPlaylistName(),
                     playlist.getWriter(),
                     playlist.getThumbnailName(),
-                    playlist.getSongList().stream().map((pl) -> PlaylistReadResponseForm.builder()
-                            .title(pl.getTitle())
-                            .singer(pl.getSinger())
-                            .build()).toList());
+                    distinctResult);
         }
         return null;
     }
