@@ -46,7 +46,7 @@ public class PlaylistServiceImpl implements PlaylistService{
             }
 
             PlaylistResponseForm responseForm = new PlaylistResponseForm(
-                    playlist.getPlaylistId(), playlist.getPlaylistName(), playlist.getWriter(),
+                    playlist.getPlaylistId(), playlist.getPlaylistName(), playlist.getAccount().getNickname(),
                     likeCount, songCount, thumbnailName);
 
             responseForms.add(responseForm);
@@ -65,7 +65,7 @@ public class PlaylistServiceImpl implements PlaylistService{
             List<Song> distinctResult = resultList.stream().distinct().collect(Collectors.toList());
 
             return new PlaylistReadResponseForm(playlist.getPlaylistName(),
-                    playlist.getWriter(),
+                    playlist.getAccount().getNickname(),
                     playlist.getThumbnailName(),
                     distinctResult);
         }
