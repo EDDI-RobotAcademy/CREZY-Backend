@@ -40,9 +40,9 @@ public class Playlist {
     @Setter
     private String thumbnailName;
 
-    public Playlist(String playlistName, Account account, String thumbnailName) {
+    public Playlist(String playlistName, String thumbnailName, Account account) {
         this.playlistName = playlistName;
-        this.account = account;
         this.thumbnailName = thumbnailName;
+        this.account = account;
     }
 }
