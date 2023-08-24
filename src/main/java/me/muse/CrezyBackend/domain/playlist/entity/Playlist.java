@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 
@@ -21,6 +22,7 @@ public class Playlist {
     @Column(name = "playlistId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long playlistId;
+    @Setter
     private String playlistName;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -35,7 +37,7 @@ public class Playlist {
     @OneToMany(mappedBy = "playlist", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Song> songList = new ArrayList<>();
-
+    @Setter
     private String thumbnailName;
 
     public Playlist(String playlistName, Account account, String thumbnailName) {
