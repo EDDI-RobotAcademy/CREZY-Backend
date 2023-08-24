@@ -91,7 +91,8 @@ public class PlaylistServiceImpl implements PlaylistService{
         }
         Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
-        if (playlist.getAccount().getId().equals(accountId)) {
+        
+      if(playlist.getAccount().getAccountId().equals(accountId)) {
             playlist.setPlaylistName(requestForm.getPlaylistName());
             playlist.setThumbnailName(requestForm.getThumbnailName());
             playlistRepository.save(playlist);

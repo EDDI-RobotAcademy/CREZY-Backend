@@ -27,6 +27,8 @@ dependencies {
 //    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.1'
 
 //    implementation 'com.google.apis:google-api-services-youtube:v3-rev222-1.25.0'
+    implementation group: 'org.apache.commons', name: 'commons-text', version: '1.9'
+
 }
 
 test {

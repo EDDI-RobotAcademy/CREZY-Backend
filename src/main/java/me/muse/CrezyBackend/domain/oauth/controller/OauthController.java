@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.oauth.service.google.GoogleService;
 import me.muse.CrezyBackend.domain.oauth.service.kakao.KakaoService;
+import me.muse.CrezyBackend.domain.oauth.service.naver.NaverService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class OauthController {
     final private GoogleService googleService;
     final private KakaoService kakaoService;
+    final private NaverService naverService;
 
     @GetMapping("/google")
     public @ResponseBody String getGoogleOAuthUrl() {
@@ -37,5 +39,17 @@ public class OauthController {
     public Account kakaoCallback(@RequestParam String code) {
         log.info("kakaoCallback()");
         return kakaoService.getAccount(code);
+    }
+
+    @GetMapping("/naver")
+    public String getNaverOAuthUrl() {
+        log.info("getNaverOAuthUrl()");
+        return naverService.naverLoginAddress();
+    }
+
+    @GetMapping("/naver-login")
+    public Account naverCallback(@RequestParam String code) {
+        log.info("naverCallback()");
+        return naverService.getAccount(code);
     }
 }
