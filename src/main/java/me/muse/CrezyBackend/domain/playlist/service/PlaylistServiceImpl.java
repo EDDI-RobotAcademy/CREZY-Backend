@@ -3,6 +3,10 @@ package me.muse.CrezyBackend.domain.playlist.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
@@ -22,6 +26,8 @@ import java.util.stream.Collectors;
 public class PlaylistServiceImpl implements PlaylistService{
 
     final private PlaylistRepository playlistRepository;
+    final private RedisService redisService;
+    final private AccountRepository accountRepository;
 
     @Override
     @Transactional
@@ -70,5 +76,25 @@ public class PlaylistServiceImpl implements PlaylistService{
         final Playlist playlist = playlistRepository.save(requestForm.toPlaylist());
 
         return playlistRepository.save(playlist).getPlaylistId();
+    }
+
+    @Override
+    @Transactional
+    public boolean modify(PlaylistModifyRequestForm requestForm) {
+        Long accountId = redisService.getValueByKey(requestForm.getUserToken());
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
+        if (maybeAccount.isEmpty()) {
+            log.info("회원이 아닙니다.");
+            return false;
+        }
+        Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
+                .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
+        if(playlist.getAccount().getId().equals(accountId)) {
+            playlist.setPlaylistName(requestForm.getPlaylistName());
+            playlist.setThumbnailName(requestForm.getThumbnailName());
+            playlistRepository.save(playlist);
+            return true;
+        }
+        return false;
     }
 }
