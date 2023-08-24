@@ -79,6 +79,7 @@ public class PlaylistServiceImpl implements PlaylistService{
     }
 
     @Override
+    @Transactional
     public boolean modify(PlaylistModifyRequestForm requestForm) {
         Long accountId = redisService.getValueByKey(requestForm.getUserToken());
         Optional<Account> maybeAccount = accountRepository.findById(accountId);
