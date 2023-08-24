@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.oauth.service.google.GoogleService;
+import me.muse.CrezyBackend.domain.oauth.service.kakao.KakaoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/oauth")
 public class OauthController {
     final private GoogleService googleService;
+    final private KakaoService kakaoService;
 
     @GetMapping("/google")
     public @ResponseBody String getGoogleOAuthUrl() {
@@ -25,4 +27,15 @@ public class OauthController {
         return googleService.getAccount(code);
     }
 
+    @GetMapping("/kakao")
+    public String getKakaoOAuthUrl() {
+        log.info("getKakaoOAuthUrl()");
+        return kakaoService.kakaoLoginAddress();
+    }
+
+    @GetMapping("/kakao-login")
+    public Account kakaoCallback(@RequestParam String code) {
+        log.info("kakaoCallback()");
+        return kakaoService.getAccount(code);
+    }
 }
