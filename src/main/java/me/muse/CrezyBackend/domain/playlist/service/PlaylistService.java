@@ -5,6 +5,7 @@ import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponse
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
 
+import org.springframework.http.HttpHeaders;
 import java.util.List;
 
 public interface PlaylistService {
@@ -13,4 +14,6 @@ public interface PlaylistService {
     long register(PlaylistRegisterRequestForm requestForm);
 
     boolean modify(PlaylistModifyRequestForm requestForm);
+
+    boolean delete(Long playlistId, HttpHeaders headers);
 }
