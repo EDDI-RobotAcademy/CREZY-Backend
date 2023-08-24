@@ -58,7 +58,7 @@ public class KakaoServiceImpl implements KakaoService{
         Account account = saveUserInfo(response);
 
         final String userToken = UUID.randomUUID().toString();
-        redisService.setKeyAndValue(userToken, account.getId());
+        redisService.setKeyAndValue(userToken, account.getAccountId());
         return account;
     }
 

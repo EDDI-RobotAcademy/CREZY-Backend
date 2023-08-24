@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 
 import java.util.ArrayList;
@@ -21,8 +22,15 @@ public class Playlist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long playlistId;
     private String playlistName;
-    private String writer; // 추후 Account로 수정
-    private List<Integer> likers; // 추후 Account로 수정
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JsonIgnore
+    @JoinColumn(name = "account_id")
+    private Account account;
+
+    @ManyToMany(mappedBy = "likedPlaylists", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Account> likers;
 
     @OneToMany(mappedBy = "playlist", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
@@ -30,9 +38,9 @@ public class Playlist {
 
     private String thumbnailName;
 
-    public Playlist(String playlistName, String writer, String thumbnailName) {
+    public Playlist(String playlistName, Account account, String thumbnailName) {
         this.playlistName = playlistName;
-        this.writer = writer;
+        this.account = account;
         this.thumbnailName = thumbnailName;
     }
 }
