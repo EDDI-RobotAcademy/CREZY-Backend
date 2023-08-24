@@ -16,4 +16,8 @@ public class AccountController {
     public void logout(@RequestParam("userToken") String userToken) {
         accountService.logout(userToken);
     }
+    @GetMapping("/check-nickName/{nickname}")
+    public boolean checkNickname(@PathVariable("nickname") String nickname) {
+        return accountService.checkNickname(nickname);
+    }
 }
