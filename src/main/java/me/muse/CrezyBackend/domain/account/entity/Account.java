@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class Account {
     @Column(name = "accountId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long accountId;
+    @Setter
     private String nickname;
     private String password;
     private String email;
