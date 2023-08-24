@@ -2,6 +2,7 @@ package me.muse.CrezyBackend.domain.playlist.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
@@ -34,5 +35,10 @@ public class PlaylistController {
     public long playlistRegister (@RequestBody PlaylistRegisterRequestForm requestForm) {
         log.info("playlistRegister()");
         return playlistService.register(requestForm);
+    }
+
+    @PostMapping("/modify")
+    public boolean modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm){
+        return playlistService.modify(requestForm);
     }
 }

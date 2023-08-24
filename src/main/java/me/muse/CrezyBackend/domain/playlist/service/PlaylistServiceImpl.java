@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.playlist.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
@@ -70,5 +71,16 @@ public class PlaylistServiceImpl implements PlaylistService{
         final Playlist playlist = playlistRepository.save(requestForm.toPlaylist());
 
         return playlistRepository.save(playlist).getPlaylistId();
+    }
+
+    @Override
+    public boolean modify(PlaylistModifyRequestForm requestForm) {
+        Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
+                .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
+        playlist.setPlaylistName(requestForm.getPlaylistName());
+        playlist.setWriter(requestForm.getWriter());
+        playlist.setThumbnailName(requestForm.getThumbnailName());
+        playlistRepository.save(playlist);
+        return true;
     }
 }
