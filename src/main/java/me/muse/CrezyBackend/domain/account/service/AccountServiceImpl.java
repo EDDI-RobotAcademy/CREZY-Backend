@@ -27,4 +27,13 @@ public class AccountServiceImpl implements AccountService{
         }
         return true;
     }
+    @Override
+    public String changeNickname(String userToken, String nickname) {
+        Long accountId = redisService.getValueByKey(userToken);
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        account.setNickname(nickname);
+        accountRepository.save(account);
+        return account.getNickname();
+    }
 }

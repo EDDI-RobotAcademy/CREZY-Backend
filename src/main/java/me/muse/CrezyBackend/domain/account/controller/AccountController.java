@@ -20,4 +20,8 @@ public class AccountController {
     public boolean checkNickname(@PathVariable("nickname") String nickname) {
         return accountService.checkNickname(nickname);
     }
+    @GetMapping("/change-nickname")
+    public String changeNickname(@RequestParam("userToken") String userToken, @RequestParam("nickname") String nickname) {
+        return accountService.changeNickname(userToken, nickname);
+    }
 }
