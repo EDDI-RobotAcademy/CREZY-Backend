@@ -15,8 +15,10 @@ import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import org.springframework.stereotype.Service;
 
+import org.springframework.http.HttpHeaders;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -89,10 +91,43 @@ public class PlaylistServiceImpl implements PlaylistService{
         }
         Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
-        if(playlist.getAccount().getAccountId().equals(accountId)) {
+        
+      if(playlist.getAccount().getAccountId().equals(accountId)) {
             playlist.setPlaylistName(requestForm.getPlaylistName());
             playlist.setThumbnailName(requestForm.getThumbnailName());
             playlistRepository.save(playlist);
+            return true;
+        }
+        return false;
+
+
+    }
+
+
+    @Override
+    @Transactional
+    public boolean delete(Long playlistId, HttpHeaders headers) {
+
+        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
+        if (maybePlaylist.isEmpty()) {
+            return false;
+        }
+
+        Playlist playlist = maybePlaylist.get();
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
+        if (authValues.isEmpty()) { // authorization 키에 해당하는 값이 없을 경우 처리
+            return false;
+        }
+
+        Long userId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> isAccount = accountRepository.findById(userId);
+        if(isAccount.isEmpty()){
+            return false;
+        }
+
+        if (playlist.getAccount().getAccountId().equals(userId)) {
+            playlistRepository.deleteById(playlistId);
             return true;
         }
         return false;
