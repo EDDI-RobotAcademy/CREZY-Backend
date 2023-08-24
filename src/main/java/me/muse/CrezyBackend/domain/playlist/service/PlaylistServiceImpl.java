@@ -75,7 +75,15 @@ public class PlaylistServiceImpl implements PlaylistService{
     }
 
     public long register(PlaylistRegisterRequestForm requestForm) {
-        final Playlist playlist = playlistRepository.save(requestForm.toPlaylist());
+        final Long accountId = redisService.getValueByKey(requestForm.getUserToken());
+        final Optional<Account> maybeAccount = accountRepository.findById(accountId);
+
+        if (maybeAccount.isEmpty()) {
+            return 0;
+        }
+
+        final Playlist playlist = new Playlist(requestForm.getPlaylistName(),
+                requestForm.getThumbnailName(), maybeAccount.get());
 
         return playlistRepository.save(playlist).getPlaylistId();
     }
@@ -91,8 +99,8 @@ public class PlaylistServiceImpl implements PlaylistService{
         }
         Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
-        
-      if(playlist.getAccount().getAccountId().equals(accountId)) {
+
+        if(playlist.getAccount().getAccountId().equals(accountId)) {
             playlist.setPlaylistName(requestForm.getPlaylistName());
             playlist.setThumbnailName(requestForm.getThumbnailName());
             playlistRepository.save(playlist);
