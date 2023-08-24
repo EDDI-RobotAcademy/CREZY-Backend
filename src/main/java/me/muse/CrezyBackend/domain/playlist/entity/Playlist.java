@@ -23,7 +23,6 @@ public class Playlist {
     private Long playlistId;
     @Setter
     private String playlistName;
-    @Setter
     private String writer; // 추후 Account로 수정
     private List<Integer> likers; // 추후 Account로 수정
 
