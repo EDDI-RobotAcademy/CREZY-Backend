@@ -10,7 +10,9 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -32,7 +34,7 @@ public class Playlist {
 
     @ManyToMany(mappedBy = "likedPlaylists", fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<Account> likers;
+    private Set<Account> likers = new HashSet<>();
 
     @OneToMany(mappedBy = "playlist", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
