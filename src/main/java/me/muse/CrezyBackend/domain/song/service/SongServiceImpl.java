@@ -26,8 +26,6 @@ public class SongServiceImpl implements SongService{
     final private SongRepository songRepository;
     final private Youtube youtube;
 
-
-
     @Value("${youtube.lyricsAddress}")
     private String lyricsAddress;
 
@@ -41,7 +39,7 @@ public class SongServiceImpl implements SongService{
             song.setLink("https://www.youtube.com/watch?v=" + videoId);
         }
 
-        song.setLyrics(getLyrics(requestForm.getSinger() + " " + requestForm.getTitle()));
+//        song.setLyrics(getLyrics(requestForm.getSinger() + " " + requestForm.getTitle()));
 
         songRepository.save(song);
 
