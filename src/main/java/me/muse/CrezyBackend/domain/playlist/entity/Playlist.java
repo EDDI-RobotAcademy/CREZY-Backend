@@ -38,7 +38,7 @@ public class Playlist {
 
     @OneToMany(mappedBy = "playlist", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
-    private List<Song> songList = new ArrayList<>();
+    private List<Song> songlist = new ArrayList<>();
     @Setter
     private String thumbnailName;
 

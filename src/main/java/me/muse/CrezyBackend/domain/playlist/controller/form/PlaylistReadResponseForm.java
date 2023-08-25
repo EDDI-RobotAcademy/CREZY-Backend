@@ -13,13 +13,13 @@ public class PlaylistReadResponseForm {
     private String playlistName;
     private String accountWriter;
     private String thumbnailName;
-    private List<Song> songList;
+    private List<Song> songlist;
 
     @Builder
-    public PlaylistReadResponseForm(String playlistName, String accountWriter, String thumbnailName, List<Song> songList) {
+    public PlaylistReadResponseForm(String playlistName, String accountWriter, String thumbnailName, List<Song> songlist) {
         this.playlistName = playlistName;
         this.accountWriter = accountWriter;
         this.thumbnailName = thumbnailName;
-        this.songList = songList;
+        this.songlist = songlist;
     }
 }

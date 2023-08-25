@@ -40,11 +40,11 @@ public class PlaylistServiceImpl implements PlaylistService{
         for (Playlist playlist : playlists) {
             String thumbnailName = playlist.getThumbnailName();
             int likeCount = playlist.getLikers() != null ? playlist.getLikers().size() : 0;
-            int songCount = playlist.getSongList() != null ? playlist.getSongList().size() : 0;
+            int songCount = playlist.getSonglist() != null ? playlist.getSonglist().size() : 0;
 
             // 썸네일을 등록하지 않았다면 유튜브 링크의 썸네일을 가져오도록
-            if (thumbnailName == null && !playlist.getSongList().isEmpty()) {
-                thumbnailName = playlist.getSongList().get(0).getLink();
+            if (thumbnailName == null && !playlist.getSonglist().isEmpty()) {
+                thumbnailName = playlist.getSonglist().get(0).getLink();
             }
 
             PlaylistResponseForm responseForm = new PlaylistResponseForm(
@@ -63,7 +63,7 @@ public class PlaylistServiceImpl implements PlaylistService{
         if (maybePlaylist.isPresent()) {
             Playlist playlist = maybePlaylist.get();
 
-            List<Song> resultList = playlist.getSongList();
+            List<Song> resultList = playlist.getSonglist();
             List<Song> distinctResult = resultList.stream().distinct().collect(Collectors.toList());
 
             return new PlaylistReadResponseForm(playlist.getPlaylistName(),
