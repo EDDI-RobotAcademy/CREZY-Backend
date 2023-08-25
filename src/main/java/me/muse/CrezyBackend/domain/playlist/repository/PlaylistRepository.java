@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
-    @Query("SELECT p FROM Playlist p JOIN FETCH p.account JOIN FETCH p.songList LEFT JOIN FETCH p.likers")
+    @Query("SELECT p FROM Playlist p JOIN FETCH p.account JOIN FETCH p.songlist LEFT JOIN FETCH p.likers")
     List<Playlist> findAll();
 
-    @Query("SELECT DISTINCT p FROM Playlist p LEFT JOIN FETCH p.songList LEFT JOIN FETCH p.account LEFT JOIN FETCH p.likers WHERE p.id = :id")
+    @Query("SELECT DISTINCT p FROM Playlist p LEFT JOIN FETCH p.songlist LEFT JOIN FETCH p.account LEFT JOIN FETCH p.likers WHERE p.id = :id")
     Playlist findWithSongById(Long id);
 
 }
