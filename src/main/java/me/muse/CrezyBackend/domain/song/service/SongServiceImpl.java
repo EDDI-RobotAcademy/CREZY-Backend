@@ -1,7 +1,11 @@
 package me.muse.CrezyBackend.domain.song.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
@@ -14,7 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import org.springframework.http.HttpHeaders;
 import java.security.GeneralSecurityException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 
 @Slf4j
@@ -25,6 +33,8 @@ public class SongServiceImpl implements SongService{
     final private PlaylistRepository playlistRepository;
     final private SongRepository songRepository;
     final private Youtube youtube;
+    final private RedisService redisService;
+    final private AccountRepository accountRepository;
 
     @Value("${youtube.lyricsAddress}")
     private String lyricsAddress;
@@ -45,6 +55,33 @@ public class SongServiceImpl implements SongService{
 
         return song.getSongId();
 
+    }
+
+    @Override
+    @Transactional
+    public boolean delete(Long songId, HttpHeaders headers) {
+
+        Optional<Song> maybeSong = songRepository.findById(songId);
+        if (maybeSong.isEmpty()) {
+            return false;
+        }
+        Song song = maybeSong.get();
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
+        if (authValues.isEmpty()) {
+            return false;
+        }
+
+        Long userId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> isAccount = accountRepository.findById(userId);
+        if (isAccount.isEmpty()) {
+            return false;
+        }
+        if (song.getPlaylist().getAccount().getAccountId().equals(userId)) {
+            songRepository.deleteById(songId);
+            return true;
+        }
+        return false;
     }
 
     public String getLyrics(String searchWord) {
