@@ -1,16 +1,11 @@
 package me.muse.CrezyBackend.domain.song.controller;
-
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
 import me.muse.CrezyBackend.domain.song.service.SongService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+import org.springframework.http.HttpHeaders;
 import java.security.GeneralSecurityException;
 
 @Slf4j
@@ -25,5 +20,11 @@ public class SongController {
     public Long songRegister (@RequestBody SongRegisterRequestForm requestForm) throws GeneralSecurityException, IOException {
 
         return songService.register(requestForm);
+    }
+
+    @DeleteMapping("/{songId}")
+    public boolean deleteSong(@PathVariable("songId") Long songId, @RequestHeader HttpHeaders headers) {
+        log.info("deleteSong() ");
+        return songService.delete(songId, headers);
     }
 }
