@@ -20,6 +20,8 @@ public class Song {
     private String title;
     private String singer;
     private String genre;
+
+    @Setter
     private String link;
 
     @Lob
@@ -30,4 +32,12 @@ public class Song {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name="playlist_id")
     private Playlist playlist;
+
+    public Song(String title, String singer, String genre, String link, Playlist playlist) {
+        this.title = title;
+        this.singer = singer;
+        this.genre = genre;
+        this.link = link;
+        this.playlist = playlist;
+    }
 }
