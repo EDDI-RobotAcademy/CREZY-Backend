@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import org.springframework.http.HttpHeaders;
 import java.security.GeneralSecurityException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -26,5 +27,10 @@ public class SongController {
     public boolean deleteSong(@PathVariable("songId") Long songId, @RequestHeader HttpHeaders headers) {
         log.info("deleteSong() ");
         return songService.delete(songId, headers);
+    }
+    @DeleteMapping("/delete-songIds")
+    public boolean deleteSong(@RequestParam("songIds") List<Long> songIds, @RequestHeader HttpHeaders headers) {
+        log.info("deleteSongIds() ");
+        return songService.deleteSongIds(songIds, headers);
     }
 }
