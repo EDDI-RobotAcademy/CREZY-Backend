@@ -120,7 +120,7 @@ public class SongServiceImpl implements SongService{
     }
 
     @Override
-    @Transactiona
+    @Transactional
     public boolean modify(SongModifyRequestForm requestForm, HttpHeaders headers) {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
         if (authValues.isEmpty()) {

@@ -36,9 +36,8 @@ public class SongController {
         return songService.deleteSongIds(songIds, headers);
     }
     @PostMapping("/modify")
-    public Song modifySong(@RequestBody SongModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
-
-        songService.modify(requestForm, headers);
-        return null;
+    public boolean modifySong(@RequestBody SongModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
+        log.info("modifySong() ");
+        return songService.modify(requestForm, headers);
     }
 }
