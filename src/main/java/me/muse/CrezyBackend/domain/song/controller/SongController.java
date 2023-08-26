@@ -1,7 +1,9 @@
 package me.muse.CrezyBackend.domain.song.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.song.controller.form.SongModifyRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
+import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.service.SongService;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
@@ -32,5 +34,11 @@ public class SongController {
     public boolean deleteSong(@RequestParam("songIds") List<Long> songIds, @RequestHeader HttpHeaders headers) {
         log.info("deleteSongIds() ");
         return songService.deleteSongIds(songIds, headers);
+    }
+    @PostMapping("/modify")
+    public Song modifySong(@RequestBody SongModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
+
+        songService.modify(requestForm, headers);
+        return null;
     }
 }

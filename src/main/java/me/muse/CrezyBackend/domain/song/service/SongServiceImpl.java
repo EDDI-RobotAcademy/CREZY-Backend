@@ -8,6 +8,7 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import me.muse.CrezyBackend.domain.song.controller.form.SongModifyRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
@@ -116,5 +117,23 @@ public class SongServiceImpl implements SongService{
         }
         songRepository.deleteAllByIds(songIds);
         return true;
+    }
+
+    @Override
+    @Transactiona
+    public boolean modify(SongModifyRequestForm requestForm, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return false;
+        }
+        Long userId = redisService.getValueByKey(authValues.get(0));
+        Song song= songRepository.findById(requestForm.getSongId())
+                .orElseThrow(() -> new IllegalArgumentException("노래 없음"));
+        if(song.getPlaylist().getAccount().getAccountId().equals(userId)) {
+            song.setLink(requestForm.getLink());
+            songRepository.save(song);
+            return true;
+        }
+        return false;
     }
 }

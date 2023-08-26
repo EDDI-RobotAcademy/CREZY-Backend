@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.song.service;
 
+import me.muse.CrezyBackend.domain.song.controller.form.SongModifyRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
 
 import java.io.IOException;
@@ -14,4 +15,6 @@ public interface SongService {
     boolean delete(Long songId, HttpHeaders headers);
 
     boolean deleteSongIds(List<Long> songIds, HttpHeaders headers);
+
+    boolean modify(SongModifyRequestForm requestForm, HttpHeaders headers);
 }
