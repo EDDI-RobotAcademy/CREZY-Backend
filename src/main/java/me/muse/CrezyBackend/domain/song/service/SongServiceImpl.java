@@ -101,4 +101,20 @@ public class SongServiceImpl implements SongService{
 
         return lyrics;
     }
+
+    @Override
+    @Transactional
+    public boolean deleteSongIds(List<Long> songIds, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return false;
+        }
+        Long userId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> isAccount = accountRepository.findById(userId);
+        if (isAccount.isEmpty()) {
+            return false;
+        }
+        songRepository.deleteAllByIds(songIds);
+        return true;
+    }
 }
