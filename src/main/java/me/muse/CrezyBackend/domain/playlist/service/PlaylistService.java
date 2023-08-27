@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.playlist.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
@@ -20,4 +21,6 @@ public interface PlaylistService {
     int likePlaylist(Long playlistId, HttpHeaders headers);
 
     boolean isPlaylistLiked(Long playlistId, HttpHeaders headers);
+
+    int unlikePlaylist(Long playlistId, HttpHeaders headers);
 }

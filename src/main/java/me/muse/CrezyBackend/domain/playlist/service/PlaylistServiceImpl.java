@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.playlist.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -205,6 +206,42 @@ public class PlaylistServiceImpl implements PlaylistService{
 
         return likedPlaylists.contains(playlist); // 안에 포함 되어 있으면 true 반환
 
+    }
+
+    @Override
+    @Transactional
+    public int unlikePlaylist(Long playlistId, HttpHeaders headers) {
+        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
+
+        if (maybePlaylist.isEmpty()) {
+            return 0;
+        }
+
+        Playlist playlist = maybePlaylist.get();
+
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
+        if (authValues.isEmpty()) {
+            return 0;
+        }
+
+        Long userId = redisService.getValueByKey(authValues.get(0));
+
+        Optional<Account> isAccount = accountRepository.findById(userId);
+
+        if(isAccount.isEmpty()){
+            return 0;
+        }
+
+        Account account = isAccount.get();
+
+        account.getLikedPlaylists().remove(playlist);
+        accountRepository.save(account);
+        playlist.getLikers().remove(account);
+        playlistRepository.save(playlist);
+        playlist.getLikers().size();
+
+        return 1;
     }
 
 

@@ -73,5 +73,10 @@ public class PlaylistController {
         return playlistService.isPlaylistLiked(playlistId, headers);
     }
 
+    @PostMapping("/unlike-playlist/{playlistId}") // 좋아요 해체
+    public int unLikePlaylist (@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
+        return playlistService.unlikePlaylist(playlistId, headers);
+    }
+
 
 }
