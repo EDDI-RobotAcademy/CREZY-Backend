@@ -16,4 +16,6 @@ public interface PlaylistService {
     boolean modify(PlaylistModifyRequestForm requestForm);
 
     boolean delete(Long playlistId, HttpHeaders headers);
+
+    int likePlaylist(Long playlistId, HttpHeaders headers);
 }

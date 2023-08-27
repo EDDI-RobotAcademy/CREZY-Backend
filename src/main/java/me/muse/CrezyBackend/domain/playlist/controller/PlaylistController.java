@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.playlist.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
@@ -61,5 +62,12 @@ public class PlaylistController {
 
         return playlistService.delete(playlistId, headers);
     }
+
+    @PostMapping("/like-playlist/{playlistId}")
+    public int likePlaylist (@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
+        return playlistService.likePlaylist(playlistId, headers);
+    }
+
+
 
 }
