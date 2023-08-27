@@ -63,11 +63,15 @@ public class PlaylistController {
         return playlistService.delete(playlistId, headers);
     }
 
-    @PostMapping("/like-playlist/{playlistId}")
+    @PostMapping("/like-playlist/{playlistId}") // 플레이 리스트 좋아요
     public int likePlaylist (@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
         return playlistService.likePlaylist(playlistId, headers);
     }
 
+    @PostMapping("check-liked/{playlistId}")
+    public boolean checkLikedPlaylist(@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
+        return playlistService.isPlaylistLiked(playlistId, headers);
+    }
 
 
 }

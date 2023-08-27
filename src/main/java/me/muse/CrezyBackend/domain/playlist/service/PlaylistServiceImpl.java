@@ -174,5 +174,38 @@ public class PlaylistServiceImpl implements PlaylistService{
         return playlist.getLikers().size();
     }
 
+    @Override
+    @Transactional
+    public boolean isPlaylistLiked(Long playlistId, HttpHeaders headers) {
+        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
+
+        if (maybePlaylist.isEmpty()) {
+            return false;
+        }
+
+        Playlist playlist = maybePlaylist.get(); // 추천 누른 해당 플레이 리스트 가져옴
+
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
+        if (authValues.isEmpty()) {
+            return false;
+        }
+
+        Long userId = redisService.getValueByKey(authValues.get(0));
+
+        Optional<Account> isAccount = accountRepository.findById(userId);
+
+        if(isAccount.isEmpty()){
+            return false;
+        }
+
+        Account account = isAccount.get();
+
+        Set<Playlist> likedPlaylists = account.getLikedPlaylists();
+
+        return likedPlaylists.contains(playlist); // 안에 포함 되어 있으면 true 반환
+
+    }
+
 
 }

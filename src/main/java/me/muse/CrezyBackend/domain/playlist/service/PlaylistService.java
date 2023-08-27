@@ -18,4 +18,6 @@ public interface PlaylistService {
     boolean delete(Long playlistId, HttpHeaders headers);
 
     int likePlaylist(Long playlistId, HttpHeaders headers);
+
+    boolean isPlaylistLiked(Long playlistId, HttpHeaders headers);
 }
