@@ -1,12 +1,19 @@
 package me.muse.CrezyBackend.domain.account.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -15,6 +22,8 @@ import java.util.Optional;
 public class AccountServiceImpl implements AccountService{
     final private RedisService redisService;
     final private AccountRepository accountRepository;
+    final private PlaylistRepository playlistRepository;
+
     @Override
     public void logout(String userToken) {
         redisService.deleteByKey(userToken);
@@ -35,5 +44,34 @@ public class AccountServiceImpl implements AccountService{
         account.setNickname(nickname);
         accountRepository.save(account);
         return account.getNickname();
+    }
+
+    @Override
+    @Transactional
+    public Boolean withdrawal(HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return false;
+        }
+
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
+
+        if (maybeAccount.isPresent()) {
+            Account account = maybeAccount.get();
+
+            for (Playlist playlist : account.getLikedPlaylists()) {
+                playlist.removeFromLikers(account);
+                account.removeFromLikedPlaylists(playlist);
+            }
+
+            playlistRepository.deleteByAccountId(accountId);
+            accountRepository.deleteById(accountId);
+            redisService.deleteByKey(authValues.get(0));
+
+            return true;
+        }
+
+        return false;
     }
 }

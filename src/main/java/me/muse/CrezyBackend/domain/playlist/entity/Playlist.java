@@ -47,4 +47,8 @@ public class Playlist {
         this.thumbnailName = thumbnailName;
         this.account = account;
     }
+
+    public void removeFromLikers(Account liker) {
+        likers.remove(liker);
+    }
 }

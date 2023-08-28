@@ -50,4 +50,9 @@ public class Account {
         return Objects.hash(accountId);
     }
 
+    public void removeFromLikedPlaylists(Playlist playlist) {
+
+        likedPlaylists.remove(playlist);
+    }
+
 }
