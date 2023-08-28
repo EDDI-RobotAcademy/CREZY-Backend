@@ -16,4 +16,10 @@ public interface PlaylistService {
     boolean modify(PlaylistModifyRequestForm requestForm, HttpHeaders headers);
 
     boolean delete(Long playlistId, HttpHeaders headers);
+
+    int likePlaylist(Long playlistId, HttpHeaders headers);
+
+    boolean isPlaylistLiked(Long playlistId, HttpHeaders headers);
+
+    int unlikePlaylist(Long playlistId, HttpHeaders headers);
 }
