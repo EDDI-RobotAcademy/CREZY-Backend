@@ -132,7 +132,7 @@ public class SongServiceImpl implements SongService{
             Song song= songRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("노래 없음"));
 
-            if(!song.getPlaylist().getAccount().getAccountId().equals(userId)){
+            if(!song.getPlaylist().getAccount().getAccountId().equals(accountId)){
                 continue;
             }
 

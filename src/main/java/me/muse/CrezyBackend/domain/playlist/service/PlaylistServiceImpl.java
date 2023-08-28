@@ -77,8 +77,8 @@ public class PlaylistServiceImpl implements PlaylistService{
         if (authValues.isEmpty()) {
             return -1;
         }
-        Long userId = redisService.getValueByKey(authValues.get(0));
-        Optional<Account> maybeAccount = accountRepository.findById(userId);
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
         if (maybeAccount.isEmpty()) {
             return -1;
         }
@@ -95,15 +95,15 @@ public class PlaylistServiceImpl implements PlaylistService{
         if (authValues.isEmpty()) {
             return false;
         }
-        Long userId = redisService.getValueByKey(authValues.get(0));
-        Optional<Account> maybeAccount = accountRepository.findById(userId);
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
         if (maybeAccount.isEmpty()) {
             return false;
         }
         Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
 
-        if(playlist.getAccount().getAccountId().equals(userId)) {
+        if(playlist.getAccount().getAccountId().equals(accountId)) {
             playlist.setPlaylistName(requestForm.getPlaylistName());
             playlist.setThumbnailName(requestForm.getThumbnailName());
             playlistRepository.save(playlist);
