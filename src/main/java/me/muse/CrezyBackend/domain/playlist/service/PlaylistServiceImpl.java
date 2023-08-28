@@ -74,14 +74,16 @@ public class PlaylistServiceImpl implements PlaylistService{
         return null;
     }
 
-    public long register(PlaylistRegisterRequestForm requestForm) {
-        final Long accountId = redisService.getValueByKey(requestForm.getUserToken());
-        final Optional<Account> maybeAccount = accountRepository.findById(accountId);
-
-        if (maybeAccount.isEmpty()) {
-            return 0;
+    public long register(PlaylistRegisterRequestForm requestForm, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return -1;
         }
-
+        Long userId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> maybeAccount = accountRepository.findById(userId);
+        if (maybeAccount.isEmpty()) {
+            return -1;
+        }
         final Playlist playlist = new Playlist(requestForm.getPlaylistName(),
                 requestForm.getThumbnailName(), maybeAccount.get());
 

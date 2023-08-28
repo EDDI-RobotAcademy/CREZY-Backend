@@ -46,9 +46,9 @@ public class PlaylistController {
     }
 
     @PostMapping("/register")
-    public long playlistRegister (@RequestBody PlaylistRegisterRequestForm requestForm) {
+    public long playlistRegister (@RequestBody PlaylistRegisterRequestForm requestForm, @RequestHeader HttpHeaders headers) {
         log.info("playlistRegister()");
-        return playlistService.register(requestForm);
+        return playlistService.register(requestForm, headers);
     }
 
     @PostMapping("/modify")
