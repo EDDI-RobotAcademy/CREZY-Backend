@@ -41,9 +41,23 @@ public class SongServiceImpl implements SongService{
     private String lyricsAddress;
 
     @Override
-    public Long register(SongRegisterRequestForm requestForm) throws GeneralSecurityException, IOException {
+    @Transactional
+    public Long register(SongRegisterRequestForm requestForm, HttpHeaders headers) throws GeneralSecurityException, IOException {
+
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
+        if (authValues.isEmpty()) {
+            return 0L;
+        }
+
+        Long userId = redisService.getValueByKey(authValues.get(0));
 
         final Playlist playlist = playlistRepository.findWithSongById(requestForm.getPlaylistId());
+
+        if(!playlist.getAccount().getAccountId().equals(userId)){
+            return null;
+        }
+
         final Song song = new Song(requestForm.getTitle(), requestForm.getSinger(), requestForm.getGenre(), requestForm.getLink(), playlist);
         if(requestForm.getLink().equals("")){
             String videoId = youtube.searchByKeyword(requestForm.getSinger() + " " + requestForm.getTitle());
@@ -55,7 +69,6 @@ public class SongServiceImpl implements SongService{
         songRepository.save(song);
 
         return song.getSongId();
-
     }
 
     @Override

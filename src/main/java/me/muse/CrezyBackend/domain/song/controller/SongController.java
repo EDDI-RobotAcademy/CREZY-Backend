@@ -20,9 +20,9 @@ public class SongController {
     final private SongService songService;
 
     @PostMapping("/register")
-    public Long songRegister (@RequestBody SongRegisterRequestForm requestForm) throws GeneralSecurityException, IOException {
+    public Long songRegister (@RequestBody SongRegisterRequestForm requestForm, @RequestHeader HttpHeaders headers) throws GeneralSecurityException, IOException {
 
-        return songService.register(requestForm);
+        return songService.register(requestForm, headers);
     }
 
     @DeleteMapping("/{songId}")
