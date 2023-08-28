@@ -126,13 +126,13 @@ public class PlaylistServiceImpl implements PlaylistService{
             return false;
         }
 
-        Long userId = redisService.getValueByKey(authValues.get(0));
-        Optional<Account> isAccount = accountRepository.findById(userId);
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> isAccount = accountRepository.findById(accountId);
         if(isAccount.isEmpty()){
             return false;
         }
 
-        if (playlist.getAccount().getAccountId().equals(userId)) {
+        if (playlist.getAccount().getAccountId().equals(accountId)) {
             playlistRepository.deleteById(playlistId);
             return true;
         }
@@ -156,9 +156,9 @@ public class PlaylistServiceImpl implements PlaylistService{
             return playlist.getLikers().size();
         }
 
-        Long userId = redisService.getValueByKey(authValues.get(0));
+        Long accountId = redisService.getValueByKey(authValues.get(0));
 
-        Optional<Account> isAccount = accountRepository.findById(userId);
+        Optional<Account> isAccount = accountRepository.findById(accountId);
 
         if(isAccount.isEmpty()){
             return playlist.getLikers().size();
@@ -191,9 +191,9 @@ public class PlaylistServiceImpl implements PlaylistService{
             return false;
         }
 
-        Long userId = redisService.getValueByKey(authValues.get(0));
+        Long accountId = redisService.getValueByKey(authValues.get(0));
 
-        Optional<Account> isAccount = accountRepository.findById(userId);
+        Optional<Account> isAccount = accountRepository.findById(accountId);
 
         if(isAccount.isEmpty()){
             return false;
@@ -224,9 +224,9 @@ public class PlaylistServiceImpl implements PlaylistService{
             return playlist.getLikers().size();
         }
 
-        Long userId = redisService.getValueByKey(authValues.get(0));
+        Long accountId = redisService.getValueByKey(authValues.get(0));
 
-        Optional<Account> isAccount = accountRepository.findById(userId);
+        Optional<Account> isAccount = accountRepository.findById(accountId);
 
         if(isAccount.isEmpty()){
             return playlist.getLikers().size();

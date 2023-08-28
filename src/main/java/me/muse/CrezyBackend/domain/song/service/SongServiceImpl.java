@@ -50,11 +50,11 @@ public class SongServiceImpl implements SongService{
             return 0L;
         }
 
-        Long userId = redisService.getValueByKey(authValues.get(0));
+        Long accountId = redisService.getValueByKey(authValues.get(0));
 
         final Playlist playlist = playlistRepository.findWithSongById(requestForm.getPlaylistId());
 
-        if(!playlist.getAccount().getAccountId().equals(userId)){
+        if(!playlist.getAccount().getAccountId().equals(accountId)){
             return null;
         }
 
@@ -86,12 +86,12 @@ public class SongServiceImpl implements SongService{
             return false;
         }
 
-        Long userId = redisService.getValueByKey(authValues.get(0));
-        Optional<Account> isAccount = accountRepository.findById(userId);
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> isAccount = accountRepository.findById(accountId);
         if (isAccount.isEmpty()) {
             return false;
         }
-        if (song.getPlaylist().getAccount().getAccountId().equals(userId)) {
+        if (song.getPlaylist().getAccount().getAccountId().equals(accountId)) {
             songRepository.deleteById(songId);
             return true;
         }
@@ -123,8 +123,8 @@ public class SongServiceImpl implements SongService{
         if (authValues.isEmpty()) {
             return false;
         }
-        Long userId = redisService.getValueByKey(authValues.get(0));
-        Optional<Account> isAccount = accountRepository.findById(userId);
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> isAccount = accountRepository.findById(accountId);
         if (isAccount.isEmpty()) {
             return false;
         }
@@ -139,10 +139,10 @@ public class SongServiceImpl implements SongService{
         if (authValues.isEmpty()) {
             return false;
         }
-        Long userId = redisService.getValueByKey(authValues.get(0));
+        Long accountId = redisService.getValueByKey(authValues.get(0));
         Song song= songRepository.findById(requestForm.getSongId())
                 .orElseThrow(() -> new IllegalArgumentException("노래 없음"));
-        if(song.getPlaylist().getAccount().getAccountId().equals(userId)) {
+        if(song.getPlaylist().getAccount().getAccountId().equals(accountId)) {
             song.setLink(requestForm.getLink());
             songRepository.save(song);
             return true;
