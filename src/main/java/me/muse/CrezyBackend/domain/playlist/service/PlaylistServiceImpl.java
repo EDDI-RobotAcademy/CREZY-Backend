@@ -132,8 +132,8 @@ public class PlaylistServiceImpl implements PlaylistService{
         }
 
         Long accountId = redisService.getValueByKey(authValues.get(0));
-        Optional<Account> isAccount = accountRepository.findById(accountId);
-        if(isAccount.isEmpty()){
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
+        if(maybeAccount.isEmpty()){
             return false;
         }
 
@@ -150,7 +150,7 @@ public class PlaylistServiceImpl implements PlaylistService{
         Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
 
         if (maybePlaylist.isEmpty()) {
-            return 0;
+            return -1;
         }
 
         Playlist playlist = maybePlaylist.get();
@@ -163,13 +163,13 @@ public class PlaylistServiceImpl implements PlaylistService{
 
         Long accountId = redisService.getValueByKey(authValues.get(0));
 
-        Optional<Account> isAccount = accountRepository.findById(accountId);
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
 
-        if(isAccount.isEmpty()){
+        if(maybeAccount.isEmpty()){
             return playlist.getLikers().size();
         }
 
-        Account account = isAccount.get();
+        Account account = maybeAccount.get();
 
         account.getLikedPlaylists().add(playlist);
         accountRepository.save(account);
@@ -198,13 +198,13 @@ public class PlaylistServiceImpl implements PlaylistService{
 
         Long accountId = redisService.getValueByKey(authValues.get(0));
 
-        Optional<Account> isAccount = accountRepository.findById(accountId);
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
 
-        if(isAccount.isEmpty()){
+        if(maybeAccount.isEmpty()){
             return false;
         }
 
-        Account account = isAccount.get();
+        Account account = maybeAccount.get();
 
         Set<Playlist> likedPlaylists = account.getLikedPlaylists();
 
@@ -218,7 +218,7 @@ public class PlaylistServiceImpl implements PlaylistService{
         Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
 
         if (maybePlaylist.isEmpty()) {
-            return 0;
+            return -1;
         }
 
         Playlist playlist = maybePlaylist.get();
@@ -231,13 +231,13 @@ public class PlaylistServiceImpl implements PlaylistService{
 
         Long accountId = redisService.getValueByKey(authValues.get(0));
 
-        Optional<Account> isAccount = accountRepository.findById(accountId);
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
 
-        if(isAccount.isEmpty()){
+        if(maybeAccount.isEmpty()){
             return playlist.getLikers().size();
         }
 
-        Account account = isAccount.get();
+        Account account = maybeAccount.get();
 
         account.getLikedPlaylists().remove(playlist);
         accountRepository.save(account);
