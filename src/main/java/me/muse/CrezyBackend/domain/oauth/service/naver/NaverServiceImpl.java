@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.KakaoOAuthToken;
 import me.muse.CrezyBackend.domain.oauth.dto.NaverOAuthToken;
 import org.apache.commons.text.StringEscapeUtils;
@@ -53,14 +54,14 @@ public class NaverServiceImpl implements NaverService{
     }
 
     @Override
-    public Account getAccount(String code) {
+    public LoginResponseForm getAccount(String code) {
         NaverOAuthToken naverOAuthToken = getAccessToken(code);
         ResponseEntity<String> response = requestUserInfo(naverOAuthToken);
         Account account = saveUserInfo(response);
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return account;
+        return new LoginResponseForm(account.getNickname(), userToken);
     }
 
     private Account saveUserInfo(ResponseEntity<String> response) {

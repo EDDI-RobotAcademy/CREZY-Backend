@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.service.google.GoogleService;
 import me.muse.CrezyBackend.domain.oauth.service.kakao.KakaoService;
 import me.muse.CrezyBackend.domain.oauth.service.naver.NaverService;
@@ -25,7 +26,7 @@ public class OauthController {
     }
 
     @GetMapping("/google-login")
-    public Account googleCallback(@RequestParam String code) {
+    public LoginResponseForm googleCallback(@RequestParam String code) {
         return googleService.getAccount(code);
     }
 
@@ -36,7 +37,7 @@ public class OauthController {
     }
 
     @GetMapping("/kakao-login")
-    public Account kakaoCallback(@RequestParam String code) {
+    public LoginResponseForm kakaoCallback(@RequestParam String code) {
         log.info("kakaoCallback()");
         return kakaoService.getAccount(code);
     }
@@ -48,7 +49,7 @@ public class OauthController {
     }
 
     @GetMapping("/naver-login")
-    public Account naverCallback(@RequestParam String code) {
+    public LoginResponseForm naverCallback(@RequestParam String code) {
         log.info("naverCallback()");
         return naverService.getAccount(code);
     }

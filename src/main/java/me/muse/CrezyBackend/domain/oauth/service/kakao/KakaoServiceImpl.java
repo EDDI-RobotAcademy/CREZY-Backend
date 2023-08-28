@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.KakaoOAuthToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -52,14 +53,14 @@ public class KakaoServiceImpl implements KakaoService{
     }
 
     @Override
-    public Account getAccount(String code) {
+    public LoginResponseForm getAccount(String code) {
         KakaoOAuthToken kakaoOAuthToken = getAccessToken(code);
         ResponseEntity<String> response = requestUserInfo(kakaoOAuthToken);
         Account account = saveUserInfo(response);
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return account;
+        return new LoginResponseForm(account.getNickname(), userToken);
     }
 
     private Account saveUserInfo(ResponseEntity<String> response) {
