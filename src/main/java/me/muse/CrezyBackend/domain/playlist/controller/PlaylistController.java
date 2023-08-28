@@ -1,25 +1,19 @@
 package me.muse.CrezyBackend.domain.playlist.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
-
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
-import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.service.PlaylistService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.http.HttpHeaders;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -68,7 +62,7 @@ public class PlaylistController {
         return playlistService.likePlaylist(playlistId, headers);
     }
 
-    @PostMapping("check-liked/{playlistId}")
+    @PostMapping("check-liked/{playlistId}") // 좋아요 유무 확인
     public boolean checkLikedPlaylist(@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
         return playlistService.isPlaylistLiked(playlistId, headers);
     }

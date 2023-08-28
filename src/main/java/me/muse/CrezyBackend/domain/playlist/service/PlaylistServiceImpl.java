@@ -1,6 +1,5 @@
 package me.muse.CrezyBackend.domain.playlist.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -239,9 +238,8 @@ public class PlaylistServiceImpl implements PlaylistService{
         accountRepository.save(account);
         playlist.getLikers().remove(account);
         playlistRepository.save(playlist);
-        playlist.getLikers().size();
 
-        return 1;
+        return playlist.getLikers().size();
     }
 
 

@@ -1,6 +1,5 @@
 package me.muse.CrezyBackend.domain.playlist.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
