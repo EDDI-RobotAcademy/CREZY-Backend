@@ -37,7 +37,7 @@ public class OauthController {
     }
 
     @GetMapping("/kakao-login")
-    public Account kakaoCallback(@RequestParam String code) {
+    public LoginResponseForm kakaoCallback(@RequestParam String code) {
         log.info("kakaoCallback()");
         return kakaoService.getAccount(code);
     }
