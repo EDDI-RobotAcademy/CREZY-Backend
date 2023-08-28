@@ -128,7 +128,16 @@ public class SongServiceImpl implements SongService{
         if (isAccount.isEmpty()) {
             return false;
         }
-        songRepository.deleteAllByIds(songIds);
+        for(Long id : songIds){
+            Song song= songRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("노래 없음"));
+
+            if(!song.getPlaylist().getAccount().getAccountId().equals(userId)){
+                continue;
+            }
+
+            songRepository.deleteById(id);
+        }
         return true;
     }
 
