@@ -52,8 +52,8 @@ public class PlaylistController {
     }
 
     @PostMapping("/modify")
-    public boolean modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm){
-        return playlistService.modify(requestForm);
+    public boolean modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
+        return playlistService.modify(requestForm, headers);
     }
 
     @DeleteMapping("/{playlistId}")

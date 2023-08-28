@@ -92,17 +92,20 @@ public class PlaylistServiceImpl implements PlaylistService{
 
     @Override
     @Transactional
-    public boolean modify(PlaylistModifyRequestForm requestForm) {
-        Long accountId = redisService.getValueByKey(requestForm.getUserToken());
-        Optional<Account> maybeAccount = accountRepository.findById(accountId);
+    public boolean modify(PlaylistModifyRequestForm requestForm, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return false;
+        }
+        Long userId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> maybeAccount = accountRepository.findById(userId);
         if (maybeAccount.isEmpty()) {
-            log.info("회원이 아닙니다.");
             return false;
         }
         Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
 
-        if(playlist.getAccount().getAccountId().equals(accountId)) {
+        if(playlist.getAccount().getAccountId().equals(userId)) {
             playlist.setPlaylistName(requestForm.getPlaylistName());
             playlist.setThumbnailName(requestForm.getThumbnailName());
             playlistRepository.save(playlist);
