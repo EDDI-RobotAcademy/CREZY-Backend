@@ -153,7 +153,7 @@ public class PlaylistServiceImpl implements PlaylistService{
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
 
         if (authValues.isEmpty()) {
-            return 0;
+            return playlist.getLikers().size();
         }
 
         Long userId = redisService.getValueByKey(authValues.get(0));
@@ -161,7 +161,7 @@ public class PlaylistServiceImpl implements PlaylistService{
         Optional<Account> isAccount = accountRepository.findById(userId);
 
         if(isAccount.isEmpty()){
-            return 0;
+            return playlist.getLikers().size();
         }
 
         Account account = isAccount.get();
@@ -221,7 +221,7 @@ public class PlaylistServiceImpl implements PlaylistService{
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
 
         if (authValues.isEmpty()) {
-            return 0;
+            return playlist.getLikers().size();
         }
 
         Long userId = redisService.getValueByKey(authValues.get(0));
@@ -229,7 +229,7 @@ public class PlaylistServiceImpl implements PlaylistService{
         Optional<Account> isAccount = accountRepository.findById(userId);
 
         if(isAccount.isEmpty()){
-            return 0;
+            return playlist.getLikers().size();
         }
 
         Account account = isAccount.get();
