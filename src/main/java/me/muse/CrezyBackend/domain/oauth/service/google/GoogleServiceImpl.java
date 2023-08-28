@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
 import me.muse.CrezyBackend.domain.oauth.service.google.GoogleService;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,13 +99,13 @@ public class GoogleServiceImpl implements GoogleService {
         return savedAccount;
     }
     @Override
-    public Account getAccount(String code) {
+    public LoginResponseForm getAccount(String code) {
         GoogleOAuthToken googleOAuthToken = getAccessToken(code);
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
         Account account = saveUserInfo(response);
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return account;
+        return new LoginResponseForm(account.getNickname(), userToken);
     }
 }
