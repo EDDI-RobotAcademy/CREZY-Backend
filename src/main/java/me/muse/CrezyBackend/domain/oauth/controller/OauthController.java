@@ -49,7 +49,7 @@ public class OauthController {
     }
 
     @GetMapping("/naver-login")
-    public Account naverCallback(@RequestParam String code) {
+    public LoginResponseForm naverCallback(@RequestParam String code) {
         log.info("naverCallback()");
         return naverService.getAccount(code);
     }
