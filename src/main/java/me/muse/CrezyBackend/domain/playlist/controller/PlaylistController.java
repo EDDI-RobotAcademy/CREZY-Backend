@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
+import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.service.PlaylistService;
 import org.springframework.http.HttpHeaders;
@@ -47,7 +44,7 @@ public class PlaylistController {
     }
 
     @PostMapping("/modify")
-    public boolean modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
+    public PlaylistModifyResponseForm modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
         return playlistService.modify(requestForm, headers);
     }
 
