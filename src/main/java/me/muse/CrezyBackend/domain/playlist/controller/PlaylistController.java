@@ -41,14 +41,14 @@ public class PlaylistController {
     }
 
     @PostMapping("/register")
-    public long playlistRegister (@RequestBody PlaylistRegisterRequestForm requestForm) {
+    public long playlistRegister (@RequestBody PlaylistRegisterRequestForm requestForm, @RequestHeader HttpHeaders headers) {
         log.info("playlistRegister()");
-        return playlistService.register(requestForm);
+        return playlistService.register(requestForm, headers);
     }
 
     @PostMapping("/modify")
-    public boolean modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm){
-        return playlistService.modify(requestForm);
+    public boolean modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
+        return playlistService.modify(requestForm, headers);
     }
 
     @DeleteMapping("/{playlistId}")

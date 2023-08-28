@@ -11,9 +11,9 @@ import java.util.List;
 public interface PlaylistService {
     List<PlaylistResponseForm> list();
     PlaylistReadResponseForm read(Long playlistId);
-    long register(PlaylistRegisterRequestForm requestForm);
+    long register(PlaylistRegisterRequestForm requestForm, HttpHeaders headers);
 
-    boolean modify(PlaylistModifyRequestForm requestForm);
+    boolean modify(PlaylistModifyRequestForm requestForm, HttpHeaders headers);
 
     boolean delete(Long playlistId, HttpHeaders headers);
 

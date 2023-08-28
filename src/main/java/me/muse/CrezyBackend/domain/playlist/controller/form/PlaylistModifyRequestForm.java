@@ -9,5 +9,4 @@ public class PlaylistModifyRequestForm {
     final private Long playlistId;
     final private String playlistName;
     final private String thumbnailName;
-    final private String userToken;
 }
