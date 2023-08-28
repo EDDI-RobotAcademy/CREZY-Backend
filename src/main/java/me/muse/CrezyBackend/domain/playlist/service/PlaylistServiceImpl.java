@@ -16,10 +16,8 @@ import me.muse.CrezyBackend.domain.song.entity.Song;
 import org.springframework.stereotype.Service;
 
 import org.springframework.http.HttpHeaders;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -140,4 +138,109 @@ public class PlaylistServiceImpl implements PlaylistService{
         }
         return false;
     }
+
+    @Override
+    @Transactional
+    public int likePlaylist(Long playlistId, HttpHeaders headers) {
+        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
+
+        if (maybePlaylist.isEmpty()) {
+            return 0;
+        }
+
+        Playlist playlist = maybePlaylist.get();
+
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
+        if (authValues.isEmpty()) {
+            return 0;
+        }
+
+        Long userId = redisService.getValueByKey(authValues.get(0));
+
+        Optional<Account> isAccount = accountRepository.findById(userId);
+
+        if(isAccount.isEmpty()){
+            return 0;
+        }
+
+        Account account = isAccount.get();
+
+        account.getLikedPlaylists().add(playlist);
+        accountRepository.save(account);
+        playlist.getLikers().add(account);
+        playlistRepository.save(playlist);
+
+        return playlist.getLikers().size();
+    }
+
+    @Override
+    @Transactional
+    public boolean isPlaylistLiked(Long playlistId, HttpHeaders headers) {
+        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
+
+        if (maybePlaylist.isEmpty()) {
+            return false;
+        }
+
+        Playlist playlist = maybePlaylist.get(); // 추천 누른 해당 플레이 리스트 가져옴
+
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
+        if (authValues.isEmpty()) {
+            return false;
+        }
+
+        Long userId = redisService.getValueByKey(authValues.get(0));
+
+        Optional<Account> isAccount = accountRepository.findById(userId);
+
+        if(isAccount.isEmpty()){
+            return false;
+        }
+
+        Account account = isAccount.get();
+
+        Set<Playlist> likedPlaylists = account.getLikedPlaylists();
+
+        return likedPlaylists.contains(playlist); // 안에 포함 되어 있으면 true 반환
+
+    }
+
+    @Override
+    @Transactional
+    public int unlikePlaylist(Long playlistId, HttpHeaders headers) {
+        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
+
+        if (maybePlaylist.isEmpty()) {
+            return 0;
+        }
+
+        Playlist playlist = maybePlaylist.get();
+
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
+        if (authValues.isEmpty()) {
+            return 0;
+        }
+
+        Long userId = redisService.getValueByKey(authValues.get(0));
+
+        Optional<Account> isAccount = accountRepository.findById(userId);
+
+        if(isAccount.isEmpty()){
+            return 0;
+        }
+
+        Account account = isAccount.get();
+
+        account.getLikedPlaylists().remove(playlist);
+        accountRepository.save(account);
+        playlist.getLikers().remove(account);
+        playlistRepository.save(playlist);
+
+        return playlist.getLikers().size();
+    }
+
+
 }
