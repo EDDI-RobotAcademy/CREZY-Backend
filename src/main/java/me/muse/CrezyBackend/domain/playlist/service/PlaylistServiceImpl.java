@@ -243,5 +243,39 @@ public class PlaylistServiceImpl implements PlaylistService{
         return playlist.getLikers().size();
     }
 
+    @Override
+    @Transactional
+    public List<MyPlaylistResponseForm> myPlaylist(HttpHeaders headers) {
+        final List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return null;
+        }
 
+        final Long accountId = redisService.getValueByKey(authValues.get(0));
+        final Optional<Account> maybeAccount = accountRepository.findById(accountId);
+        if (maybeAccount.isEmpty()) {
+            return null;
+        }
+
+        final List<Playlist> playlists = playlistRepository.findByAccountId(accountId);
+
+        final List<MyPlaylistResponseForm> responseForms = new ArrayList<>();
+        for (Playlist playlist : playlists) {
+            String thumbnailName = playlist.getThumbnailName();
+            int likeCount = playlist.getLikers() != null ? playlist.getLikers().size() : 0;
+            int songCount = playlist.getSonglist() != null ? playlist.getSonglist().size() : 0;
+
+            // 썸네일을 등록하지 않았다면 유튜브 링크의 썸네일을 가져오도록
+            if (thumbnailName == null && !playlist.getSonglist().isEmpty()) {
+                thumbnailName = playlist.getSonglist().get(0).getLink();
+            }
+
+            MyPlaylistResponseForm responseForm = new MyPlaylistResponseForm(
+                    playlist.getPlaylistId(), playlist.getPlaylistName(),
+                    likeCount, songCount, thumbnailName);
+
+            responseForms.add(responseForm);
+        }
+        return responseForms;
+    }
 }

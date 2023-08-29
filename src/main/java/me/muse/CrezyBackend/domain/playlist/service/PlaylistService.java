@@ -19,4 +19,6 @@ public interface PlaylistService {
     boolean isPlaylistLiked(Long playlistId, HttpHeaders headers);
 
     int unlikePlaylist(Long playlistId, HttpHeaders headers);
+
+    List<MyPlaylistResponseForm> myPlaylist(HttpHeaders headers);
 }

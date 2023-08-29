@@ -69,5 +69,12 @@ public class PlaylistController {
         return playlistService.unlikePlaylist(playlistId, headers);
     }
 
+    @GetMapping("/my-playlist")
+    public List<MyPlaylistResponseForm> myPlaylist(@RequestHeader HttpHeaders headers){
+        log.info("myPlaylist()");
+        return playlistService.myPlaylist(headers);
+    }
+
+
 
 }
