@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
+import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.service.PlaylistService;
 import org.springframework.http.HttpHeaders;
@@ -71,6 +68,13 @@ public class PlaylistController {
     public int unLikePlaylist (@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
         return playlistService.unlikePlaylist(playlistId, headers);
     }
+
+    @GetMapping("/my-playlist")
+    public List<MyPlaylistResponseForm> myPlaylist(@RequestHeader HttpHeaders headers){
+        log.info("myPlaylist()");
+        return playlistService.myPlaylist(headers);
+    }
+
 
 
 }

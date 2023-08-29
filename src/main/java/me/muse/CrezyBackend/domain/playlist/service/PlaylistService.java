@@ -1,9 +1,6 @@
 package me.muse.CrezyBackend.domain.playlist.service;
 
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
+import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 
 import org.springframework.http.HttpHeaders;
 import java.util.List;
@@ -22,4 +19,6 @@ public interface PlaylistService {
     boolean isPlaylistLiked(Long playlistId, HttpHeaders headers);
 
     int unlikePlaylist(Long playlistId, HttpHeaders headers);
+
+    List<MyPlaylistResponseForm> myPlaylist(HttpHeaders headers);
 }
