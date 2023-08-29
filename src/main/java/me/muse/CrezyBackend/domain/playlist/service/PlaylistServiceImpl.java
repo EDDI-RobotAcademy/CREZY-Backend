@@ -278,4 +278,47 @@ public class PlaylistServiceImpl implements PlaylistService{
         }
         return responseForms;
     }
+
+    @Override
+    @Transactional
+    public List<PlaylistUsersLikeResponseForm> bringLikePlaylist(HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
+        if (authValues.isEmpty()) {
+            return null;
+        }
+
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+
+        if (accountId == null) {
+            return null;
+        }
+
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
+
+        if (maybeAccount.isEmpty()) {
+            return null;
+        }
+
+        Account account = maybeAccount.get();
+
+        // Account 객체에서 좋아요한 플레이리스트 목록 가져오기
+        Set<Playlist> likedPlaylists = account.getLikedPlaylists();
+
+        List<PlaylistUsersLikeResponseForm> responseForms = new ArrayList<>();
+        for (Playlist playlist : likedPlaylists) {
+            System.out.println("Playlist: " + playlist);
+            System.out.println("Songlist: " + playlist.getSonglist());
+            System.out.println("Likers size: " + playlist.getLikers().size());
+            PlaylistUsersLikeResponseForm responseForm = new PlaylistUsersLikeResponseForm(
+                    playlist.getPlaylistId(),
+                    playlist.getThumbnailName(),
+                    playlist.getPlaylistName(),
+                    playlist.getSonglist(),
+                    playlist.getLikers().size()
+            );
+            responseForms.add(responseForm);
+        }
+        return responseForms;
+    }
 }

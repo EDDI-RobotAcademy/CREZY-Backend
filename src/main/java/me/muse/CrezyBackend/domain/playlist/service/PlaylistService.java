@@ -21,4 +21,6 @@ public interface PlaylistService {
     int unlikePlaylist(Long playlistId, HttpHeaders headers);
 
     List<MyPlaylistResponseForm> myPlaylist(HttpHeaders headers);
+
+    List<PlaylistUsersLikeResponseForm> bringLikePlaylist(HttpHeaders headers);
 }
