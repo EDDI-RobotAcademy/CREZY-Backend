@@ -1,10 +1,8 @@
 package me.muse.CrezyBackend.domain.account.controller;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.account.controller.form.AccountInfoResponseForm;
 import me.muse.CrezyBackend.domain.account.service.AccountService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -33,5 +31,10 @@ public class AccountController {
     public Boolean withdrawal(@RequestHeader HttpHeaders headers){
         log.info("withdrawal()");
         return accountService.withdrawal(headers);
+    }
+
+    @GetMapping("/info")
+    public AccountInfoResponseForm returnAccount(@RequestHeader HttpHeaders headers) {
+        return accountService.returnAccountInfo(headers);
     }
 }

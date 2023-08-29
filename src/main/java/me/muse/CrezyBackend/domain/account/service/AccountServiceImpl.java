@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.account.controller.form.AccountInfoResponseForm;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
@@ -73,5 +74,29 @@ public class AccountServiceImpl implements AccountService{
         }
 
         return false;
+    }
+
+    @Override
+    @Transactional
+    public AccountInfoResponseForm returnAccountInfo(HttpHeaders headers) {
+        final List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return null;
+        }
+
+        final Long accountId = redisService.getValueByKey(authValues.get(0));
+        final Optional<Account> maybeAccount = accountRepository.findById(accountId);
+
+        if (maybeAccount.isEmpty()) {
+            return null;
+        }
+
+        final Account account = maybeAccount.get();
+
+        final AccountInfoResponseForm responseForm = new AccountInfoResponseForm(
+                account.getNickname(), account.getPlaylist().size(), account.getLikedPlaylists().size()
+        );
+
+        return responseForm;
     }
 }
