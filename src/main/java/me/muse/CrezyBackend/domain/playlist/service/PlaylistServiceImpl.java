@@ -6,10 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyRequestForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistRegisterRequestForm;
-import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
+import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
@@ -71,7 +68,8 @@ public class PlaylistServiceImpl implements PlaylistService{
         }
         return null;
     }
-
+    @Override
+    @Transactional
     public long register(PlaylistRegisterRequestForm requestForm, HttpHeaders headers) {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
         if (authValues.isEmpty()) {
@@ -90,15 +88,15 @@ public class PlaylistServiceImpl implements PlaylistService{
 
     @Override
     @Transactional
-    public boolean modify(PlaylistModifyRequestForm requestForm, HttpHeaders headers) {
+    public PlaylistModifyResponseForm modify(PlaylistModifyRequestForm requestForm, HttpHeaders headers) {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
         if (authValues.isEmpty()) {
-            return false;
+            return null;
         }
         Long accountId = redisService.getValueByKey(authValues.get(0));
         Optional<Account> maybeAccount = accountRepository.findById(accountId);
         if (maybeAccount.isEmpty()) {
-            return false;
+            return null;
         }
         Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
@@ -107,11 +105,9 @@ public class PlaylistServiceImpl implements PlaylistService{
             playlist.setPlaylistName(requestForm.getPlaylistName());
             playlist.setThumbnailName(requestForm.getThumbnailName());
             playlistRepository.save(playlist);
-            return true;
+            return new PlaylistModifyResponseForm(playlist.getPlaylistId(), playlist.getPlaylistName(), playlist.getThumbnailName());
         }
-        return false;
-
-
+        return null;
     }
 
 
