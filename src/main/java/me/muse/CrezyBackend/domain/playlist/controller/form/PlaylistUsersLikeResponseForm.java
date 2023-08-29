@@ -10,6 +10,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PlaylistUsersLikeResponseForm {
     final private Long playlistId;
+    final private String playlistName;
     final private String thumbnailName;
     final private String accountWriter;
     final private List<Song> songlist;
