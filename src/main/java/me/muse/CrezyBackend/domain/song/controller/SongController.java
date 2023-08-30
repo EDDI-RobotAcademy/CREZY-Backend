@@ -31,9 +31,9 @@ public class SongController {
         return songService.delete(songId, headers);
     }
     @DeleteMapping("/delete-songIds")
-    public boolean deleteSong(@RequestParam("songIds") List<Long> songIds, @RequestHeader HttpHeaders headers) {
+    public boolean deleteSong(@RequestParam("songlistId") List<Long> songlistId, @RequestHeader HttpHeaders headers) {
         log.info("deleteSongIds() ");
-        return songService.deleteSongIds(songIds, headers);
+        return songService.deleteSongIds(songlistId, headers);
     }
     @PostMapping("/modify")
     public boolean modifySong(@RequestBody SongModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
