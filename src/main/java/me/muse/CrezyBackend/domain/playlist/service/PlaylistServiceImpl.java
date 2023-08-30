@@ -312,8 +312,9 @@ public class PlaylistServiceImpl implements PlaylistService{
             System.out.println("Likers size: " + playlist.getLikers().size());
             PlaylistUsersLikeResponseForm responseForm = new PlaylistUsersLikeResponseForm(
                     playlist.getPlaylistId(),
-                    playlist.getThumbnailName(),
                     playlist.getPlaylistName(),
+                    playlist.getThumbnailName(),
+                    playlist.getAccount().getNickname(),
                     playlist.getSonglist(),
                     playlist.getLikers().size()
             );

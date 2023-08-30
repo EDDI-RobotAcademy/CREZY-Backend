@@ -76,7 +76,7 @@ public class PlaylistController {
     }
 
 
-    @PostMapping("/my-liked-playlist") // 사용자가 좋아요한 목록 가져오기
+    @GetMapping("/my-liked-playlist") // 사용자가 좋아요한 목록 가져오기
     public List<PlaylistUsersLikeResponseForm> myLikedPlaylist(@RequestHeader HttpHeaders headers) {
         return playlistService.bringLikePlaylist(headers);
     }
