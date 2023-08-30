@@ -314,7 +314,7 @@ public class PlaylistServiceImpl implements PlaylistService{
                     playlist.getPlaylistId(),
                     playlist.getPlaylistName(),
                     playlist.getThumbnailName(),
-                    playlist.getPlaylistName(),
+                    playlist.getAccount().getNickname(),
                     playlist.getSonglist(),
                     playlist.getLikers().size()
             );
