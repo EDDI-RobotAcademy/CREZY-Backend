@@ -19,7 +19,6 @@ public class Song {
     private Long songId;
     private String title;
     private String singer;
-    private String genre;
 
     @Setter
     private String link;
@@ -33,10 +32,9 @@ public class Song {
     @JoinColumn(name="playlist_id")
     private Playlist playlist;
 
-    public Song(String title, String singer, String genre, String link, Playlist playlist) {
+    public Song(String title, String singer, String link, Playlist playlist) {
         this.title = title;
         this.singer = singer;
-        this.genre = genre;
         this.link = link;
         this.playlist = playlist;
     }
