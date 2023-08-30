@@ -19,23 +19,23 @@ public class SongController {
 
     final private SongService songService;
 
-    @PostMapping("/register")
+    @PostMapping("/register") // 노래 등록
     public Long songRegister (@RequestBody SongRegisterRequestForm requestForm, @RequestHeader HttpHeaders headers) throws GeneralSecurityException, IOException {
 
         return songService.register(requestForm, headers);
     }
 
-    @DeleteMapping("/{songId}")
+    @DeleteMapping("/{songId}") // 노래 삭제(하나만 삭제 -추후 다른 곳 이용)
     public boolean deleteSong(@PathVariable("songId") Long songId, @RequestHeader HttpHeaders headers) {
         log.info("deleteSong() ");
         return songService.delete(songId, headers);
     }
-    @DeleteMapping("/delete-songIds")
+    @DeleteMapping("/delete-songIds") // 노래 여러개 삭제
     public boolean deleteSong(@RequestParam("songIds") List<Long> songIds, @RequestHeader HttpHeaders headers) {
         log.info("deleteSongIds() ");
         return songService.deleteSongIds(songIds, headers);
     }
-    @PostMapping("/modify")
+    @PostMapping("/modify") // 노래 수정
     public boolean modifySong(@RequestBody SongModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
         log.info("modifySong() ");
         return songService.modify(requestForm, headers);
