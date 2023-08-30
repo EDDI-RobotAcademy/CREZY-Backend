@@ -14,7 +14,7 @@ public interface SongService {
 
     boolean delete(Long songId, HttpHeaders headers);
 
-    boolean deleteSongIds(List<Long> songIds, HttpHeaders headers);
+    boolean deleteSongIds(List<Long> songlistId, HttpHeaders headers);
 
     boolean modify(SongModifyRequestForm requestForm, HttpHeaders headers);
 }

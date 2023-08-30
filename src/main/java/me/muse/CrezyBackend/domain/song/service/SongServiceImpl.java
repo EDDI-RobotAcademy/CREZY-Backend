@@ -118,7 +118,7 @@ public class SongServiceImpl implements SongService{
 
     @Override
     @Transactional
-    public boolean deleteSongIds(List<Long> songIds, HttpHeaders headers) {
+    public boolean deleteSongIds(List<Long> songlistId, HttpHeaders headers) {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
         if (authValues.isEmpty()) {
             return false;
@@ -128,14 +128,13 @@ public class SongServiceImpl implements SongService{
         if (isAccount.isEmpty()) {
             return false;
         }
-        for(Long id : songIds){
+        for(Long id : songlistId){
             Song song= songRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("노래 없음"));
 
             if(!song.getPlaylist().getAccount().getAccountId().equals(accountId)){
                 continue;
             }
-
             songRepository.deleteById(id);
         }
         return true;

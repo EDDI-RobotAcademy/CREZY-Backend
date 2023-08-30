@@ -31,9 +31,9 @@ public class SongController {
         return songService.delete(songId, headers);
     }
     @DeleteMapping("/delete-songIds") // 노래 여러개 삭제
-    public boolean deleteSong(@RequestParam("songIds") List<Long> songIds, @RequestHeader HttpHeaders headers) {
+    public boolean deleteSong(@RequestParam("songlistId") List<Long> songlistId, @RequestHeader HttpHeaders headers) {
         log.info("deleteSongIds() ");
-        return songService.deleteSongIds(songIds, headers);
+        return songService.deleteSongIds(songlistId, headers);
     }
     @PostMapping("/modify") // 노래 수정
     public boolean modifySong(@RequestBody SongModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
