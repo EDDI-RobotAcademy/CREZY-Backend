@@ -14,26 +14,29 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
     final private AccountService accountService;
 
-    @GetMapping("/logout")
+    @GetMapping("/logout") // 로그아웃
     public void logout(@RequestParam("userToken") String userToken) {
+
         accountService.logout(userToken);
     }
-    @GetMapping("/check-nickName/{nickname}")
+
+    @GetMapping("/check-nickName/{nickname}") // 닉네임 중복 체크
     public boolean checkNickname(@PathVariable("nickname") String nickname) {
         return accountService.checkNickname(nickname);
     }
-    @GetMapping("/change-nickname")
+
+    @GetMapping("/change-nickname") // 닉네임 변경
     public String changeNickname(@RequestParam("userToken") String userToken, @RequestParam("nickname") String nickname) {
         return accountService.changeNickname(userToken, nickname);
     }
 
-    @DeleteMapping("/withdraw")
+    @DeleteMapping("/withdraw") // 회원 탈퇴
     public Boolean withdrawal(@RequestHeader HttpHeaders headers){
         log.info("withdrawal()");
         return accountService.withdrawal(headers);
     }
 
-    @GetMapping("/info")
+    @GetMapping("/info") //마이페이지 - 회원 정보 닉네임 & 내가 등록한 플레이 리스트 개수 & 좋아요 한 플레이 리스트 개수 리턴
     public AccountInfoResponseForm returnAccount(@RequestHeader HttpHeaders headers) {
         return accountService.returnAccountInfo(headers);
     }

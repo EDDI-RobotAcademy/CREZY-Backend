@@ -37,18 +37,18 @@ public class PlaylistController {
         return playlistService.read(playlistId);
     }
 
-    @PostMapping("/register")
+    @PostMapping("/register") // 플레이 리스트 등록
     public long playlistRegister (@RequestBody PlaylistRegisterRequestForm requestForm, @RequestHeader HttpHeaders headers) {
         log.info("playlistRegister()");
         return playlistService.register(requestForm, headers);
     }
 
-    @PostMapping("/modify")
+    @PostMapping("/modify") // 플레이 리스트 수정
     public PlaylistModifyResponseForm modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
         return playlistService.modify(requestForm, headers);
     }
 
-    @DeleteMapping("/{playlistId}")
+    @DeleteMapping("/{playlistId}") // 플레이 리스트 삭제
     public boolean deleteSong(@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
 
         return playlistService.delete(playlistId, headers);
@@ -69,14 +69,14 @@ public class PlaylistController {
         return playlistService.unlikePlaylist(playlistId, headers);
     }
 
-    @GetMapping("/my-playlist")
+    @GetMapping("/my-playlist") // 내가 등록한 플레이 리스트
     public List<MyPlaylistResponseForm> myPlaylist(@RequestHeader HttpHeaders headers){
         log.info("myPlaylist()");
         return playlistService.myPlaylist(headers);
     }
 
 
-    @GetMapping("/my-liked-playlist") // 사용자가 좋아요한 목록 가져오기
+    @GetMapping("/my-liked-playlist") // 사용자가 좋아요 한 목록 가져오기
     public List<PlaylistUsersLikeResponseForm> myLikedPlaylist(@RequestHeader HttpHeaders headers) {
         return playlistService.bringLikePlaylist(headers);
     }
