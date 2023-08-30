@@ -9,6 +9,5 @@ public class SongRegisterRequestForm {
     final private Long playlistId;
     final private String title;
     final private String singer;
-    final private String genre;
     final private String link;
 }

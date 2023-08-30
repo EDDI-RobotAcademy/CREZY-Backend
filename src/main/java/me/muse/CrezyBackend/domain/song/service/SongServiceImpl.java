@@ -58,7 +58,7 @@ public class SongServiceImpl implements SongService{
             return null;
         }
 
-        final Song song = new Song(requestForm.getTitle(), requestForm.getSinger(), requestForm.getGenre(), requestForm.getLink(), playlist);
+        final Song song = new Song(requestForm.getTitle(), requestForm.getSinger(), requestForm.getLink(), playlist);
         if(requestForm.getLink().equals("")){
             String videoId = youtube.searchByKeyword(requestForm.getSinger() + " " + requestForm.getTitle());
             song.setLink("https://www.youtube.com/watch?v=" + videoId);
