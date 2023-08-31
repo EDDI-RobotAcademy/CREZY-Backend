@@ -87,12 +87,12 @@ public class GoogleServiceImpl implements GoogleService {
             throw new RuntimeException("Failed to parse JSON string", e);
         }
         String email = (String) jsonMap.get("email");
-
+        String profileImageName = (String) jsonMap.get("picture");
         Optional<Account> maybeAccount = accountRepository.findByEmail(email);
         Account savedAccount;
         if(maybeAccount.isEmpty()) {
             String nickname = (String) jsonMap.get("name");
-            savedAccount = accountRepository.save(new Account(nickname, email));
+            savedAccount = accountRepository.save(new Account(nickname, email, profileImageName));
         } else {
             savedAccount = maybeAccount.get();
         }

@@ -75,14 +75,14 @@ public class NaverServiceImpl implements NaverService{
         Map<String, Object> responseMap = (Map<String, Object>) jsonMap.get("response");
 
         String email = (String) responseMap.get("email");
-
+        String profileImageName = (String) responseMap.get("profile_image");
         Optional<Account> maybeAccount = accountRepository.findByEmail(email);
         Account savedAccount;
         if (maybeAccount.isEmpty()) {
             String nickname = (String) responseMap.get("nickname");
             String decodedNickname = StringEscapeUtils.unescapeJava(nickname);
 
-            savedAccount = accountRepository.save(new Account(decodedNickname, email));
+            savedAccount = accountRepository.save(new Account(decodedNickname, email, profileImageName));
         } else {
             savedAccount = maybeAccount.get();
         }
