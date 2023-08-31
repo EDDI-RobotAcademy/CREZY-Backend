@@ -48,6 +48,7 @@ public class KakaoServiceImpl implements KakaoService{
     public String kakaoLoginAddress() {
         String reqUrl = kakaoLoginUrl + "/oauth/authorize?client_id=" + kakaoClientId + "&redirect_uri=" + kakaoRedirect_uri
                 + "&response_type=code";
+        // 카카오 재로그인 해야할 때 url뒤에 붙이기: + "&prompt=login"
         System.out.println(reqUrl);
         return reqUrl;
     }
@@ -75,15 +76,18 @@ public class KakaoServiceImpl implements KakaoService{
         // "properties" 키 아래의 중첩된 JSON 객체 파싱
         Map<String, Object> propertiesMap = (Map<String, Object>) jsonMap.get("properties");
         String nickname = (String) propertiesMap.get("nickname");
+        String profileImageName = (String) propertiesMap.get("thumbnail_image");
 
         // "kakao_account" 키 아래의 중첩된 JSON 객체 파싱
         Map<String, Object> kakaoAccountMap = (Map<String, Object>) jsonMap.get("kakao_account");
         String email = (String) kakaoAccountMap.get("email");
+//        String profileImageName = (String) kakaoAccountMap.get("thumbnail_image_url");
+
 
         Optional<Account> maybeAccount = accountRepository.findByEmail(email);
         Account savedAccount;
         if (maybeAccount.isEmpty()) {
-            savedAccount = accountRepository.save(new Account(nickname, email));
+            savedAccount = accountRepository.save(new Account(nickname, email, profileImageName));
         } else {
             savedAccount = maybeAccount.get();
         }
