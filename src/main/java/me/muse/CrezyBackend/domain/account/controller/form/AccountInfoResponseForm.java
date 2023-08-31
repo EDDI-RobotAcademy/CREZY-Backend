@@ -4,6 +4,8 @@ import lombok.Getter;
 
 @Getter
 public class AccountInfoResponseForm {
+    private Long accountId;
+    private String email;
     private String nickname;
     private int myPlaylistCount;
     private int myLikedPlaylistCount;
@@ -15,7 +17,10 @@ public class AccountInfoResponseForm {
         this.myLikedPlaylistCount = myLikedPlaylistCount;
     }
 
-    public AccountInfoResponseForm(String nickname, int myPlaylistCount, int myLikedPlaylistCount, String profileImageName) {
+    public AccountInfoResponseForm(Long accountId, String email, String nickname, int myPlaylistCount,
+                                   int myLikedPlaylistCount, String profileImageName) {
+        this.accountId = accountId;
+        this.email = email;
         this.nickname = nickname;
         this.myPlaylistCount = myPlaylistCount;
         this.myLikedPlaylistCount = myLikedPlaylistCount;
