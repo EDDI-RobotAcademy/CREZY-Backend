@@ -94,7 +94,7 @@ public class AccountServiceImpl implements AccountService{
         final Account account = maybeAccount.get();
 
         final AccountInfoResponseForm responseForm = new AccountInfoResponseForm(
-                account.getNickname(), account.getPlaylist().size(), account.getLikedPlaylists().size()
+                account.getNickname(), account.getPlaylist().size(), account.getLikedPlaylists().size(), account.getProfileImageName()
         );
 
         return responseForm;

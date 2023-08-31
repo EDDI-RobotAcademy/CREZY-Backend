@@ -21,6 +21,7 @@ public class Account {
     private String nickname;
     private String password;
     private String email;
+    private String profileImageName;
 
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
@@ -36,6 +37,12 @@ public class Account {
     public Account(String nickname, String email) {
         this.nickname = nickname;
         this.email = email;
+    }
+
+    public Account(String nickname, String email, String profileImageName) {
+        this.nickname = nickname;
+        this.email = email;
+        this.profileImageName = profileImageName;
     }
     @Override
     public boolean equals(Object o) {
