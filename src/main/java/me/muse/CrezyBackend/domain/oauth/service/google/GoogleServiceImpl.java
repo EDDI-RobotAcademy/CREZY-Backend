@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.entity.LoginType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
@@ -87,14 +88,19 @@ public class GoogleServiceImpl implements GoogleService {
             throw new RuntimeException("Failed to parse JSON string", e);
         }
         String email = (String) jsonMap.get("email");
-        String profileImageName = (String) jsonMap.get("picture");
         Optional<Account> maybeAccount = accountRepository.findByEmail(email);
         Account savedAccount;
-        if(maybeAccount.isEmpty()) {
+
+        if(maybeAccount.isPresent()){
+            if(maybeAccount.get().getLoginType().equals(LoginType.GOOGLE)){
+                savedAccount = maybeAccount.get();
+            }else {
+                String nickname = (String) jsonMap.get("name");
+                savedAccount = accountRepository.save(new Account(nickname, email, LoginType.GOOGLE));
+            }
+        }else {
             String nickname = (String) jsonMap.get("name");
-            savedAccount = accountRepository.save(new Account(nickname, email, profileImageName));
-        } else {
-            savedAccount = maybeAccount.get();
+            savedAccount = accountRepository.save(new Account(nickname, email, LoginType.GOOGLE));
         }
         return savedAccount;
     }
