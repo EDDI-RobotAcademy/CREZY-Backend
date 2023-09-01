@@ -22,7 +22,7 @@ public class OauthController {
 
     @GetMapping("/google")
     public @ResponseBody String getGoogleOAuthUrl() {
-        return googleService.gooleLoginAddress();
+        return googleService.googleLoginAddress();
     }
 
     @GetMapping("/google-login")

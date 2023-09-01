@@ -40,7 +40,7 @@ public class GoogleServiceImpl implements GoogleService {
     @Value("${google.client-secret}")
     private String googleClientSecret;
 
-    public String gooleLoginAddress(){
+    public String googleLoginAddress(){
         String reqUrl = googleLoginUrl + "/o/oauth2/v2/auth?client_id=" + googleClientId + "&redirect_uri=" + googleRedirect_uri
                 + "&response_type=code&scope=email%20profile%20openid&access_type=offline";
         System.out.println(reqUrl);
