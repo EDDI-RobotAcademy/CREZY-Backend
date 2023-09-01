@@ -5,6 +5,6 @@ import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import org.springframework.http.ResponseEntity;
 
 public interface GoogleService {
-    String gooleLoginAddress();
+    String googleLoginAddress();
     LoginResponseForm getAccount(String code);
 }
