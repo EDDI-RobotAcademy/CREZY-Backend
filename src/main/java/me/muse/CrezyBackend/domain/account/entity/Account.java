@@ -40,6 +40,13 @@ public class Account {
         this.email = email;
     }
 
+    public Account(String nickname, String email, LoginType loginType, String profileImageName) {
+        this.nickname = nickname;
+        this.email = email;
+        this.loginType = loginType;
+        this.profileImageName = profileImageName;
+    }
+
     public Account(String nickname, String email, LoginType loginType) {
         this.nickname = nickname;
         this.email = email;
