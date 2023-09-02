@@ -34,17 +34,26 @@ public class Account {
             joinColumns = @JoinColumn(name = "account_id"),
             inverseJoinColumns = @JoinColumn(name = "playlist_id"))
     private Set<Playlist> likedPlaylists = new HashSet<>();
-
+    @Enumerated(EnumType.STRING)
+    private LoginType loginType;
     public Account(String nickname, String email) {
         this.nickname = nickname;
         this.email = email;
     }
 
-    public Account(String nickname, String email, String profileImageName) {
+    public Account(String nickname, String email, LoginType loginType, String profileImageName) {
         this.nickname = nickname;
         this.email = email;
+        this.loginType = loginType;
         this.profileImageName = profileImageName;
     }
+
+    public Account(String nickname, String email, LoginType loginType) {
+        this.nickname = nickname;
+        this.email = email;
+        this.loginType = loginType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

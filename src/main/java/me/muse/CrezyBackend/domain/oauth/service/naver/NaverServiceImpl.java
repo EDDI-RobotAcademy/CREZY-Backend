@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.entity.LoginType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.KakaoOAuthToken;
@@ -75,16 +76,21 @@ public class NaverServiceImpl implements NaverService{
         Map<String, Object> responseMap = (Map<String, Object>) jsonMap.get("response");
 
         String email = (String) responseMap.get("email");
-        String profileImageName = (String) responseMap.get("profile_image");
         Optional<Account> maybeAccount = accountRepository.findByEmail(email);
         Account savedAccount;
-        if (maybeAccount.isEmpty()) {
+
+        if(maybeAccount.isPresent()){
+            if(maybeAccount.get().getLoginType().equals(LoginType.NAVER)){
+                savedAccount = maybeAccount.get();
+            }else {
+                String nickname = (String) responseMap.get("nickname");
+                String decodedNickname = StringEscapeUtils.unescapeJava(nickname);
+                savedAccount = accountRepository.save(new Account(decodedNickname, email, LoginType.NAVER));
+            }
+        }else {
             String nickname = (String) responseMap.get("nickname");
             String decodedNickname = StringEscapeUtils.unescapeJava(nickname);
-
-            savedAccount = accountRepository.save(new Account(decodedNickname, email, profileImageName));
-        } else {
-            savedAccount = maybeAccount.get();
+            savedAccount = accountRepository.save(new Account(decodedNickname, email, LoginType.NAVER));
         }
         return savedAccount;
     }

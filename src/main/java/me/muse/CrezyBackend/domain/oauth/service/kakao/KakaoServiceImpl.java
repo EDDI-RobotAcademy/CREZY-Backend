@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.entity.LoginType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.KakaoOAuthToken;
@@ -76,7 +77,6 @@ public class KakaoServiceImpl implements KakaoService{
         // "properties" 키 아래의 중첩된 JSON 객체 파싱
         Map<String, Object> propertiesMap = (Map<String, Object>) jsonMap.get("properties");
         String nickname = (String) propertiesMap.get("nickname");
-        String profileImageName = (String) propertiesMap.get("thumbnail_image");
 
         // "kakao_account" 키 아래의 중첩된 JSON 객체 파싱
         Map<String, Object> kakaoAccountMap = (Map<String, Object>) jsonMap.get("kakao_account");
@@ -86,10 +86,15 @@ public class KakaoServiceImpl implements KakaoService{
 
         Optional<Account> maybeAccount = accountRepository.findByEmail(email);
         Account savedAccount;
-        if (maybeAccount.isEmpty()) {
-            savedAccount = accountRepository.save(new Account(nickname, email, profileImageName));
-        } else {
-            savedAccount = maybeAccount.get();
+
+        if(maybeAccount.isPresent()){
+            if(maybeAccount.get().getLoginType().equals(LoginType.KAKAO)){
+                savedAccount = maybeAccount.get();
+            }else {
+                savedAccount = accountRepository.save(new Account(nickname, email, LoginType.KAKAO));
+            }
+        }else {
+            savedAccount = accountRepository.save(new Account(nickname, email, LoginType.KAKAO));
         }
         return savedAccount;
     }

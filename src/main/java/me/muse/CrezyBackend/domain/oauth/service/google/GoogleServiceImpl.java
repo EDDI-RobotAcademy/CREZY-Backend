@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.entity.LoginType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
 import me.muse.CrezyBackend.domain.oauth.service.google.GoogleService;
@@ -40,7 +42,7 @@ public class GoogleServiceImpl implements GoogleService {
     @Value("${google.client-secret}")
     private String googleClientSecret;
 
-    public String gooleLoginAddress(){
+    public String googleLoginAddress(){
         String reqUrl = googleLoginUrl + "/o/oauth2/v2/auth?client_id=" + googleClientId + "&redirect_uri=" + googleRedirect_uri
                 + "&response_type=code&scope=email%20profile%20openid&access_type=offline";
         System.out.println(reqUrl);
@@ -78,7 +80,9 @@ public class GoogleServiceImpl implements GoogleService {
         System.out.println("response.getBody() = " + response.getBody());
         return response;
     }
-    private Account saveUserInfo(ResponseEntity<String> response){
+
+
+    private Account saveUserInfo(ResponseEntity<String> response, String nickname, String profileImageName){
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> jsonMap;
         try {
@@ -87,25 +91,55 @@ public class GoogleServiceImpl implements GoogleService {
             throw new RuntimeException("Failed to parse JSON string", e);
         }
         String email = (String) jsonMap.get("email");
-        String profileImageName = (String) jsonMap.get("picture");
         Optional<Account> maybeAccount = accountRepository.findByEmail(email);
         Account savedAccount;
-        if(maybeAccount.isEmpty()) {
-            String nickname = (String) jsonMap.get("name");
-            savedAccount = accountRepository.save(new Account(nickname, email, profileImageName));
-        } else {
-            savedAccount = maybeAccount.get();
+
+        if(maybeAccount.isPresent()){
+            if(maybeAccount.get().getLoginType().equals(LoginType.GOOGLE)){
+                savedAccount = maybeAccount.get();
+            }else {
+                savedAccount = accountRepository.save(new Account(nickname, email, LoginType.GOOGLE, profileImageName));
+            }
+        }else {
+            savedAccount = accountRepository.save(new Account(nickname, email, LoginType.GOOGLE, profileImageName));
         }
         return savedAccount;
     }
+
+    public boolean isExistAccount(ResponseEntity<String> response){
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> jsonMap;
+        try {
+            jsonMap = objectMapper.readValue(response.getBody(), Map.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse JSON string", e);
+        }
+        String email = (String) jsonMap.get("email");
+        Optional<Account> maybeAccount = accountRepository.findByEmail(email);
+        if(maybeAccount.isEmpty()){
+            return false;
+        }
+        return true;
+    }
     @Override
-    public LoginResponseForm getAccount(String code) {
-        GoogleOAuthToken googleOAuthToken = getAccessToken(code);
+    public LoginResponseForm getAccount(LoginRequestForm requestForm) {
+        GoogleOAuthToken googleOAuthToken = getAccessToken(requestForm.getCode());
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
-        Account account = saveUserInfo(response);
+
+        boolean isExist = isExistAccount(response);
+
+        Account account = saveUserInfo(response, requestForm.getNickname(), requestForm.getProfileImageName());
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
         return new LoginResponseForm(account.getNickname(), userToken);
+    }
+
+    @Override
+    public boolean checkDuplicateAccount(String code) {
+        GoogleOAuthToken googleOAuthToken = getAccessToken(code);
+        ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
+
+        return isExistAccount(response);
     }
 }

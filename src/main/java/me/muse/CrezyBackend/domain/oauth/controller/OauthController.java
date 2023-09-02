@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.service.google.GoogleService;
 import me.muse.CrezyBackend.domain.oauth.service.kakao.KakaoService;
@@ -22,12 +23,17 @@ public class OauthController {
 
     @GetMapping("/google")
     public @ResponseBody String getGoogleOAuthUrl() {
-        return googleService.gooleLoginAddress();
+        return googleService.googleLoginAddress();
+    }
+
+    @GetMapping("/google-check-exist")
+    public boolean googleCheckExist(@RequestParam String code) {
+        return googleService.checkDuplicateAccount(code);
     }
 
     @GetMapping("/google-login")
-    public LoginResponseForm googleCallback(@RequestParam String code) {
-        return googleService.getAccount(code);
+    public LoginResponseForm googleCallback(@RequestBody LoginRequestForm requestForm) {
+        return googleService.getAccount(requestForm);
     }
 
     @GetMapping("/kakao")
