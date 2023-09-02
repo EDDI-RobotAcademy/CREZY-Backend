@@ -38,6 +38,13 @@ public class AccountController {
 
     @GetMapping("/info") //마이페이지 - 회원 정보 닉네임 & 내가 등록한 플레이 리스트 개수 & 좋아요 한 플레이 리스트 개수 리턴
     public AccountInfoResponseForm returnAccount(@RequestHeader HttpHeaders headers) {
+        log.info("returnAccount()");
         return accountService.returnAccountInfo(headers);
+    }
+
+    @GetMapping("/change-profileImage") // 프로필 이미지 변경
+    public String changeProfileImage(@RequestHeader HttpHeaders headers, @RequestParam("profileImageName") String profileImageName) {
+        log.info("changeProfileImage()");
+        return accountService.changeProfileImage(headers, profileImageName);
     }
 }

@@ -100,4 +100,24 @@ public class AccountServiceImpl implements AccountService{
 
         return responseForm;
     }
+
+    @Override
+    public String changeProfileImage(HttpHeaders headers, String profileImageName) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return null;
+        }
+
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
+
+        if (maybeAccount.isPresent()) {
+            Account account = maybeAccount.get();
+            account.setProfileImageName(profileImageName);
+            accountRepository.save(account);
+            return account.getProfileImageName();
+        }
+
+        return null;
+    }
 }

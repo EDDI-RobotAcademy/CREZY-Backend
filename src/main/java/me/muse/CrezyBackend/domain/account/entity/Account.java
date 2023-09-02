@@ -21,6 +21,7 @@ public class Account {
     private String nickname;
     private String password;
     private String email;
+    @Setter
     private String profileImageName;
 
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)

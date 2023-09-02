@@ -9,4 +9,5 @@ public interface AccountService {
     String changeNickname(String userToken, String nickname);
     Boolean withdrawal(HttpHeaders headers);
     AccountInfoResponseForm returnAccountInfo(HttpHeaders headers);
+    String changeProfileImage(HttpHeaders headers, String profileImageName);
 }
