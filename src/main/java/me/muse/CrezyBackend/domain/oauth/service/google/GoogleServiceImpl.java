@@ -122,8 +122,8 @@ public class GoogleServiceImpl implements GoogleService {
         return true;
     }
     @Override
-    public LoginResponseForm getAccount(LoginRequestForm requestForm) {
-        GoogleOAuthToken googleOAuthToken = getAccessToken(requestForm.getCode());
+    public LoginResponseForm getAccount(String code, LoginRequestForm requestForm) {
+        GoogleOAuthToken googleOAuthToken = getAccessToken(code);
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
 
         boolean isExist = isExistAccount(response);
