@@ -8,4 +8,5 @@ import lombok.RequiredArgsConstructor;
 public class LoginResponseForm {
     final private String nickname;
     final private String userToken;
+    final private String profileImageName;
 }

@@ -10,6 +10,7 @@ import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
 import me.muse.CrezyBackend.domain.oauth.service.google.GoogleService;
+import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.*;
@@ -83,56 +84,38 @@ public class GoogleServiceImpl implements GoogleService {
 
 
     private Account saveUserInfo(ResponseEntity<String> response, String nickname, String profileImageName){
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> jsonMap;
-        try {
-            jsonMap = objectMapper.readValue(response.getBody(), Map.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse JSON string", e);
-        }
-        String email = (String) jsonMap.get("email");
-        Optional<Account> maybeAccount = accountRepository.findByEmail(email);
-        Account savedAccount;
-
-        if(maybeAccount.isPresent()){
-            if(maybeAccount.get().getLoginType().equals(LoginType.GOOGLE)){
-                savedAccount = maybeAccount.get();
-            }else {
-                savedAccount = accountRepository.save(new Account(nickname, email, LoginType.GOOGLE, profileImageName));
-            }
-        }else {
-            savedAccount = accountRepository.save(new Account(nickname, email, LoginType.GOOGLE, profileImageName));
-        }
-        return savedAccount;
+        return accountRepository.save(new Account(nickname, findEmail(response), LoginType.GOOGLE, profileImageName));
     }
 
     public boolean isExistAccount(ResponseEntity<String> response){
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> jsonMap;
-        try {
-            jsonMap = objectMapper.readValue(response.getBody(), Map.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse JSON string", e);
-        }
-        String email = (String) jsonMap.get("email");
-        Optional<Account> maybeAccount = accountRepository.findByEmail(email);
-        if(maybeAccount.isEmpty()){
-            return false;
-        }
-        return true;
+        Optional<Account> maybeAccount = accountRepository.findByEmail(findEmail(response));
+
+        return (maybeAccount.isPresent() && maybeAccount.get().getLoginType().equals(LoginType.GOOGLE));
     }
+
     @Override
-    public LoginResponseForm getAccount(String code, LoginRequestForm requestForm) {
+    public LoginResponseForm getAccount(String code) {
         GoogleOAuthToken googleOAuthToken = getAccessToken(code);
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
 
-        boolean isExist = isExistAccount(response);
+        Account account = accountRepository.findByEmail(findEmail(response))
+                .orElseThrow(() -> new IllegalArgumentException("계정 없음"));
+
+        final String userToken = UUID.randomUUID().toString();
+        redisService.setKeyAndValue(userToken, account.getAccountId());
+        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
+    }
+
+    @Override
+    public LoginResponseForm getNewAccount(String code, LoginRequestForm requestForm) {
+        GoogleOAuthToken googleOAuthToken = getAccessToken(code);
+        ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
 
         Account account = saveUserInfo(response, requestForm.getNickname(), requestForm.getProfileImageName());
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return new LoginResponseForm(account.getNickname(), userToken);
+        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
     }
 
     @Override
@@ -141,5 +124,18 @@ public class GoogleServiceImpl implements GoogleService {
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
 
         return isExistAccount(response);
+    }
+
+    public String findEmail(ResponseEntity<String> response){
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> jsonMap;
+        try {
+            jsonMap = objectMapper.readValue(response.getBody(), Map.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse JSON string", e);
+        }
+        String email = (String) jsonMap.get("email");
+
+        return email;
     }
 }
