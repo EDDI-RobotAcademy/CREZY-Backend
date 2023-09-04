@@ -95,7 +95,7 @@ jobs:
             fi
             echo "pass mysql-container"
             
-            if [[ "$(docker ps -qa --filterancestor=crezy-backend/crezy-backend-server:latest)" ]]; then
+            if [[ "$(docker ps -qa --filter ancestor=crezy-backend/crezy-backend-server:latest)" ]]; then
               docker rm -f $(docker pas -qa --filter ancestor=crezy-backend/crezy-backend-server:latest)
             fi
             echo "pass crezy-backend/crezy-backend-server:latest"
