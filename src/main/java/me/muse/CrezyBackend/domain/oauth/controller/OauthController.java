@@ -32,8 +32,8 @@ public class OauthController {
     }
 
     @GetMapping("/google-login")
-    public LoginResponseForm googleCallback(@RequestBody LoginRequestForm requestForm) {
-        return googleService.getAccount(requestForm);
+    public LoginResponseForm googleCallback(@RequestParam String code, @RequestBody LoginRequestForm requestForm) {
+        return googleService.getAccount(code, requestForm);
     }
 
     @GetMapping("/kakao")
