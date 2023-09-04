@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  DOCKER_IMAGE: ghcr.io/${{ github.actor }}/crezy-backend
+  DOCKER_IMAGE: ghcr.io/${{ github.repository_owner }}/crezy-backend
   VERSION: ${{ github.sha }}
   NAME: crezy-backend
   REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
@@ -63,7 +63,7 @@ jobs:
         run: |
           echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
           docker buildx create --name arm64builder --use
-          docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile -t ghcr.io/${{ github.actor }}/personal-project-backend:latest --push .
+          docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/crezy-backend-server:latest --push .
           docker logout
 
   deploy:
@@ -75,7 +75,7 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN }}
 
 
@@ -103,7 +103,7 @@ jobs:
             
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             
-            docker pull ghcr.io/${{ github.actor }}/crezy-backend:latest
+            docker pull ghcr.io/${{ github.repository_owner }}/crezy-backend:latest
             
             docker image prune -f
             docker logout
