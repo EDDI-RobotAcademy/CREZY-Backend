@@ -31,9 +31,15 @@ public class OauthController {
         return googleService.checkDuplicateAccount(code);
     }
 
+
+    @PostMapping("/google-new-login")
+    public LoginResponseForm googleCallbackNewAccount(@RequestParam String code, @RequestBody LoginRequestForm requestForm) {
+        return googleService.getNewAccount(code, requestForm);
+    }
+
     @GetMapping("/google-login")
-    public LoginResponseForm googleCallback(@RequestParam String code, @RequestBody LoginRequestForm requestForm) {
-        return googleService.getAccount(code, requestForm);
+    public LoginResponseForm googleCallback(@RequestParam String code) {
+        return googleService.getAccount(code);
     }
 
     @GetMapping("/kakao")

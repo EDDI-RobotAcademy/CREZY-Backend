@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface GoogleService {
     String googleLoginAddress();
-    LoginResponseForm getAccount(String code, LoginRequestForm requestForm);
-
+    LoginResponseForm getAccount(String code);
+    LoginResponseForm getNewAccount(String code, LoginRequestForm requestForm);
     boolean checkDuplicateAccount(String code);
 }
