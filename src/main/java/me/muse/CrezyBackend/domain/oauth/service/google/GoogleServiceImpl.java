@@ -42,8 +42,8 @@ public class GoogleServiceImpl implements GoogleService {
     private String googleRedirect_uri;
     @Value("${google.client-secret}")
     private String googleClientSecret;
-    @Value("${google.GOOGLE_ACESSTOEKN_FROM_REFRESHTOKEN_URL}")
-    private String GOOGLE_ACESSTOEKN_FROM_REFRESHTOKEN_URL;
+    @Value("${google.GOOGLE_ACCESSTOKEN_FROM_REFRESHTOKEN_URL}")
+    private String GOOGLE_ACCESSTOKEN_FROM_REFRESHTOKEN_URL;
 
     private String refreshToken;
     public String googleLoginAddress(){
@@ -89,7 +89,7 @@ public class GoogleServiceImpl implements GoogleService {
         body.add("grant_type", "refresh_token");
 
         HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(body, headers);
-        ResponseEntity<GoogleOAuthToken> response = restTemplate.exchange(GOOGLE_ACESSTOEKN_FROM_REFRESHTOKEN_URL, HttpMethod.POST, tokenRequest, GoogleOAuthToken.class);
+        ResponseEntity<GoogleOAuthToken> response = restTemplate.exchange(GOOGLE_ACCESSTOKEN_FROM_REFRESHTOKEN_URL, HttpMethod.POST, tokenRequest, GoogleOAuthToken.class);
         System.out.println(response);
         System.out.println(response.getBody().getAccess_token());
         return response.getBody();
