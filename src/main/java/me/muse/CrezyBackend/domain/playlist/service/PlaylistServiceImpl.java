@@ -64,6 +64,7 @@ public class PlaylistServiceImpl implements PlaylistService{
             return new PlaylistReadResponseForm(playlist.getPlaylistName(),
                     playlist.getAccount().getNickname(),
                     playlist.getThumbnailName(),
+                    playlist.getLikers().size(),
                     distinctResult);
         }
         return null;
