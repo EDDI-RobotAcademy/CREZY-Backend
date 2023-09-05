@@ -6,7 +6,9 @@ import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.LoginType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
+import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
 import me.muse.CrezyBackend.domain.oauth.dto.KakaoOAuthToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -44,6 +46,8 @@ public class KakaoServiceImpl implements KakaoService{
     private String KAKAO_TOKEN_REQUEST_URL;
     @Value("${kakao.KAKAO_USERINFO_REQUEST_URL}")
     private String KAKAO_USERINFO_REQUEST_URL;
+    private String refreshToken;
+
 
     @Override
     public String kakaoLoginAddress() {
@@ -55,17 +59,18 @@ public class KakaoServiceImpl implements KakaoService{
     }
 
     @Override
-    public LoginResponseForm getAccount(String code) {
+    public boolean checkDuplicateAccount(String code) {
         KakaoOAuthToken kakaoOAuthToken = getAccessToken(code);
+        refreshToken = kakaoOAuthToken.getRefresh_token();
         ResponseEntity<String> response = requestUserInfo(kakaoOAuthToken);
-        Account account = saveUserInfo(response);
-
-        final String userToken = UUID.randomUUID().toString();
-        redisService.setKeyAndValue(userToken, account.getAccountId());
-        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
+        return isExitAccount(response);
+    }
+    public boolean isExitAccount(ResponseEntity<String> response){
+        Optional<Account> maybeAccount = accountRepository.findByEmail(findEmail(response));
+        return (maybeAccount.isPresent() && maybeAccount.get().getLoginType().equals(LoginType.KAKAO));
     }
 
-    private Account saveUserInfo(ResponseEntity<String> response) {
+    public String findEmail(ResponseEntity<String> response){
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> jsonMap;
         try {
@@ -73,30 +78,57 @@ public class KakaoServiceImpl implements KakaoService{
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse JSON string", e);
         }
-
-        // "properties" 키 아래의 중첩된 JSON 객체 파싱
-        Map<String, Object> propertiesMap = (Map<String, Object>) jsonMap.get("properties");
-        String nickname = (String) propertiesMap.get("nickname");
-
-        // "kakao_account" 키 아래의 중첩된 JSON 객체 파싱
         Map<String, Object> kakaoAccountMap = (Map<String, Object>) jsonMap.get("kakao_account");
         String email = (String) kakaoAccountMap.get("email");
-//        String profileImageName = (String) kakaoAccountMap.get("thumbnail_image_url");
 
+        return email;
+    }
 
-        Optional<Account> maybeAccount = accountRepository.findByEmail(email);
-        Account savedAccount;
+    @Override
+    public LoginResponseForm getNewAccount(LoginRequestForm requestForm) {
+        KakaoOAuthToken kakaoOAuthToken = getAccessTokenFromRefreshToken();
+        ResponseEntity<String> response = requestUserInfo(kakaoOAuthToken);
 
-        if(maybeAccount.isPresent()){
-            if(maybeAccount.get().getLoginType().equals(LoginType.KAKAO)){
-                savedAccount = maybeAccount.get();
-            }else {
-                savedAccount = accountRepository.save(new Account(nickname, email, LoginType.KAKAO));
-            }
-        }else {
-            savedAccount = accountRepository.save(new Account(nickname, email, LoginType.KAKAO));
-        }
-        return savedAccount;
+        Account account = saveUserInfo(response, requestForm.getNickname(), requestForm.getProfileImageName());
+
+        final String userToken = UUID.randomUUID().toString();
+        redisService.setKeyAndValue(userToken, account.getAccountId());
+        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
+    }
+
+    @Override
+    public LoginResponseForm getAccount() {
+        KakaoOAuthToken kakaoOAuthToken = getAccessTokenFromRefreshToken();
+        ResponseEntity<String> response = requestUserInfo(kakaoOAuthToken);
+
+        Account account = accountRepository.findByEmail(findEmail(response))
+                .orElseThrow(() -> new IllegalArgumentException("계정 없음"));
+
+        final String userToken = UUID.randomUUID().toString();
+        redisService.setKeyAndValue(userToken, account.getAccountId());
+        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
+    }
+
+    private KakaoOAuthToken getAccessTokenFromRefreshToken(){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add("Content-type", "application/x-www-form-urlencoded");
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "refresh_token");
+        body.add("client_id", kakaoClientId);
+        body.add("client_secret", kakaoClientSecret);
+        body.add("refresh_token", refreshToken);
+
+        HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(body, headers);
+        ResponseEntity<KakaoOAuthToken> response = restTemplate.exchange(KAKAO_TOKEN_REQUEST_URL, HttpMethod.POST, tokenRequest, KakaoOAuthToken.class);
+        System.out.println(response);
+        System.out.println(response.getBody().getAccess_token());
+        return response.getBody();
+    }
+    private Account saveUserInfo(ResponseEntity<String> response, String nickname, String profileImageName) {
+        return accountRepository.save(new Account(nickname, findEmail(response), LoginType.KAKAO, profileImageName));
     }
 
     private ResponseEntity<String> requestUserInfo(KakaoOAuthToken kakaoOAuthToken) {

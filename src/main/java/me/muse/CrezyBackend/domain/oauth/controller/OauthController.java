@@ -47,11 +47,20 @@ public class OauthController {
         log.info("getKakaoOAuthUrl()");
         return kakaoService.kakaoLoginAddress();
     }
+    @GetMapping("/kakao-check-exist")
+    public boolean kakaoCheckExist(@RequestParam String code) {
+        return kakaoService.checkDuplicateAccount(code);
+    }
+
+    @PostMapping("/kakao-new-login")
+    public LoginResponseForm kakaoCallbackNewAccount(@RequestBody LoginRequestForm requestForm) {
+        return kakaoService.getNewAccount(requestForm);
+    }
 
     @GetMapping("/kakao-login")
-    public LoginResponseForm kakaoCallback(@RequestParam String code) {
+    public LoginResponseForm kakaoCallback() {
         log.info("kakaoCallback()");
-        return kakaoService.getAccount(code);
+        return kakaoService.getAccount();
     }
 
     @GetMapping("/naver")
