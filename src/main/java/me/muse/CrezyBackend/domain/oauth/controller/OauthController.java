@@ -60,9 +60,20 @@ public class OauthController {
         return naverService.naverLoginAddress();
     }
 
-    @GetMapping("/naver-login")
-    public LoginResponseForm naverCallback(@RequestParam String code) {
+    @GetMapping("/naver-check-exist")
+    public boolean naverCheckExist(@RequestParam String code) {
+        return naverService.checkDuplicateAccount(code);
+    }
+
+    @PostMapping("/naver-new-login")
+    public LoginResponseForm naverCallbackNewAccount(@RequestBody LoginRequestForm requestForm) {
         log.info("naverCallback()");
-        return naverService.getAccount(code);
+        return naverService.getNewAccount(requestForm);
+    }
+
+    @GetMapping("/naver-login")
+    public LoginResponseForm naverCallback() {
+        log.info("naverCallback()");
+        return naverService.getAccount();
     }
 }

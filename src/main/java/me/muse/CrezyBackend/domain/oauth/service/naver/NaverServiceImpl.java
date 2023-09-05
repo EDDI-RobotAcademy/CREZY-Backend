@@ -6,7 +6,9 @@ import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.LoginType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
+import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
 import me.muse.CrezyBackend.domain.oauth.dto.KakaoOAuthToken;
 import me.muse.CrezyBackend.domain.oauth.dto.NaverOAuthToken;
 import org.apache.commons.text.StringEscapeUtils;
@@ -46,6 +48,8 @@ public class NaverServiceImpl implements NaverService{
     @Value("${naver.NAVER_USERINFO_REQUEST_URL}")
     private String NAVER_USERINFO_REQUEST_URL;
 
+    private String refreshToken;
+
     @Override
     public String naverLoginAddress() {
         String reqUrl = naverLoginUrl + "?response_type=code&client_id=" + naverClientId + "&redirect_uri=" + naverRedirect_uri + "&state=" + generateState();
@@ -55,44 +59,32 @@ public class NaverServiceImpl implements NaverService{
     }
 
     @Override
-    public LoginResponseForm getAccount(String code) {
-        NaverOAuthToken naverOAuthToken = getAccessToken(code);
+    public LoginResponseForm getAccount() {
+        NaverOAuthToken naverOAuthToken = getAccessTokenFromRefreshToken();
         ResponseEntity<String> response = requestUserInfo(naverOAuthToken);
-        Account account = saveUserInfo(response);
+
+        Account account = accountRepository.findByEmail(findEmail(response))
+                .orElseThrow(() -> new IllegalArgumentException("계정 없음"));
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
         return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
     }
 
-    private Account saveUserInfo(ResponseEntity<String> response) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> jsonMap;
-        try {
-            jsonMap = objectMapper.readValue(response.getBody(), Map.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse JSON string", e);
-        }
-        Map<String, Object> responseMap = (Map<String, Object>) jsonMap.get("response");
+    @Override
+    public LoginResponseForm getNewAccount(LoginRequestForm requestForm) {
+        NaverOAuthToken naverOAuthToken = getAccessTokenFromRefreshToken();
+        ResponseEntity<String> response = requestUserInfo(naverOAuthToken);
 
-        String email = (String) responseMap.get("email");
-        Optional<Account> maybeAccount = accountRepository.findByEmail(email);
-        Account savedAccount;
+        Account account = saveUserInfo(response, requestForm.getNickname(), requestForm.getProfileImageName());
 
-        if(maybeAccount.isPresent()){
-            if(maybeAccount.get().getLoginType().equals(LoginType.NAVER)){
-                savedAccount = maybeAccount.get();
-            }else {
-                String nickname = (String) responseMap.get("nickname");
-                String decodedNickname = StringEscapeUtils.unescapeJava(nickname);
-                savedAccount = accountRepository.save(new Account(decodedNickname, email, LoginType.NAVER));
-            }
-        }else {
-            String nickname = (String) responseMap.get("nickname");
-            String decodedNickname = StringEscapeUtils.unescapeJava(nickname);
-            savedAccount = accountRepository.save(new Account(decodedNickname, email, LoginType.NAVER));
-        }
-        return savedAccount;
+        final String userToken = UUID.randomUUID().toString();
+        redisService.setKeyAndValue(userToken, account.getAccountId());
+        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
+    }
+
+    private Account saveUserInfo(ResponseEntity<String> response, String nickname, String profileImageName) {
+        return accountRepository.save(new Account(nickname, findEmail(response), LoginType.NAVER, profileImageName));
     }
 
     private NaverOAuthToken getAccessToken(String code) {
@@ -120,7 +112,6 @@ public class NaverServiceImpl implements NaverService{
         return response.getBody();
     }
 
-
     private ResponseEntity<String> requestUserInfo(NaverOAuthToken naverOAuthToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + naverOAuthToken.getAccess_token());
@@ -134,5 +125,56 @@ public class NaverServiceImpl implements NaverService{
 
     private String generateState() {
         SecureRandom random = new SecureRandom();
-        return new BigInteger(130, random).toString(32);    }
+        return new BigInteger(130, random).toString(32);
+    }
+
+    public String findEmail(ResponseEntity<String> response){
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> jsonMap;
+        try {
+            jsonMap = objectMapper.readValue(response.getBody(), Map.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse JSON string", e);
+        }
+        Map<String, Object> responseMap = (Map<String, Object>) jsonMap.get("response");
+
+        String email = (String) responseMap.get("email");
+
+        return email;
+    }
+
+    public boolean isExistAccount(ResponseEntity<String> response){
+        Optional<Account> maybeAccount = accountRepository.findByEmail(findEmail(response));
+
+        return (maybeAccount.isPresent() && maybeAccount.get().getLoginType().equals(LoginType.NAVER));
+    }
+
+    public boolean checkDuplicateAccount(String code) {
+        NaverOAuthToken naverOAuthToken = getAccessToken(code);
+        refreshToken = naverOAuthToken.getRefresh_token();
+        ResponseEntity<String> response = requestUserInfo(naverOAuthToken);
+
+        return isExistAccount(response);
+    }
+
+    private NaverOAuthToken getAccessTokenFromRefreshToken(){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add("Host", "oauth2.googleapis.com");
+        headers.add("Content-type", "application/x-www-form-urlencoded");
+
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("client_id", naverClientId);
+        body.add("client_secret", naverClientSecret);
+        body.add("refresh_token", refreshToken);
+        body.add("grant_type", "refresh_token");
+
+        HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(body, headers);
+        ResponseEntity<NaverOAuthToken> response = restTemplate.exchange(NAVER_TOKEN_REQUEST_URL, HttpMethod.POST, tokenRequest, NaverOAuthToken.class);
+        System.out.println(response);
+        System.out.println(response.getBody().getAccess_token());
+        return response.getBody();
+    }
 }
