@@ -33,13 +33,13 @@ public class OauthController {
 
 
     @PostMapping("/google-new-login")
-    public LoginResponseForm googleCallbackNewAccount(@RequestParam String code, @RequestBody LoginRequestForm requestForm) {
-        return googleService.getNewAccount(code, requestForm);
+    public LoginResponseForm googleCallbackNewAccount(@RequestBody LoginRequestForm requestForm) {
+        return googleService.getNewAccount(requestForm);
     }
 
     @GetMapping("/google-login")
-    public LoginResponseForm googleCallback(@RequestParam String code) {
-        return googleService.getAccount(code);
+    public LoginResponseForm googleCallback() {
+        return googleService.getAccount();
     }
 
     @GetMapping("/kakao")

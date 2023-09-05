@@ -42,7 +42,10 @@ public class GoogleServiceImpl implements GoogleService {
     private String googleRedirect_uri;
     @Value("${google.client-secret}")
     private String googleClientSecret;
+    @Value("${google.GOOGLE_ACESSTOEKN_FROM_REFRESHTOKEN_URL}")
+    private String GOOGLE_ACESSTOEKN_FROM_REFRESHTOKEN_URL;
 
+    private String refreshToken;
     public String googleLoginAddress(){
         String reqUrl = googleLoginUrl + "/o/oauth2/v2/auth?client_id=" + googleClientId + "&redirect_uri=" + googleRedirect_uri
                 + "&response_type=code&scope=email%20profile%20openid&access_type=offline";
@@ -71,6 +74,27 @@ public class GoogleServiceImpl implements GoogleService {
         return response.getBody();
     }
 
+    private GoogleOAuthToken getAccessTokenFromRefreshToken(){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add("Host", "oauth2.googleapis.com");
+        headers.add("Content-type", "application/x-www-form-urlencoded");
+
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("client_id", googleClientId);
+        body.add("client_secret", googleClientSecret);
+        body.add("refresh_token", refreshToken);
+        body.add("grant_type", "refresh_token");
+
+        HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(body, headers);
+        ResponseEntity<GoogleOAuthToken> response = restTemplate.exchange(GOOGLE_ACESSTOEKN_FROM_REFRESHTOKEN_URL, HttpMethod.POST, tokenRequest, GoogleOAuthToken.class);
+        System.out.println(response);
+        System.out.println(response.getBody().getAccess_token());
+        return response.getBody();
+    }
+
     private ResponseEntity<String> requestUserInfo(GoogleOAuthToken oAuthToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oAuthToken.getAccess_token());
@@ -94,8 +118,8 @@ public class GoogleServiceImpl implements GoogleService {
     }
 
     @Override
-    public LoginResponseForm getAccount(String code) {
-        GoogleOAuthToken googleOAuthToken = getAccessToken(code);
+    public LoginResponseForm getAccount() {
+        GoogleOAuthToken googleOAuthToken = getAccessTokenFromRefreshToken();
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
 
         Account account = accountRepository.findByEmail(findEmail(response))
@@ -107,8 +131,8 @@ public class GoogleServiceImpl implements GoogleService {
     }
 
     @Override
-    public LoginResponseForm getNewAccount(String code, LoginRequestForm requestForm) {
-        GoogleOAuthToken googleOAuthToken = getAccessToken(code);
+    public LoginResponseForm getNewAccount(LoginRequestForm requestForm) {
+        GoogleOAuthToken googleOAuthToken = getAccessTokenFromRefreshToken();
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
 
         Account account = saveUserInfo(response, requestForm.getNickname(), requestForm.getProfileImageName());
@@ -121,6 +145,7 @@ public class GoogleServiceImpl implements GoogleService {
     @Override
     public boolean checkDuplicateAccount(String code) {
         GoogleOAuthToken googleOAuthToken = getAccessToken(code);
+        refreshToken = googleOAuthToken.getRefresh_token();
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
 
         return isExistAccount(response);
