@@ -1,11 +1,14 @@
 package me.muse.CrezyBackend.domain.oauth.service.google;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.account.entity.Account;
-import me.muse.CrezyBackend.domain.account.entity.LoginType;
+import me.muse.CrezyBackend.domain.account.entity.*;
+import me.muse.CrezyBackend.domain.account.repository.AccountLoginTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
+import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
@@ -24,12 +27,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static me.muse.CrezyBackend.domain.account.entity.LoginType.GOOGLE;
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
+
 @Service
 @RequiredArgsConstructor
 @PropertySource("classpath:google.properties")
 public class GoogleServiceImpl implements GoogleService {
     final private AccountRepository accountRepository;
+    final private AccountLoginTypeRepository accountLoginTypeRepository;
+    final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private RedisService redisService;
+    final private ProfileRepository profileRepository;
     @Value("${google.googleLoginUrl}")
     private String googleLoginUrl;
     @Value("${google.GOOGLE_TOKEN_REQUEST_URL}")
@@ -106,28 +115,34 @@ public class GoogleServiceImpl implements GoogleService {
         return response;
     }
 
-
+    @Transactional
     private Account saveUserInfo(ResponseEntity<String> response, String nickname, String profileImageName){
-        return accountRepository.save(new Account(nickname, findEmail(response), LoginType.GOOGLE, profileImageName));
+        AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(GOOGLE).get();
+        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(NORMAL).get();
+        Profile profile = profileRepository.save(new Profile(nickname, findEmail(response), profileImageName, new Account(loginType, roleType)));
+
+        return profile.getAccount();
     }
 
     public boolean isExistAccount(ResponseEntity<String> response){
-        Optional<Account> maybeAccount = accountRepository.findByEmail(findEmail(response));
-
-        return (maybeAccount.isPresent() && maybeAccount.get().getLoginType().equals(LoginType.GOOGLE));
+        Optional<Profile> maybeProfile = profileRepository.findByEmail(findEmail(response));
+        return (maybeProfile.isPresent() && maybeProfile.get().getAccount().getLoginType().getLoginType().equals(LoginType.GOOGLE));
     }
 
     @Override
+    @Transactional
     public LoginResponseForm getAccount() {
         GoogleOAuthToken googleOAuthToken = getAccessTokenFromRefreshToken();
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
-
-        Account account = accountRepository.findByEmail(findEmail(response))
-                .orElseThrow(() -> new IllegalArgumentException("계정 없음"));
+        Optional<Profile> maybeProfile = profileRepository.findByEmail(findEmail(response));
+        if(maybeProfile.isEmpty()){
+            return null;
+        }
+        Account account = maybeProfile.get().getAccount();
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
+        return new LoginResponseForm(maybeProfile.get().getNickname(), userToken, maybeProfile.get().getProfileImageName());
     }
 
     @Override
@@ -139,7 +154,11 @@ public class GoogleServiceImpl implements GoogleService {
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
+
+        Profile profile = profileRepository.findByAccount(account)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));;
+
+        return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 
     @Override

@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountInfoResponseForm;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +26,7 @@ public class AccountServiceImpl implements AccountService{
     final private RedisService redisService;
     final private AccountRepository accountRepository;
     final private PlaylistRepository playlistRepository;
+    final private ProfileRepository profileRepository;
 
     @Override
     public void logout(String userToken) {
@@ -31,8 +34,8 @@ public class AccountServiceImpl implements AccountService{
     }
     @Override
     public Boolean checkNickname(String nickname) {
-        final Optional<Account> maybeAccount = accountRepository.findByNickname(nickname);
-        if (maybeAccount.isPresent()) {
+        Optional<Profile> maybeProfile = profileRepository.findByNickname(nickname);
+        if (maybeProfile.isPresent()) {
             return false;
         }
         return true;
@@ -42,9 +45,12 @@ public class AccountServiceImpl implements AccountService{
         Long accountId = redisService.getValueByKey(userToken);
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        account.setNickname(nickname);
-        accountRepository.save(account);
-        return account.getNickname();
+        Profile profile = profileRepository.findByAccount(account)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));;
+
+        profile.setNickname(nickname);
+        profileRepository.save(profile);
+        return profile.getNickname();
     }
 
     @Override
@@ -85,17 +91,13 @@ public class AccountServiceImpl implements AccountService{
         }
 
         final Long accountId = redisService.getValueByKey(authValues.get(0));
-        final Optional<Account> maybeAccount = accountRepository.findById(accountId);
-
-        if (maybeAccount.isEmpty()) {
-            return null;
-        }
-
-        final Account account = maybeAccount.get();
-
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        Profile profile = profileRepository.findByAccount(account)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));;
         final AccountInfoResponseForm responseForm = new AccountInfoResponseForm(
-               account.getAccountId(), account.getEmail(), account.getNickname(), account.getPlaylist().size(),
-                account.getLikedPlaylists().size(), account.getProfileImageName()
+               account.getAccountId(), profile.getEmail(), profile.getNickname(), account.getPlaylist().size(),
+                account.getLikedPlaylists().size(), profile.getProfileImageName()
         );
 
         return responseForm;
@@ -109,15 +111,15 @@ public class AccountServiceImpl implements AccountService{
         }
 
         Long accountId = redisService.getValueByKey(authValues.get(0));
-        Optional<Account> maybeAccount = accountRepository.findById(accountId);
 
-        if (maybeAccount.isPresent()) {
-            Account account = maybeAccount.get();
-            account.setProfileImageName(profileImageName);
-            accountRepository.save(account);
-            return account.getProfileImageName();
-        }
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        Profile profile = profileRepository.findByAccount(account)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
 
-        return null;
+        profile.setProfileImageName(profileImageName);
+        profileRepository.save(profile);
+        return profile.getProfileImageName();
+
     }
 }
