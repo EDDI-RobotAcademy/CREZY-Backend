@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
@@ -25,6 +27,7 @@ public class PlaylistServiceImpl implements PlaylistService{
     final private PlaylistRepository playlistRepository;
     final private RedisService redisService;
     final private AccountRepository accountRepository;
+    final private ProfileRepository profileRepository;
 
     @Override
     @Transactional
@@ -41,9 +44,10 @@ public class PlaylistServiceImpl implements PlaylistService{
             if (thumbnailName == null && !playlist.getSonglist().isEmpty()) {
                 thumbnailName = playlist.getSonglist().get(0).getLink();
             }
-
+            Profile profile = profileRepository.findByAccount(playlist.getAccount())
+                    .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
             PlaylistResponseForm responseForm = new PlaylistResponseForm(
-                    playlist.getPlaylistId(), playlist.getPlaylistName(), playlist.getAccount().getNickname(),
+                    playlist.getPlaylistId(), playlist.getPlaylistName(), profile.getNickname(),
                     likeCount, songCount, thumbnailName);
 
             responseForms.add(responseForm);
@@ -61,8 +65,11 @@ public class PlaylistServiceImpl implements PlaylistService{
             List<Song> resultList = playlist.getSonglist();
             List<Song> distinctResult = resultList.stream().distinct().collect(Collectors.toList());
 
+            Profile profile = profileRepository.findByAccount(playlist.getAccount())
+                    .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
+
             return new PlaylistReadResponseForm(playlist.getPlaylistName(),
-                    playlist.getAccount().getNickname(),
+                    profile.getNickname(),
                     playlist.getThumbnailName(),
                     playlist.getLikers().size(),
                     distinctResult);
@@ -311,11 +318,15 @@ public class PlaylistServiceImpl implements PlaylistService{
             System.out.println("Playlist: " + playlist);
             System.out.println("Songlist: " + playlist.getSonglist());
             System.out.println("Likers size: " + playlist.getLikers().size());
+
+            Profile profile = profileRepository.findByAccount(playlist.getAccount())
+                    .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
+
             PlaylistUsersLikeResponseForm responseForm = new PlaylistUsersLikeResponseForm(
                     playlist.getPlaylistId(),
                     playlist.getPlaylistName(),
                     playlist.getThumbnailName(),
-                    playlist.getAccount().getNickname(),
+                    profile.getNickname(),
                     playlist.getSonglist(),
                     playlist.getLikers().size()
             );

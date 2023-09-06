@@ -74,8 +74,10 @@ public class KakaoServiceImpl implements KakaoService{
         return isExitAccount(response);
     }
     public boolean isExitAccount(ResponseEntity<String> response){
-        Optional<Profile> maybeProfile = profileRepository.findByEmail(findEmail(response));
-        return (maybeProfile.isPresent() && maybeProfile.get().getAccount().getLoginType().getLoginType().equals(LoginType.KAKAO));
+        AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(KAKAO).get();
+        Optional<Profile> maybeProfile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType);
+
+        return (maybeProfile.isPresent());
     }
 
     public String findEmail(ResponseEntity<String> response){
@@ -112,15 +114,15 @@ public class KakaoServiceImpl implements KakaoService{
         KakaoOAuthToken kakaoOAuthToken = getAccessTokenFromRefreshToken();
         ResponseEntity<String> response = requestUserInfo(kakaoOAuthToken);
 
-        Optional<Profile> maybeProfile = profileRepository.findByEmail(findEmail(response));
-        if(maybeProfile.isEmpty()){
-            return null;
-        }
-        Account account = maybeProfile.get().getAccount();
+        AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(KAKAO).get();
+        Profile profile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        Account account = profile.getAccount();
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return new LoginResponseForm(maybeProfile.get().getNickname(), userToken, maybeProfile.get().getProfileImageName());
+        return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 
     private KakaoOAuthToken getAccessTokenFromRefreshToken(){

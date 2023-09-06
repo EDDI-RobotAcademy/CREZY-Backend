@@ -29,8 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static me.muse.CrezyBackend.domain.account.entity.LoginType.GOOGLE;
-import static me.muse.CrezyBackend.domain.account.entity.LoginType.NAVER;
+import static me.muse.CrezyBackend.domain.account.entity.LoginType.*;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
 
 @Service
@@ -71,15 +70,15 @@ public class NaverServiceImpl implements NaverService{
         NaverOAuthToken naverOAuthToken = getAccessTokenFromRefreshToken();
         ResponseEntity<String> response = requestUserInfo(naverOAuthToken);
 
-        Optional<Profile> maybeProfile = profileRepository.findByEmail(findEmail(response));
-        if(maybeProfile.isEmpty()){
-            return null;
-        }
-        Account account = maybeProfile.get().getAccount();
+        AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(NAVER).get();
+        Profile profile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        Account account = profile.getAccount();
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return new LoginResponseForm(maybeProfile.get().getNickname(), userToken, maybeProfile.get().getProfileImageName());
+        return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 
     @Override
@@ -161,9 +160,11 @@ public class NaverServiceImpl implements NaverService{
         return email;
     }
 
-    public boolean isExistAccount(ResponseEntity<String> response){
-        Optional<Profile> maybeProfile = profileRepository.findByEmail(findEmail(response));
-        return (maybeProfile.isPresent() && maybeProfile.get().getAccount().getLoginType().getLoginType().equals(LoginType.NAVER));
+    public boolean isExistAccount(ResponseEntity<String> response) {
+        AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(NAVER).get();
+        Optional<Profile> maybeProfile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType);
+
+        return (maybeProfile.isPresent());
     }
 
     public boolean checkDuplicateAccount(String code) {
