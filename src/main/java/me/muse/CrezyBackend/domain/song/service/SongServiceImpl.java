@@ -14,12 +14,16 @@ import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.utility.Youtube;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import org.springframework.http.HttpHeaders;
+
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +33,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@PropertySource("classpath:youtube.properties")
 public class SongServiceImpl implements SongService{
 
     final private PlaylistRepository playlistRepository;
@@ -64,12 +69,15 @@ public class SongServiceImpl implements SongService{
             song.setLink("https://www.youtube.com/watch?v=" + videoId);
         }
 
-//        song.setLyrics(getLyrics(requestForm.getSinger() + " " + requestForm.getTitle()));
-
+        String lyrics = getLyrics(requestForm.getSinger() + " " + requestForm.getTitle());
+        log.info(lyrics);
+        song.setLyrics(lyrics);
         songRepository.save(song);
 
         return song.getSongId();
     }
+
+
 
     @Override
     @Transactional
