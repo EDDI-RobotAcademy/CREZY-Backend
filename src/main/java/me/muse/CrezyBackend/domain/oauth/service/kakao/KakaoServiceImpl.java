@@ -3,9 +3,11 @@ package me.muse.CrezyBackend.domain.oauth.service.kakao;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.account.entity.Account;
-import me.muse.CrezyBackend.domain.account.entity.LoginType;
+import me.muse.CrezyBackend.domain.account.entity.*;
+import me.muse.CrezyBackend.domain.account.repository.AccountLoginTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
+import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
@@ -26,6 +28,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static me.muse.CrezyBackend.domain.account.entity.LoginType.GOOGLE;
+import static me.muse.CrezyBackend.domain.account.entity.LoginType.KAKAO;
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
+
 @Service
 @RequiredArgsConstructor
 @PropertySource("classpath:kakao.properties")
@@ -33,7 +39,9 @@ public class KakaoServiceImpl implements KakaoService{
 
     final private RedisService redisService;
     final private AccountRepository accountRepository;
-
+    final private AccountLoginTypeRepository accountLoginTypeRepository;
+    final private AccountRoleTypeRepository accountRoleTypeRepository;
+    final private ProfileRepository profileRepository;
     @Value("${kakao.kakaoLoginUrl}")
     private String kakaoLoginUrl;
     @Value("${kakao.client-id}")
@@ -66,8 +74,10 @@ public class KakaoServiceImpl implements KakaoService{
         return isExitAccount(response);
     }
     public boolean isExitAccount(ResponseEntity<String> response){
-        Optional<Account> maybeAccount = accountRepository.findByEmail(findEmail(response));
-        return (maybeAccount.isPresent() && maybeAccount.get().getLoginType().equals(LoginType.KAKAO));
+        AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(KAKAO).get();
+        Optional<Profile> maybeProfile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType);
+
+        return (maybeProfile.isPresent());
     }
 
     public String findEmail(ResponseEntity<String> response){
@@ -93,7 +103,10 @@ public class KakaoServiceImpl implements KakaoService{
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
+        Profile profile = profileRepository.findByAccount(account)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));;
+
+        return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 
     @Override
@@ -101,12 +114,15 @@ public class KakaoServiceImpl implements KakaoService{
         KakaoOAuthToken kakaoOAuthToken = getAccessTokenFromRefreshToken();
         ResponseEntity<String> response = requestUserInfo(kakaoOAuthToken);
 
-        Account account = accountRepository.findByEmail(findEmail(response))
-                .orElseThrow(() -> new IllegalArgumentException("계정 없음"));
+        AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(KAKAO).get();
+        Profile profile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        Account account = profile.getAccount();
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
-        return new LoginResponseForm(account.getNickname(), userToken, account.getProfileImageName());
+        return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 
     private KakaoOAuthToken getAccessTokenFromRefreshToken(){
@@ -128,7 +144,11 @@ public class KakaoServiceImpl implements KakaoService{
         return response.getBody();
     }
     private Account saveUserInfo(ResponseEntity<String> response, String nickname, String profileImageName) {
-        return accountRepository.save(new Account(nickname, findEmail(response), LoginType.KAKAO, profileImageName));
+        AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(KAKAO).get();
+        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(NORMAL).get();
+        Profile profile = profileRepository.save(new Profile(nickname, findEmail(response), profileImageName, new Account(loginType, roleType)));
+
+        return profile.getAccount();
     }
 
     private ResponseEntity<String> requestUserInfo(KakaoOAuthToken kakaoOAuthToken) {

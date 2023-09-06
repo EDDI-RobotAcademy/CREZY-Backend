@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -17,13 +19,8 @@ public class Account {
     @Column(name = "accountId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long accountId;
-    @Setter
-    private String nickname;
-    private String password;
-    private String email;
-    @Setter
-    private String profileImageName;
-
+    @CreationTimestamp
+    private LocalDate createDate;
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Playlist> playlist = new ArrayList<>();
@@ -34,24 +31,14 @@ public class Account {
             joinColumns = @JoinColumn(name = "account_id"),
             inverseJoinColumns = @JoinColumn(name = "playlist_id"))
     private Set<Playlist> likedPlaylists = new HashSet<>();
-    @Enumerated(EnumType.STRING)
-    private LoginType loginType;
-    public Account(String nickname, String email) {
-        this.nickname = nickname;
-        this.email = email;
-    }
+    @OneToOne
+    private AccountLoginType loginType;
+    @OneToOne
+    private AccountRoleType roleType;
 
-    public Account(String nickname, String email, LoginType loginType, String profileImageName) {
-        this.nickname = nickname;
-        this.email = email;
+    public Account(AccountLoginType loginType, AccountRoleType roleType) {
         this.loginType = loginType;
-        this.profileImageName = profileImageName;
-    }
-
-    public Account(String nickname, String email, LoginType loginType) {
-        this.nickname = nickname;
-        this.email = email;
-        this.loginType = loginType;
+        this.roleType = roleType;
     }
 
     @Override
