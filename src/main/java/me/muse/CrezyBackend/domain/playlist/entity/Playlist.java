@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 
 import java.util.ArrayList;
@@ -32,9 +33,9 @@ public class Playlist {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @ManyToMany(mappedBy = "likedPlaylists", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "playlist", fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<Account> likers = new HashSet<>();
+    private Set<LikePlaylist> likePlaylist= new HashSet<>();
 
     @OneToMany(mappedBy = "playlist", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
@@ -48,7 +49,4 @@ public class Playlist {
         this.account = account;
     }
 
-    public void removeFromLikers(Account liker) {
-        likers.remove(liker);
-    }
 }

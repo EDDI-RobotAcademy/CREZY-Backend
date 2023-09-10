@@ -8,15 +8,19 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
+import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
-import org.springframework.http.HttpHeaders;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,7 +32,7 @@ public class PlaylistServiceImpl implements PlaylistService{
     final private RedisService redisService;
     final private AccountRepository accountRepository;
     final private ProfileRepository profileRepository;
-
+    final private LikePlaylistRepository likePlaylistRepository;
     @Override
     @Transactional
     public List<PlaylistResponseForm> list() {
@@ -37,7 +41,7 @@ public class PlaylistServiceImpl implements PlaylistService{
         List<PlaylistResponseForm> responseForms = new ArrayList<>();
         for (Playlist playlist : playlists) {
             String thumbnailName = playlist.getThumbnailName();
-            int likeCount = playlist.getLikers() != null ? playlist.getLikers().size() : 0;
+            int likeCount = playlist.getLikePlaylist() != null ? playlist.getLikePlaylist().size() : 0;
             int songCount = playlist.getSonglist() != null ? playlist.getSonglist().size() : 0;
 
             // 썸네일을 등록하지 않았다면 유튜브 링크의 썸네일을 가져오도록
@@ -68,10 +72,12 @@ public class PlaylistServiceImpl implements PlaylistService{
             Profile profile = profileRepository.findByAccount(playlist.getAccount())
                     .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
 
+            List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
+
             return new PlaylistReadResponseForm(playlist.getPlaylistName(),
                     profile.getNickname(),
                     playlist.getThumbnailName(),
-                    playlist.getLikers().size(),
+                    likePlaylists.size(),
                     distinctResult);
         }
         return null;
@@ -148,108 +154,6 @@ public class PlaylistServiceImpl implements PlaylistService{
         return false;
     }
 
-    @Override
-    @Transactional
-    public int likePlaylist(Long playlistId, HttpHeaders headers) {
-        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
-
-        if (maybePlaylist.isEmpty()) {
-            return -1;
-        }
-
-        Playlist playlist = maybePlaylist.get();
-
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-
-        if (authValues.isEmpty()) {
-            return playlist.getLikers().size();
-        }
-
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Optional<Account> maybeAccount = accountRepository.findById(accountId);
-
-        if(maybeAccount.isEmpty()){
-            return playlist.getLikers().size();
-        }
-
-        Account account = maybeAccount.get();
-
-        account.getLikedPlaylists().add(playlist);
-        accountRepository.save(account);
-        playlist.getLikers().add(account);
-        playlistRepository.save(playlist);
-
-        return playlist.getLikers().size();
-    }
-
-    @Override
-    @Transactional
-    public boolean isPlaylistLiked(Long playlistId, HttpHeaders headers) {
-        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
-
-        if (maybePlaylist.isEmpty()) {
-            return false;
-        }
-
-        Playlist playlist = maybePlaylist.get(); // 추천 누른 해당 플레이 리스트 가져옴
-
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-
-        if (authValues.isEmpty()) {
-            return false;
-        }
-
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Optional<Account> maybeAccount = accountRepository.findById(accountId);
-
-        if(maybeAccount.isEmpty()){
-            return false;
-        }
-
-        Account account = maybeAccount.get();
-
-        Set<Playlist> likedPlaylists = account.getLikedPlaylists();
-
-        return likedPlaylists.contains(playlist); // 안에 포함 되어 있으면 true 반환
-
-    }
-
-    @Override
-    @Transactional
-    public int unlikePlaylist(Long playlistId, HttpHeaders headers) {
-        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
-
-        if (maybePlaylist.isEmpty()) {
-            return -1;
-        }
-
-        Playlist playlist = maybePlaylist.get();
-
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-
-        if (authValues.isEmpty()) {
-            return playlist.getLikers().size();
-        }
-
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Optional<Account> maybeAccount = accountRepository.findById(accountId);
-
-        if(maybeAccount.isEmpty()){
-            return playlist.getLikers().size();
-        }
-
-        Account account = maybeAccount.get();
-
-        account.getLikedPlaylists().remove(playlist);
-        accountRepository.save(account);
-        playlist.getLikers().remove(account);
-        playlistRepository.save(playlist);
-
-        return playlist.getLikers().size();
-    }
 
     @Override
     @Transactional
@@ -270,7 +174,7 @@ public class PlaylistServiceImpl implements PlaylistService{
         final List<MyPlaylistResponseForm> responseForms = new ArrayList<>();
         for (Playlist playlist : playlists) {
             String thumbnailName = playlist.getThumbnailName();
-            int likeCount = playlist.getLikers() != null ? playlist.getLikers().size() : 0;
+            int likeCount = likePlaylistRepository.countByPlaylist(playlist);
             int songCount = playlist.getSonglist() != null ? playlist.getSonglist().size() : 0;
 
             // 썸네일을 등록하지 않았다면 유튜브 링크의 썸네일을 가져오도록
@@ -282,54 +186,6 @@ public class PlaylistServiceImpl implements PlaylistService{
                     playlist.getPlaylistId(), playlist.getPlaylistName(),
                     likeCount, songCount, thumbnailName);
 
-            responseForms.add(responseForm);
-        }
-        return responseForms;
-    }
-
-    @Override
-    @Transactional
-    public List<PlaylistUsersLikeResponseForm> bringLikePlaylist(HttpHeaders headers) {
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-
-        if (authValues.isEmpty()) {
-            return null;
-        }
-
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        if (accountId == null) {
-            return null;
-        }
-
-        Optional<Account> maybeAccount = accountRepository.findById(accountId);
-
-        if (maybeAccount.isEmpty()) {
-            return null;
-        }
-
-        Account account = maybeAccount.get();
-
-        // Account 객체에서 좋아요한 플레이리스트 목록 가져오기
-        Set<Playlist> likedPlaylists = account.getLikedPlaylists();
-
-        List<PlaylistUsersLikeResponseForm> responseForms = new ArrayList<>();
-        for (Playlist playlist : likedPlaylists) {
-            System.out.println("Playlist: " + playlist);
-            System.out.println("Songlist: " + playlist.getSonglist());
-            System.out.println("Likers size: " + playlist.getLikers().size());
-
-            Profile profile = profileRepository.findByAccount(playlist.getAccount())
-                    .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
-
-            PlaylistUsersLikeResponseForm responseForm = new PlaylistUsersLikeResponseForm(
-                    playlist.getPlaylistId(),
-                    playlist.getPlaylistName(),
-                    playlist.getThumbnailName(),
-                    profile.getNickname(),
-                    playlist.getSonglist(),
-                    playlist.getLikers().size()
-            );
             responseForms.add(responseForm);
         }
         return responseForms;

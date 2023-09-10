@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -25,12 +25,8 @@ public class Account {
     @JsonIgnore
     private List<Playlist> playlist = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JsonIgnore
-    @JoinTable(name = "playlist_likes",
-            joinColumns = @JoinColumn(name = "account_id"),
-            inverseJoinColumns = @JoinColumn(name = "playlist_id"))
-    private Set<Playlist> likedPlaylists = new HashSet<>();
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private Set<LikePlaylist> likePlaylist = new HashSet<>();
     @OneToOne
     private AccountLoginType loginType;
     @OneToOne
@@ -52,11 +48,6 @@ public class Account {
     @Override
     public int hashCode() {
         return Objects.hash(accountId);
-    }
-
-    public void removeFromLikedPlaylists(Playlist playlist) {
-
-        likedPlaylists.remove(playlist);
     }
 
 }

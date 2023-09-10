@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.likePlaylist.Service.LikePlaylistService;
 import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.service.PlaylistService;
@@ -54,31 +55,10 @@ public class PlaylistController {
         return playlistService.delete(playlistId, headers);
     }
 
-    @PostMapping("/like-playlist/{playlistId}") // 플레이 리스트 좋아요
-    public int likePlaylist (@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
-        return playlistService.likePlaylist(playlistId, headers);
-    }
-
-    @PostMapping("check-liked/{playlistId}") // 좋아요 유무 확인
-    public boolean checkLikedPlaylist(@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
-        return playlistService.isPlaylistLiked(playlistId, headers);
-    }
-
-    @PostMapping("/unlike-playlist/{playlistId}") // 좋아요 해체
-    public int unLikePlaylist (@PathVariable("playlistId") Long playlistId, @RequestHeader HttpHeaders headers) {
-        return playlistService.unlikePlaylist(playlistId, headers);
-    }
-
     @GetMapping("/my-playlist") // 내가 등록한 플레이 리스트
     public List<MyPlaylistResponseForm> myPlaylist(@RequestHeader HttpHeaders headers){
         log.info("myPlaylist()");
         return playlistService.myPlaylist(headers);
-    }
-
-
-    @GetMapping("/my-liked-playlist") // 사용자가 좋아요 한 목록 가져오기
-    public List<PlaylistUsersLikeResponseForm> myLikedPlaylist(@RequestHeader HttpHeaders headers) {
-        return playlistService.bringLikePlaylist(headers);
     }
 
 }

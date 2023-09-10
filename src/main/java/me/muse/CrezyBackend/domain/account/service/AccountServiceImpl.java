@@ -9,12 +9,13 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
+import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,8 +26,9 @@ import java.util.Optional;
 public class AccountServiceImpl implements AccountService{
     final private RedisService redisService;
     final private AccountRepository accountRepository;
-    final private PlaylistRepository playlistRepository;
     final private ProfileRepository profileRepository;
+    final private LikePlaylistRepository likePlaylistRepository;
+
 
     @Override
     public void logout(String userToken) {
@@ -46,7 +48,7 @@ public class AccountServiceImpl implements AccountService{
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
         Profile profile = profileRepository.findByAccount(account)
-                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));;
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
 
         profile.setNickname(nickname);
         profileRepository.save(profile);
@@ -62,24 +64,26 @@ public class AccountServiceImpl implements AccountService{
         }
 
         Long accountId = redisService.getValueByKey(authValues.get(0));
-        Optional<Account> maybeAccount = accountRepository.findById(accountId);
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
-        if (maybeAccount.isPresent()) {
-            Account account = maybeAccount.get();
-
-            for (Playlist playlist : account.getLikedPlaylists()) {
-                playlist.removeFromLikers(account);
-                account.removeFromLikedPlaylists(playlist);
-            }
-
-            playlistRepository.deleteByAccountId(accountId);
-            accountRepository.deleteById(accountId);
-            redisService.deleteByKey(authValues.get(0));
-
-            return true;
+        for(LikePlaylist likePlaylist : account.getLikePlaylist()){
+            likePlaylistRepository.deleteById(likePlaylist.getLikePlaylistId());
         }
 
-        return false;
+        for(Playlist playlist : account.getPlaylist()){
+            for(LikePlaylist likePlaylist : playlist.getLikePlaylist()){
+                likePlaylistRepository.deleteById(likePlaylist.getLikePlaylistId());
+            }
+        }
+
+        Profile profile = profileRepository.findByAccount(account)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        profileRepository.deleteById(profile.getProfileId());
+        redisService.deleteByKey(authValues.get(0));
+
+        return true;
     }
 
     @Override
@@ -97,7 +101,7 @@ public class AccountServiceImpl implements AccountService{
                 .orElseThrow(() -> new IllegalArgumentException("Profile not found"));;
         final AccountInfoResponseForm responseForm = new AccountInfoResponseForm(
                account.getAccountId(), profile.getEmail(), profile.getNickname(), account.getPlaylist().size(),
-                account.getLikedPlaylists().size(), profile.getProfileImageName()
+                account.getLikePlaylist().size(), profile.getProfileImageName()
         );
 
         return responseForm;
