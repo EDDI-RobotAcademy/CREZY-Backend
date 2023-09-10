@@ -1,4 +1,4 @@
-package me.muse.CrezyBackend.domain.Inquiry;
+package me.muse.CrezyBackend.domain.notice.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,22 +7,18 @@ import me.muse.CrezyBackend.domain.account.entity.Profile;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Entity
 @NoArgsConstructor
 @Getter
-public class Inquiry {
+public class Notice {
     @Id
-    @Column(name = "inquiryId")
+    @Column(name = "noticeId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long inquiryId;
-    private String inquiryTitle;
-    private String inquiryContent;
-    private List<String> inquiryImageNames;
+    private Long noticeId;
+    private String noticeTitle;
+    private String noticeContent;
     @CreationTimestamp
-    private LocalDate createInquiryDate;
-    @ManyToOne
-    private Profile profile;
-
+    private LocalDate createNoticeDate;
+    private Long accountId;
 }

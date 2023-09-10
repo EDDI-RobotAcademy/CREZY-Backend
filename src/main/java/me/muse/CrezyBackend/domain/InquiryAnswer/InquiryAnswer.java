@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.InquiryAnswer;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.muse.CrezyBackend.domain.Inquiry.Inquiry;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -18,5 +19,6 @@ public class InquiryAnswer {
     private String inquiryAnswer;
     @CreationTimestamp
     private LocalDate createInquiryAnswerDate;
-//    private Profile profile;
+    @OneToOne
+    private Inquiry inquiry;
 }

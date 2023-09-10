@@ -16,11 +16,11 @@ public class ReportDetail {
     @Column(name = "reportDetailId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reportDetailId;
-    @OneToOne
-    private Account reporter;
-    @OneToOne
-    private Account reportedAccount;
+    private Long reporterAccountId;
+    private Long reportedAccountId;
     private String reportContent;
+    @OneToOne
+    private Report report;
     @CreationTimestamp
     private LocalDate createReportDate;
 }
