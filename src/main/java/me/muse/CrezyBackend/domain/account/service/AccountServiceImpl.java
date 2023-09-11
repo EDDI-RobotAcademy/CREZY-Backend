@@ -5,20 +5,27 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountInfoResponseForm;
-import me.muse.CrezyBackend.domain.account.entity.Account;
-import me.muse.CrezyBackend.domain.account.entity.Profile;
+import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginRequestForm;
+import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginResponseForm;
+import me.muse.CrezyBackend.domain.account.entity.*;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
+
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
 
 @Slf4j
 @Service
@@ -28,7 +35,8 @@ public class AccountServiceImpl implements AccountService{
     final private AccountRepository accountRepository;
     final private ProfileRepository profileRepository;
     final private LikePlaylistRepository likePlaylistRepository;
-
+    final private BCryptPasswordEncoder passwordEncoder;
+    final private AccountRoleTypeRepository accountRoleTypeRepository;
 
     @Override
     public void logout(String userToken) {
@@ -125,5 +133,21 @@ public class AccountServiceImpl implements AccountService{
         profileRepository.save(profile);
         return profile.getProfileImageName();
 
+    }
+
+    @Override
+    public AccountLoginResponseForm login(AccountLoginRequestForm accountLoginRequestForm) {
+        final Optional<Profile> maybeAccount = profileRepository.findByEmail(accountLoginRequestForm.getEmail());
+        if (maybeAccount.isEmpty()) {
+            return null;
+        }
+        final Profile profile = maybeAccount.get();
+        if (passwordEncoder.matches(accountLoginRequestForm.getPassword(), profile.getPassword())) {
+            final String userToken = UUID.randomUUID().toString();
+            redisService.setKeyAndValue(userToken, profile.getAccount().getAccountId());
+            AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
+            return new AccountLoginResponseForm(profile.getNickname(),roleType.toString(),userToken);
+        }
+        return null;
     }
 }

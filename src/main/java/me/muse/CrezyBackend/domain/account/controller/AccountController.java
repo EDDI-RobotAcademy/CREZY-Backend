@@ -3,6 +3,8 @@ package me.muse.CrezyBackend.domain.account.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountInfoResponseForm;
+import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginRequestForm;
+import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginResponseForm;
 import me.muse.CrezyBackend.domain.account.service.AccountService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -46,5 +48,10 @@ public class AccountController {
     public String changeProfileImage(@RequestHeader HttpHeaders headers, @RequestParam("profileImageName") String profileImageName) {
         log.info("changeProfileImage()");
         return accountService.changeProfileImage(headers, profileImageName);
+    }
+
+    @PostMapping("/login-admin")
+    public AccountLoginResponseForm memberLogin(@RequestBody AccountLoginRequestForm accountLoginRequestForm) {
+        return accountService.login(accountLoginRequestForm);
     }
 }
