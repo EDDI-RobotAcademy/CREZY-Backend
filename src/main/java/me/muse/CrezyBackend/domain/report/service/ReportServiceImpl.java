@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.report.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
@@ -10,6 +11,7 @@ import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportProcessingForm;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportReadResponseForm;
+import me.muse.CrezyBackend.domain.report.controller.form.ReportRegisterForm;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportResponseForm;
 import me.muse.CrezyBackend.domain.report.entity.*;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
@@ -44,6 +46,7 @@ public class ReportServiceImpl implements ReportService {
     final private WarningRepository warningRepository;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private ProfileRepository profileRepository;
+    final private ReportedCategoryTypeRepository reportedCategoryTypeRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -161,5 +164,24 @@ public class ReportServiceImpl implements ReportService {
                 report, reportDetail.getReportContent(), reporterProfile.getNickname(), reportedProfile.getNickname(),
                 reportDetail.getCreateReportDate());
         return responseForm;
+    }
+    @Override
+    @Transactional
+    public long registerReport(ReportRegisterForm reportRegisterForm, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return -1;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.HOLDON).get();
+        ReportedCategoryType categoryType = reportedCategoryTypeRepository.findByReportedCategory(ReportedCategory.valueOf(reportRegisterForm.getReportedCategoryType())).get();
+
+        final Report report = new Report(categoryType, statusType);
+        final ReportDetail reportDetail = new ReportDetail(accountId, reportRegisterForm.getReportedAccountId(), reportRegisterForm.getReportContent(), report);
+
+        return reportDetailRepository.save(reportDetail).getReportDetailId();
     }
 }

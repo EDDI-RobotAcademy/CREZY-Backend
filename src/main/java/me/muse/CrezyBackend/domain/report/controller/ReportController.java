@@ -42,4 +42,10 @@ public class ReportController {
         log.info("readReport()");
         return reportService.readReport(reportId,headers);
     }
+
+    @PostMapping("/register-report")
+    public long registerReport(@RequestBody ReportRegisterForm reportRegisterForm, @RequestHeader HttpHeaders headers) {
+        log.info("registerReport()");
+        return reportService.registerReport(reportRegisterForm, headers);
+    }
 }

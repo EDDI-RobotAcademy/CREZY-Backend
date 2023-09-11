@@ -23,4 +23,9 @@ public class Report {
     private ReportStatusType reportStatusType;
     @UpdateTimestamp
     private LocalDate updateReportDate;
+
+    public Report(ReportedCategoryType reportedCategoryType, ReportStatusType reportStatusType) {
+        this.reportedCategoryType = reportedCategoryType;
+        this.reportStatusType = reportStatusType;
+    }
 }

@@ -13,4 +13,5 @@ public interface ReportService {
     Integer getTotalPage();
     boolean processingReport(ReportProcessingForm processingForm, HttpHeaders headers);
     ReportReadResponseForm readReport(Long reportId, HttpHeaders headers);
+    long registerReport(ReportRegisterForm reportRegisterForm, HttpHeaders headers);
 }
