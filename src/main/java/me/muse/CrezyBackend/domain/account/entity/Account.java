@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import org.hibernate.annotations.CreationTimestamp;
@@ -30,6 +31,7 @@ public class Account {
     @OneToOne
     private AccountLoginType loginType;
     @OneToOne
+    @Setter
     private AccountRoleType roleType;
 
     public Account(AccountLoginType loginType, AccountRoleType roleType) {
