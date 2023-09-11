@@ -1,4 +1,4 @@
-package me.muse.CrezyBackend.domain.playlist.controller.form;
+package me.muse.CrezyBackend.domain.likePlaylist.controller.form;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
