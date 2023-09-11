@@ -14,7 +14,6 @@ import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
-import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
-import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
 
 @Slf4j
 @Service
@@ -146,7 +144,7 @@ public class AccountServiceImpl implements AccountService{
             final String userToken = UUID.randomUUID().toString();
             redisService.setKeyAndValue(userToken, profile.getAccount().getAccountId());
             AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
-            return new AccountLoginResponseForm(profile.getNickname(),roleType.toString(),userToken);
+            return new AccountLoginResponseForm(profile.getNickname(),roleType.getRoleType().toString(),userToken);
         }
         return null;
     }
