@@ -3,7 +3,6 @@ package me.muse.CrezyBackend.domain.report.controller.form;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-
 import java.time.LocalDate;
 @Getter
 @RequiredArgsConstructor

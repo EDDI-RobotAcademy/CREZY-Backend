@@ -18,20 +18,15 @@ public class ReportController {
     final private ReportService reportService;
 
     @GetMapping(value = "/list")
-    public List<ReportResponseForm> reportList(@RequestParam("page") Integer page, @RequestHeader HttpHeaders headers){
+    public List<ReportResponseForm> reportList(@RequestParam("page") Integer page, @RequestHeader HttpHeaders headers) {
         log.info("reportList()");
-        return reportService.list(page,headers);
+        return reportService.list(page, headers);
     }
-   @GetMapping("/list/total-page")
-    public Integer getTotalPage(){
-        return reportService.getTotalPage();
 
-@Slf4j
-@RequiredArgsConstructor
-@RequestMapping("/report")
-@RestController
-public class ReportController {
-    final private ReportService reportService;
+    @GetMapping("/list/total-page")
+    public Integer getTotalPage() {
+        return reportService.getTotalPage();
+    }
 
     @PostMapping("/processing")
     public boolean approveReport(@RequestBody ReportProcessingForm processingForm, @RequestHeader HttpHeaders headers) {
