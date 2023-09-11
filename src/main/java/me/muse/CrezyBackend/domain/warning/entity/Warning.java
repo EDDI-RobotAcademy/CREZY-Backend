@@ -23,4 +23,9 @@ public class Warning {
     private Report report;
     @CreationTimestamp
     private LocalDate createWarningDate;
+
+    public Warning(Account account, Report report) {
+        this.account = account;
+        this.report = report;
+    }
 }

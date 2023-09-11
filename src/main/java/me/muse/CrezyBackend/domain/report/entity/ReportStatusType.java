@@ -16,4 +16,7 @@ public class ReportStatusType {
     @Getter
     private ReportStatus reportStatus;
 
+    public ReportStatusType(ReportStatus reportStatus) {
+        this.reportStatus = reportStatus;
+    }
 }
