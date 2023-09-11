@@ -37,6 +37,10 @@ public class Account {
         this.roleType = roleType;
     }
 
+    public Account(AccountRoleType roleType) {
+        this.roleType = roleType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

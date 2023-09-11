@@ -34,4 +34,12 @@ public class Profile {
         this.profileImageName = profileImageName;
         this.account = account;
     }
+
+    public Profile(String nickname, String password, String email, String profileImageName, Account account) {
+        this.nickname = nickname;
+        this.password = password;
+        this.email = email;
+        this.profileImageName = profileImageName;
+        this.account = account;
+    }
 }
