@@ -2,6 +2,8 @@ package me.muse.CrezyBackend.domain.report.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.report.controller.form.ReportReadResponseForm;
+import me.muse.CrezyBackend.domain.report.controller.form.ReportRegisterForm;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportResponseForm;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportProcessingForm;
 import me.muse.CrezyBackend.domain.report.service.ReportService;
@@ -33,5 +35,11 @@ public class ReportController {
         log.info("approveReport()");
         return reportService.processingReport(processingForm, headers);
 
+    }
+
+    @GetMapping("/read-report")
+    public ReportReadResponseForm readReport(@RequestParam("reportId") Long reportId, @RequestHeader HttpHeaders headers) {
+        log.info("readReport()");
+        return reportService.readReport(reportId,headers);
     }
 }

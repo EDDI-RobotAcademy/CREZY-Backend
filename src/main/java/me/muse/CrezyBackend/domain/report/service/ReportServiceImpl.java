@@ -4,16 +4,18 @@ import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
+import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
+import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportProcessingForm;
+import me.muse.CrezyBackend.domain.report.controller.form.ReportReadResponseForm;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportResponseForm;
-import me.muse.CrezyBackend.domain.report.entity.Report;
-import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
-import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
+import me.muse.CrezyBackend.domain.report.entity.*;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
+import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +43,7 @@ public class ReportServiceImpl implements ReportService {
     final private ReportStatusTypeRepository reportStatusTypeRepository;
     final private WarningRepository warningRepository;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
+    final private ProfileRepository profileRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -57,18 +60,18 @@ public class ReportServiceImpl implements ReportService {
             return null;
         }
 
-        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("reportId").descending());
-        List<ReportDetail> reportDetailList = reportDetailRepository.findAllwithPage(pageable);
+        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("reportDetailId").descending());
+        List<ReportDetail> reportDetailList = reportDetailRepository.findAllWithPage(pageable);
 
-        Integer SongReportCount = reportRepository.findByReportedCategoryType(SONG).size();
-        Integer PlaylistReportCount = reportRepository.findByReportedCategoryType(PLAYLIST).size();
-        Integer AccountReportCount = reportRepository.findByReportedCategoryType(ACCOUNT).size();
+        Integer SongReportCount = reportRepository.countByReportedCategoryType(SONG);
+        Integer PlaylistReportCount = reportRepository.countByReportedCategoryType(PLAYLIST);
+        Integer AccountReportCount = reportRepository.countByReportedCategoryType(ACCOUNT);
 
         List<ReportResponseForm> reportResponseForms = new ArrayList<>();
         for (ReportDetail reportDetail : reportDetailList) {
             ReportResponseForm responseForm = new ReportResponseForm(
                     reportDetail.getReport().getReportId(), reportDetail.getReportContent(),
-                    reportDetail.getReport().getReportedCategoryType().toString(), reportDetail.getReport().getReportStatusType().toString(),
+                    reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(), reportDetail.getReport().getReportStatusType().getReportStatus().toString(),
                     reportDetail.getCreateReportDate(), SongReportCount, PlaylistReportCount, AccountReportCount);
 
             reportResponseForms.add(responseForm);
@@ -126,5 +129,37 @@ public class ReportServiceImpl implements ReportService {
 
         reportRepository.save(report);
         return true;
+    }
+    @Override
+    public ReportReadResponseForm readReport(Long reportId, HttpHeaders headers) {
+
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return null;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+        if (account.getRoleType().getRoleType() != ADMIN) {
+            return null;
+        }
+
+        ReportDetail reportDetail = reportDetailRepository.findByReportId(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+        Account reporterAccount = accountRepository.findById(reportDetail.getReporterAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReporterAccount not found"));
+        Profile reporterProfile = profileRepository.findByAccount(reporterAccount)
+                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+        Account reportedAccount = accountRepository.findById(reportDetail.getReportedAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportedAccount not found"));
+        Profile reportedProfile = profileRepository.findByAccount(reportedAccount)
+                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+
+        Report report = reportDetail.getReport();
+        ReportReadResponseForm responseForm = new ReportReadResponseForm(
+                report, reportDetail.getReportContent(), reporterProfile.getNickname(), reportedProfile.getNickname(),
+                reportDetail.getCreateReportDate());
+        return responseForm;
     }
 }

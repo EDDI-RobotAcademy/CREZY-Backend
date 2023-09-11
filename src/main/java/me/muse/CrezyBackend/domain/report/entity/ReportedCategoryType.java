@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name="reportedCategory")
 @NoArgsConstructor
+@Getter
 public class ReportedCategoryType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
