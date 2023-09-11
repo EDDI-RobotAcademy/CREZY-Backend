@@ -18,8 +18,15 @@ public class ReportDetail {
     private Long reporterAccountId;
     private Long reportedAccountId;
     private String reportContent;
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Report report;
     @CreationTimestamp
     private LocalDate createReportDate;
+
+    public ReportDetail(Long reporterAccountId, Long reportedAccountId, String reportContent, Report report) {
+        this.reporterAccountId = reporterAccountId;
+        this.reportedAccountId = reportedAccountId;
+        this.reportContent = reportContent;
+        this.report = report;
+    }
 }
