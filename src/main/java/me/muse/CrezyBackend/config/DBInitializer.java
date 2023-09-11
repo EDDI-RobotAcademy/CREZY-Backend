@@ -43,7 +43,6 @@ public class DBInitializer {
         private String email;
         private String password;
         private String nickname;
-        private String profileImageName;
     }
 
     @PostConstruct
@@ -102,7 +101,7 @@ public class DBInitializer {
 
             for(Admin admin : admins) {
                 if (!adminEmail.contains(admin.getEmail())) {
-                    profileRepository.save(new Profile(admin.nickname, encoder.encode(admin.password), admin.email, admin.profileImageName, new Account(roleType)));
+                    profileRepository.save(new Profile(admin.nickname, encoder.encode(admin.password), admin.email, null, new Account(roleType)));
                 }
             }
         } catch (Exception e){
