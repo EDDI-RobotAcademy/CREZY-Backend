@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
+import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportProcessingForm;
+import me.muse.CrezyBackend.domain.report.controller.form.ReportReadResponseForm;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportResponseForm;
 import me.muse.CrezyBackend.domain.report.entity.*;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
@@ -41,6 +43,7 @@ public class ReportServiceImpl implements ReportService {
     final private ReportStatusTypeRepository reportStatusTypeRepository;
     final private WarningRepository warningRepository;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
+    final private ProfileRepository profileRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -126,5 +129,37 @@ public class ReportServiceImpl implements ReportService {
 
         reportRepository.save(report);
         return true;
+    }
+    @Override
+    public ReportReadResponseForm readReport(Long reportId, HttpHeaders headers) {
+
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return null;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+        if (account.getRoleType().getRoleType() != ADMIN) {
+            return null;
+        }
+
+        ReportDetail reportDetail = reportDetailRepository.findByReportId(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+        Account reporterAccount = accountRepository.findById(reportDetail.getReporterAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReporterAccount not found"));
+        Profile reporterProfile = profileRepository.findByAccount(reporterAccount)
+                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+        Account reportedAccount = accountRepository.findById(reportDetail.getReportedAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportedAccount not found"));
+        Profile reportedProfile = profileRepository.findByAccount(reportedAccount)
+                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+
+        Report report = reportDetail.getReport();
+        ReportReadResponseForm responseForm = new ReportReadResponseForm(
+                report, reportDetail.getReportContent(), reporterProfile.getNickname(), reportedProfile.getNickname(),
+                reportDetail.getCreateReportDate());
+        return responseForm;
     }
 }
