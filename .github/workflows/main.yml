@@ -49,6 +49,7 @@ jobs:
           echo "${{ secrets.KAKAO_PROPERTIES }}" > kakao.properties
           echo "${{ secrets.GOOGLE_PROPERTIES }}" > google.properties
           echo "${{ secrets.NAVER_PROPERTIES }}" > naver.properties
+          echo "${{ secrets.ADMIN_PROPERTIES }}" > admin.properties
 
       ## chmod gradlew
       - name: Grant execute permission for gradlew
