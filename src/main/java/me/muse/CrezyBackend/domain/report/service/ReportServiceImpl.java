@@ -173,14 +173,17 @@ public class ReportServiceImpl implements ReportService {
             return -1;
         }
         Long accountId = redisService.getValueByKey(authValues.get(0));
-
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
         ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.HOLDON).get();
         ReportedCategoryType categoryType = reportedCategoryTypeRepository.findByReportedCategory(ReportedCategory.valueOf(reportRegisterForm.getReportedCategoryType())).get();
 
+        Account reportedAccount = accountRepository.findByPlaylist_playlistId(reportRegisterForm.getReportedPlaylistId())
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
         final Report report = new Report(categoryType, statusType);
-        final ReportDetail reportDetail = new ReportDetail(accountId, reportRegisterForm.getReportedAccountId(), reportRegisterForm.getReportContent(), report);
+        final ReportDetail reportDetail = new ReportDetail(accountId, reportedAccount.getAccountId(), reportRegisterForm.getReportContent(), report);
 
         return reportDetailRepository.save(reportDetail).getReportDetailId();
     }
