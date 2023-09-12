@@ -3,12 +3,22 @@ package me.muse.CrezyBackend.domain.account.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountListForm;
 import me.muse.CrezyBackend.domain.account.controller.form.todayStatusAccountResponseForm;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
+import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
+import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import me.muse.CrezyBackend.domain.song.repository.SongRepository;
+import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +39,10 @@ public class AdminServiceImpl implements AdminService{
     final private AccountRepository accountRepository;
     final private RedisService redisService;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
+    final private ProfileRepository profileRepository;
+    final private WarningRepository warningRepository;
+    final private PlaylistRepository playlistRepository;
+    final private SongRepository songRepository;
     final private Integer weeks = 6;
 
     @Override
@@ -108,4 +122,49 @@ public class AdminServiceImpl implements AdminService{
         return accountDateList;
     }
 
+    @Override
+    public List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return null;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+        if (account.getRoleType().getRoleType() != ADMIN) {
+            return null;
+        }
+        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
+        List<Profile> profileList = profileRepository.findAllWithPage(pageable);
+        final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
+        for(Profile isProfile : profileList){
+            Account isAccount = accountRepository.findById(isProfile.getAccount().getAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("account 없음"));
+
+            Integer playlistCounts = playlistRepository.countByAccount(isAccount);
+            List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
+            Integer songCounts = 0;
+            for(Playlist playlist : playlists){
+                songCounts += songRepository.countByPlaylist(playlist);
+            }
+            Integer warningCounts = warningRepository.countByAccount(isAccount);
+            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts);
+            adminAccountListForms.add(adminAccountListForm);
+        }
+        log.info(adminAccountListForms.toString());
+        return adminAccountListForms;
+    }
+
+    @Override
+    public Integer getTotalPage() {
+        Integer totalReport = (int) accountRepository.count();
+        Integer size = 10;
+        if (totalReport % size == 0) {
+            return totalReport / size;
+        } else {
+            return totalReport / size + 1;
+        }
+    }
 }

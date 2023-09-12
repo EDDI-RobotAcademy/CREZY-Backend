@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.playlist.repository;
 
+import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -17,4 +18,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @Query("SELECT p FROM Playlist p JOIN FETCH p.account LEFT JOIN FETCH p.songlist " +
             "WHERE p.account.accountId = :accountId ")
     List<Playlist> findByAccountId(Long accountId);
+
+    Integer countByAccount(Account isAccount);
+    List<Playlist> findPlaylistIdByAccount(Account account);
 }
