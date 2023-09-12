@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
+import me.muse.CrezyBackend.domain.report.entity.Report;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +27,14 @@ public class InquiryDetail {
     private List<InquiryImages> inquiryImageNames = new ArrayList<>();
     @ManyToOne
     private Profile profile;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Inquiry inquiry;
 
-    public InquiryDetail(String inquiryTitle, String inquiryContent, Profile profile) {
+    public InquiryDetail(String inquiryTitle, String inquiryContent, Profile profile, Inquiry inquiry) {
         this.inquiryTitle = inquiryTitle;
         this.inquiryContent = inquiryContent;
         this.profile = profile;
+        this.inquiry = inquiry;
     }
 
     public void setInquiryImages(InquiryImages inquiryImages) {

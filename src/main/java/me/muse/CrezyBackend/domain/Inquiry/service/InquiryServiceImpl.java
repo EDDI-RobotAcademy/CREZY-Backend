@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.Inquiry.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryListResponseForm;
 import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryRegisterRequestForm;
 import me.muse.CrezyBackend.domain.Inquiry.entity.*;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryCategoryTypeRepository;
@@ -13,8 +14,9 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import me.muse.CrezyBackend.domain.report.entity.ReportedCategory;
-import me.muse.CrezyBackend.domain.report.entity.ReportedCategoryType;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +61,8 @@ public class InquiryServiceImpl implements InquiryService {
         final List<InquiryImages> inquiryImagesList = new ArrayList<>();
 
         final Inquiry inquiry = new Inquiry(inquiryCategoryType);
-        final InquiryDetail inquiryDetail = new InquiryDetail(requestForm.getInquiryTitle(), requestForm.getInquiryContent(), maybeProfile.get());
+        final InquiryDetail inquiryDetail = new InquiryDetail(requestForm.getInquiryTitle(),
+                requestForm.getInquiryContent(), maybeProfile.get(), inquiry);
 
         for (String imageUrl : inquiryImageUrls) {
             InquiryImages inquiryImage = new InquiryImages(imageUrl);
@@ -73,4 +76,36 @@ public class InquiryServiceImpl implements InquiryService {
 
         return inquiry.getInquiryId();
     }
+
+    @Override
+    @Transactional
+    public List<InquiryListResponseForm> list(HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        Optional<Profile> maybeProfile = profileRepository.findByAccount(account);
+        if (maybeProfile.isEmpty()) {
+            return null;
+        }
+
+        List<InquiryListResponseForm> inquiryListResponseForms = new ArrayList<>();
+
+        List<InquiryDetail> userInquiryDetails = inquiryDetailRepository.findByProfile(maybeProfile.get());
+
+        for (InquiryDetail inquiryDetail : userInquiryDetails) {
+            Inquiry inquiry = inquiryDetail.getInquiry();
+            InquiryListResponseForm responseForm = new InquiryListResponseForm(
+                    inquiry.getInquiryId(), inquiry.getInquiryCategoryType(),
+                    inquiryDetail.getInquiryTitle(), inquiry.getCreateInquiryDate());
+
+            inquiryListResponseForms.add(responseForm);
+        }
+
+        return inquiryListResponseForms;
+    }
+
 }
