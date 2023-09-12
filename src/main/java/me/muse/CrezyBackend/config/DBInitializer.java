@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryCategory;
+import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryCategoryType;
+import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.account.entity.*;
 import me.muse.CrezyBackend.domain.account.repository.AccountLoginTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
@@ -42,6 +45,7 @@ public class DBInitializer {
     final private BCryptPasswordEncoder encoder;
     final private ReportStatusTypeRepository reportStatusTypeRepository;
     final private ReportedCategoryTypeRepository reportedCategoryType;
+    final private InquiryCategoryTypeRepository inquiryCategoryTypeRepository;
 
     private List<Admin> admins;
 
@@ -62,6 +66,7 @@ public class DBInitializer {
         initAdminAccounts();
         initReportStatusType();
         initReportedCategoryType();
+        initInquiryCategoryType();
 
         log.debug("initializer 종료");
 
@@ -147,6 +152,24 @@ public class DBInitializer {
                 if(!reportedCategorySetSet.contains(category)){
                     final ReportedCategoryType statusType = new ReportedCategoryType(category);
                     reportedCategoryType.save(statusType);
+                }
+            }
+        }
+        catch (Exception e){
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    private void initInquiryCategoryType(){
+        try{
+            final Set<InquiryCategory> inquiryCategorySet=
+                    inquiryCategoryTypeRepository.findAll().stream()
+                            .map(InquiryCategoryType::getInquiryCategory)
+                            .collect(Collectors.toSet());
+            for(InquiryCategory category: InquiryCategory.values()){
+                if(!inquiryCategorySet.contains(category)){
+                    final InquiryCategoryType categoryType = new InquiryCategoryType(category);
+                    inquiryCategoryTypeRepository.save(categoryType);
                 }
             }
         }
