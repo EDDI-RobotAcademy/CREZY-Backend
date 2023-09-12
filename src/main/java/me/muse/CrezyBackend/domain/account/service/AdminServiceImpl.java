@@ -12,6 +12,10 @@ import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,6 +29,8 @@ public class AdminServiceImpl implements AdminService{
     final private AccountRepository accountRepository;
     final private RedisService redisService;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
+    final private Integer weeks = 6;
+
     @Override
     public todayStatusAccountResponseForm todayStatusAccount(HttpHeaders headers, String date) {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
@@ -45,6 +51,61 @@ public class AdminServiceImpl implements AdminService{
         Integer totalAccount = accountRepository.findByAccountRoleType(roleType);
         Integer previousAccount = accountRepository.findByCreateDateAndAccountRoleType((TransformToDate.transformToDate(date)).minusDays(1), roleType);
         double increaseRate =  (double)(todayAccount-previousAccount)/previousAccount * 100;
-        return new todayStatusAccountResponseForm(todayAccount, totalAccount, (int)increaseRate);
+
+        Integer afterDay = compareDate(TransformToDate.transformToDate(date));
+        Integer previousDay = weeks-afterDay;
+
+        LocalDate previousDate = (TransformToDate.transformToDate(date)).minusDays(previousDay);
+        LocalDate afterDate = (TransformToDate.transformToDate(date)).plusDays(afterDay);
+
+        List<Integer> accountCounts = accountListBetweenPeriod(previousDate, afterDate);
+        List<String> accountDateList = accountDateListBetweenPeriod(previousDate, afterDate);
+
+        return new todayStatusAccountResponseForm(todayAccount, totalAccount, (int)increaseRate, accountCounts, accountDateList);
     }
+
+    public Integer compareDate(LocalDate compareDate) {
+        Long date = System.currentTimeMillis();
+
+        SimpleDateFormat sdt = new SimpleDateFormat();
+        sdt.applyPattern("yyyy-MM-dd");
+        String currentDate = sdt.format(date);
+
+        LocalDate transformCurrentDate = TransformToDate.transformToDate(currentDate);
+
+        LocalDate date1 = transformCurrentDate;
+        LocalDate date2 = compareDate;
+
+        Period period = date2.until(date1);
+
+        int days = period.getDays();
+        return days;
+    }
+
+    public List<Integer> accountListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
+        List<Integer> accountCounts = new ArrayList<>();
+        LocalDate currentDate = previousDate;
+
+        while (!currentDate.isAfter(afterDate)) {
+            AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(NORMAL).get();
+            Integer accounts = accountRepository.findByCreateDateAndAccountRoleType(currentDate,roleType);
+            accountCounts.add(accounts);
+
+            currentDate = currentDate.plusDays(1);
+        }
+        return accountCounts;
+    }
+    public List<String> accountDateListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
+        List<String> accountDateList = new ArrayList<>();
+        LocalDate currentDate = previousDate;
+
+        while (!currentDate.isAfter(afterDate)) {
+            accountDateList.add(currentDate.toString());
+
+            currentDate = currentDate.plusDays(1);
+        }
+        log.info(accountDateList.toString());
+        return accountDateList;
+    }
+
 }
