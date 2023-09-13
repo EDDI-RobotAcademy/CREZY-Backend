@@ -1,11 +1,11 @@
-package me.muse.CrezyBackend.domain.account.service;
+package me.muse.CrezyBackend.domain.admin.accountManage.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountDetailForm;
-import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountListForm;
-import me.muse.CrezyBackend.domain.account.controller.form.todayStatusAccountResponseForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
@@ -39,7 +39,7 @@ import static me.muse.CrezyBackend.domain.account.entity.RoleType.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class AdminServiceImpl implements AdminService{
+public class AdminAccountServiceImpl implements AdminAccountService {
     final private AccountRepository accountRepository;
     final private RedisService redisService;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
