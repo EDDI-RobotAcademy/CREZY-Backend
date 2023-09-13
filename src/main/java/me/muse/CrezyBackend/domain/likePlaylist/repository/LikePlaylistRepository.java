@@ -18,4 +18,5 @@ public interface LikePlaylistRepository extends JpaRepository<LikePlaylist, Long
     List<LikePlaylist> findByAccount(Account account);
     @Modifying
     void deleteById(Long likePlaylistId);
+    Integer countByAccount(Account account);
 }

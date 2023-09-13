@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.account.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountDetailForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountListForm;
 import me.muse.CrezyBackend.domain.account.controller.form.todayStatusAccountResponseForm;
 import me.muse.CrezyBackend.domain.account.entity.Account;
@@ -11,8 +12,12 @@ import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
+import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
+import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
@@ -42,6 +47,9 @@ public class AdminServiceImpl implements AdminService{
     final private WarningRepository warningRepository;
     final private PlaylistRepository playlistRepository;
     final private SongRepository songRepository;
+    final private ReportRepository reportRepository;
+    final private ReportDetailRepository reportDetailRepository;
+    final private LikePlaylistRepository likePlaylistRepository;
     final private Integer weeks = 6;
 
     @Override
@@ -177,8 +185,8 @@ public class AdminServiceImpl implements AdminService{
             Account isAccount = accountRepository.findAccountByAccountRoleType(roleType)
                     .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
-            Integer playlistCounts = playlistRepository.countByAccount(isAccount);
             List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
+            Integer playlistCounts = playlists.size();
             Integer songCounts = 0;
             for (Playlist playlist : playlists) {
                 songCounts += songRepository.countByPlaylist(playlist);
@@ -190,4 +198,30 @@ public class AdminServiceImpl implements AdminService{
         log.info(adminAccountListForms.toString());
         return adminAccountListForms;
     }
-}
+
+    @Override
+    public AdminAccountDetailForm accountDetail(HttpHeaders headers, Long accountId) {
+        if (checkAdmin(headers)) return null;
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("account 없음"));;
+        Profile profile = profileRepository.findByAccount(account).get();
+        List<ReportDetail> reportDetails = reportDetailRepository.findAllByReportedAccountId(accountId);
+        Integer reportedCounts = 0;
+        for(ReportDetail reportDetail : reportDetails){
+            reportedCounts += reportRepository.countByReportId(reportDetail.getReport().getReportId());
+        }
+        List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(account);
+        Integer playlistCounts = playlists.size();
+        Integer songCounts = 0;
+        for (Playlist playlist : playlists) {
+            songCounts += songRepository.countByPlaylist(playlist);
+        }
+        Integer warningCounts = warningRepository.countByAccount(account);
+        Integer likePlaylistCounts = likePlaylistRepository.countByAccount(account);
+
+        AdminAccountDetailForm adminAccountDetailForm = new AdminAccountDetailForm(accountId, profile.getNickname(), warningCounts, reportedCounts, profile.getAccount().getLastLoginDate(),
+                playlistCounts, songCounts, likePlaylistCounts);
+        return adminAccountDetailForm;
+        }
+    }
+

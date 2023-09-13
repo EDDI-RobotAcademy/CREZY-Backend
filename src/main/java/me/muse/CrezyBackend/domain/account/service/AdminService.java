@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.account.service;
 
+import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountDetailForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountListForm;
 import me.muse.CrezyBackend.domain.account.controller.form.todayStatusAccountResponseForm;
 import org.springframework.http.HttpHeaders;
@@ -11,4 +12,5 @@ public interface AdminService {
     List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page);
     Integer getTotalPage();
     List<AdminAccountListForm> accountBlacklist(HttpHeaders headers, Integer page);
+    AdminAccountDetailForm accountDetail(HttpHeaders headers, Long accountId);
 }

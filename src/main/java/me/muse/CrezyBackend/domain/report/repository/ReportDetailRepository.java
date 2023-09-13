@@ -12,5 +12,6 @@ public interface ReportDetailRepository extends JpaRepository<ReportDetail,Long>
     List<ReportDetail> findAllWithPage(Pageable pageable);
     @Query("SELECT rd FROM ReportDetail rd LEFT JOIN FETCH rd.report WHERE rd.report.reportId = :reportId")
     Optional<ReportDetail> findByReportId(Long reportId);
+    List<ReportDetail> findAllByReportedAccountId(Long accountId);
 }
 

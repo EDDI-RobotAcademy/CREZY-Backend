@@ -2,6 +2,7 @@ package me.muse.CrezyBackend.domain.account.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountDetailForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountListForm;
 import me.muse.CrezyBackend.domain.account.controller.form.todayStatusAccountResponseForm;
 import me.muse.CrezyBackend.domain.account.service.AdminService;
@@ -35,5 +36,10 @@ public class AdminController {
     public List<AdminAccountListForm> accountBlacklist(@RequestHeader HttpHeaders headers, @RequestParam("page") Integer page) {
         log.info("accountBlacklist()");
         return adminService.accountBlacklist(headers, page);
+    }
+    @GetMapping("/account-detail")
+    public AdminAccountDetailForm accountDetail(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId) {
+        log.info("accountDetail()");
+        return adminService.accountDetail(headers, accountId);
     }
 }
