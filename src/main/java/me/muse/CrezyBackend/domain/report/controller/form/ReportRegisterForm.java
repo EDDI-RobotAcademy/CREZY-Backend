@@ -7,6 +7,6 @@ import lombok.RequiredArgsConstructor;
 public class ReportRegisterForm {
     final private String reportedCategoryType;
     final private String reportContent;
-    final private Long reportedPlaylistId;
+    final private Long reportedId;
 
 }
