@@ -142,12 +142,13 @@ public class PlaylistServiceImpl implements PlaylistService{
         }
 
         Long accountId = redisService.getValueByKey(authValues.get(0));
-        Optional<Account> maybeAccount = accountRepository.findById(accountId);
-        if(maybeAccount.isEmpty()){
-            return false;
-        }
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("계정 없음"));
 
-        if (playlist.getAccount().getAccountId().equals(accountId)) {
+        if (playlist.getAccount().getAccountId().equals(account.getAccountId())) {
+            for(LikePlaylist likePlaylist : playlist.getLikePlaylist()){
+                likePlaylistRepository.deleteById(likePlaylist.getLikePlaylistId());
+            }
             playlistRepository.deleteById(playlistId);
             return true;
         }
