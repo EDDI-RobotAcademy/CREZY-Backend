@@ -146,6 +146,8 @@ public class GoogleServiceImpl implements GoogleService {
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
+        account.setLastLoginDate(null);
+        accountRepository.save(account);
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 

@@ -24,6 +24,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -122,6 +124,8 @@ public class KakaoServiceImpl implements KakaoService{
 
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
+        account.setLastLoginDate(null);
+        accountRepository.save(account);
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 

@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.account.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,8 +9,10 @@ import lombok.Setter;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
@@ -22,10 +25,14 @@ public class Account {
     private Long accountId;
     @CreationTimestamp
     private LocalDate createDate;
+    @Setter
+    @UpdateTimestamp
+    @Column(columnDefinition = "DATETIME")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+    private Date lastLoginDate;
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Playlist> playlist = new ArrayList<>();
-
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Set<LikePlaylist> likePlaylist = new HashSet<>();
     @OneToOne
