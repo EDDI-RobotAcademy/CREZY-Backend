@@ -52,7 +52,11 @@ public class AdminServiceImpl implements AdminService{
 
         Integer totalAccount = accountRepository.findByAccountRoleType(roleType);
         Integer previousAccount = accountRepository.findByCreateDateAndAccountRoleType((TransformToDate.transformToDate(date)).minusDays(1), roleType);
-        double increaseRate =  (double)(todayAccount-previousAccount)/previousAccount * 100;
+        double increaseRate = 0;
+        if(0 < todayAccount && previousAccount == 0){
+            increaseRate = 100;
+        }
+        increaseRate =  (double)(todayAccount-previousAccount)/previousAccount * 100;
 
         Integer afterDay = compareDate(TransformToDate.transformToDate(date));
         Integer previousDay = weeks-afterDay;
@@ -79,9 +83,11 @@ public class AdminServiceImpl implements AdminService{
         LocalDate date2 = compareDate;
 
         Period period = date2.until(date1);
-
         int days = period.getDays();
-        return days;
+        if(days < 3) {
+            return days;
+        }
+        return 3;
     }
 
     public List<Integer> accountListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
