@@ -63,9 +63,9 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         double increaseRate = 0;
         if(0 < todayAccount && previousAccount == 0){
             increaseRate = 100;
+        }else {
+            increaseRate = (double) (todayAccount - previousAccount) / previousAccount * 100;
         }
-        increaseRate =  (double)(todayAccount-previousAccount)/previousAccount * 100;
-
         Integer afterDay = compareDate(TransformToDate.transformToDate(date));
         Integer previousDay = weeks-afterDay;
 
