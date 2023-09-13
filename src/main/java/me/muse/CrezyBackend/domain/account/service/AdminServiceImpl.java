@@ -79,9 +79,11 @@ public class AdminServiceImpl implements AdminService{
         LocalDate date2 = compareDate;
 
         Period period = date2.until(date1);
-
         int days = period.getDays();
-        return days;
+        if(days < 3) {
+            return days;
+        }
+        return 3;
     }
 
     public List<Integer> accountListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
