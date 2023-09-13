@@ -10,4 +10,5 @@ public interface AdminService {
     todayStatusAccountResponseForm todayStatusAccount(HttpHeaders headers, String date);
     List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page);
     Integer getTotalPage();
+    List<AdminAccountListForm> accountBlacklist(HttpHeaders headers, Integer page);
 }

@@ -31,4 +31,9 @@ public class AdminController {
     public Integer getTotalPage() {
         return adminService.getTotalPage();
     }
+    @GetMapping("/account-blacklist")
+    public List<AdminAccountListForm> accountBlacklist(@RequestHeader HttpHeaders headers, @RequestParam("page") Integer page) {
+        log.info("accountBlacklist()");
+        return adminService.accountBlacklist(headers, page);
+    }
 }

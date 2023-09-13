@@ -15,6 +15,7 @@ public interface AccountRepository extends JpaRepository<Account,Long> {
     Integer findByCreateDateAndAccountRoleType(LocalDate date, AccountRoleType roleType);
     @Query("SELECT COUNT(a) FROM Account a WHERE a.roleType = :roleType")
     Integer findByAccountRoleType(AccountRoleType roleType);
-
+    @Query("SELECT a FROM Account a WHERE a.roleType = :roleType")
+    Optional<Account> findAccountByAccountRoleType(AccountRoleType roleType);
     Optional<Account> findByPlaylist_playlistId(Long reportedPlaylistId);
 }

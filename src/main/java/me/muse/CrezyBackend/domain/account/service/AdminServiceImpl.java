@@ -29,8 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
-import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.*;
 
 @Service
 @Slf4j
@@ -47,18 +46,7 @@ public class AdminServiceImpl implements AdminService{
 
     @Override
     public todayStatusAccountResponseForm todayStatusAccount(HttpHeaders headers, String date) {
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-        if (authValues.isEmpty()) {
-            return null;
-        }
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
-        if (account.getRoleType().getRoleType() != ADMIN) {
-            return null;
-        }
+        if (checkAdmin(headers)) return null;
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(NORMAL).get();
         Integer todayAccount = accountRepository.findByCreateDateAndAccountRoleType(TransformToDate.transformToDate(date), roleType);
 
@@ -124,18 +112,7 @@ public class AdminServiceImpl implements AdminService{
 
     @Override
     public List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page) {
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-        if (authValues.isEmpty()) {
-            return null;
-        }
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
-        if (account.getRoleType().getRoleType() != ADMIN) {
-            return null;
-        }
+        if (checkAdmin(headers)) return null;
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
         List<Profile> profileList = profileRepository.findAllWithPage(pageable);
         final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
@@ -157,6 +134,22 @@ public class AdminServiceImpl implements AdminService{
         return adminAccountListForms;
     }
 
+    private boolean checkAdmin(HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return true;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+        if (account.getRoleType().getRoleType() != ADMIN) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public Integer getTotalPage() {
         Integer totalReport = (int) accountRepository.count();
@@ -166,5 +159,29 @@ public class AdminServiceImpl implements AdminService{
         } else {
             return totalReport / size + 1;
         }
+    }
+    @Override
+    public List<AdminAccountListForm> accountBlacklist(HttpHeaders headers, Integer page) {
+        if (checkAdmin(headers)) return null;
+        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
+        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
+        List<Profile> profileList = profileRepository.findAllBlacklistWithPage(pageable, roleType);
+        final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
+        for (Profile isProfile : profileList) {
+            Account isAccount = accountRepository.findAccountByAccountRoleType(roleType)
+                    .orElseThrow(() -> new IllegalArgumentException("account 없음"));
+
+            Integer playlistCounts = playlistRepository.countByAccount(isAccount);
+            List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
+            Integer songCounts = 0;
+            for (Playlist playlist : playlists) {
+                songCounts += songRepository.countByPlaylist(playlist);
+            }
+            Integer warningCounts = warningRepository.countByAccount(isAccount);
+            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts);
+            adminAccountListForms.add(adminAccountListForm);
+        }
+        log.info(adminAccountListForms.toString());
+        return adminAccountListForms;
     }
 }
