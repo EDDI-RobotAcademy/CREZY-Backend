@@ -41,6 +41,7 @@ public class NaverServiceImpl implements NaverService{
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private RedisService redisService;
     final private ProfileRepository profileRepository;
+    final private AccountRepository accountRepository;
 
     @Value("${naver.naverLoginUrl}")
     private String naverLoginUrl;
@@ -75,9 +76,10 @@ public class NaverServiceImpl implements NaverService{
                 .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
 
         Account account = profile.getAccount();
-
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
+        account.setLastLoginDate(null);
+        accountRepository.save(account);
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 
