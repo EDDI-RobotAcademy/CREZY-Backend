@@ -1,13 +1,13 @@
-package me.muse.CrezyBackend.domain.account.service;
+package me.muse.CrezyBackend.domain.admin.accountManage.service;
 
-import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountDetailForm;
-import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountListForm;
-import me.muse.CrezyBackend.domain.account.controller.form.todayStatusAccountResponseForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
 import org.springframework.http.HttpHeaders;
 
 import java.util.List;
 
-public interface AdminService {
+public interface AdminAccountService {
     todayStatusAccountResponseForm todayStatusAccount(HttpHeaders headers, String date);
     List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page);
     Integer getTotalPage();

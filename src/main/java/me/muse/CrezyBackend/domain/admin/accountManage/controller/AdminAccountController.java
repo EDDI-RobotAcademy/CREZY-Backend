@@ -1,11 +1,11 @@
-package me.muse.CrezyBackend.domain.account.controller;
+package me.muse.CrezyBackend.domain.admin.accountManage.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountDetailForm;
-import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountListForm;
-import me.muse.CrezyBackend.domain.account.controller.form.todayStatusAccountResponseForm;
-import me.muse.CrezyBackend.domain.account.service.AdminService;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.service.AdminAccountService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +15,8 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin-account")
-public class AdminController {
-    final private AdminService adminService;
+public class AdminAccountController {
+    final private AdminAccountService adminService;
     @GetMapping("/check-account")
     public todayStatusAccountResponseForm todayStatusAccount(@RequestHeader HttpHeaders headers, @RequestParam("date") String date) {
         log.info("statusTodayAccount()");
