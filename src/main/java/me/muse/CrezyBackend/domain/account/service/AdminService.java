@@ -13,4 +13,5 @@ public interface AdminService {
     Integer getTotalPage();
     List<AdminAccountListForm> accountBlacklist(HttpHeaders headers, Integer page);
     AdminAccountDetailForm accountDetail(HttpHeaders headers, Long accountId);
+    Integer getBlacklistTotalPage();
 }

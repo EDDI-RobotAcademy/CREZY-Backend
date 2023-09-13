@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin")
+@RequestMapping("/admin-account")
 public class AdminController {
     final private AdminService adminService;
     @GetMapping("/check-account")
@@ -32,11 +32,17 @@ public class AdminController {
     public Integer getTotalPage() {
         return adminService.getTotalPage();
     }
+
     @GetMapping("/account-blacklist")
     public List<AdminAccountListForm> accountBlacklist(@RequestHeader HttpHeaders headers, @RequestParam("page") Integer page) {
         log.info("accountBlacklist()");
         return adminService.accountBlacklist(headers, page);
     }
+    @GetMapping("/list/blacklist-total-page")
+    public Integer getBlacklistTotalPage() {
+        return adminService.getBlacklistTotalPage();
+    }
+
     @GetMapping("/account-detail")
     public AdminAccountDetailForm accountDetail(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId) {
         log.info("accountDetail()");
