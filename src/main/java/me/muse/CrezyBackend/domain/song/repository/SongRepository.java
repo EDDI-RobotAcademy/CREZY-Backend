@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface SongRepository extends JpaRepository<Song, Long> {
@@ -13,4 +14,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     @Query("delete from Song s where s.songId in :songIds")
     void deleteAllByIds(List<Long> songIds);
     Integer countByPlaylist(Playlist playlist);
+    @Query("SELECT COUNT(p) FROM Song p WHERE p.playlist = :playlist AND p.createDate = :createDate")
+    Integer countByPlaylistAndCreateDate(Playlist playlist, LocalDate createDate);
 }

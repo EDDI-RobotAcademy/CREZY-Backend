@@ -100,28 +100,43 @@ public class AdminServiceImpl implements AdminService{
 
     public List<Integer> accountListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
         List<Integer> accountCounts = new ArrayList<>();
-        LocalDate currentDate = previousDate;
-
-        while (!currentDate.isAfter(afterDate)) {
+        while (!previousDate.isAfter(afterDate)) {
             AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(NORMAL).get();
-            Integer accounts = accountRepository.findByCreateDateAndAccountRoleType(currentDate,roleType);
+            Integer accounts = accountRepository.findByCreateDateAndAccountRoleType(previousDate,roleType);
             accountCounts.add(accounts);
-
-            currentDate = currentDate.plusDays(1);
+            previousDate = previousDate.plusDays(1);
         }
         return accountCounts;
     }
     public List<String> accountDateListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
         List<String> accountDateList = new ArrayList<>();
-        LocalDate currentDate = previousDate;
-
-        while (!currentDate.isAfter(afterDate)) {
-            accountDateList.add(currentDate.toString());
-
-            currentDate = currentDate.plusDays(1);
+        while (!previousDate.isAfter(afterDate)) {
+            accountDateList.add(previousDate.toString());
+            previousDate = previousDate.plusDays(1);
         }
-        log.info(accountDateList.toString());
         return accountDateList;
+    }
+    public List<Integer> songCountsListBetweenPeriod(LocalDate previousDate, LocalDate afterDate, Account account) {
+        List<Integer> songCounts = new ArrayList<>();
+        List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(account);
+        while (!previousDate.isAfter(afterDate)) {
+            int songCount = 0;
+            for (Playlist playlist : playlists) {
+                songCount += songRepository.countByPlaylistAndCreateDate(playlist, previousDate);
+            }
+            songCounts.add(songCount);
+            previousDate = previousDate.plusDays(1);
+        }
+        return songCounts;
+    }
+    public List<Integer> playlistCountsListBetweenPeriod(LocalDate previousDate, LocalDate afterDate, Account account){
+        List<Integer> playlistCounts = new ArrayList<>();
+        while (!previousDate.isAfter(afterDate)) {
+            List<Playlist> playlists = playlistRepository.countByAccountAndCreateDate(account, previousDate);
+            playlistCounts.add(playlists.size());
+            previousDate = previousDate.plusDays(1);
+        }
+        return playlistCounts;
     }
 
     @Override
@@ -219,8 +234,15 @@ public class AdminServiceImpl implements AdminService{
         Integer warningCounts = warningRepository.countByAccount(account);
         Integer likePlaylistCounts = likePlaylistRepository.countByAccount(account);
 
+        LocalDate currentDate = LocalDate.now();
+        LocalDate previousDate = LocalDate.now().minusDays(6);
+
+        List<Integer> playlistCountsList = playlistCountsListBetweenPeriod(previousDate, currentDate, account);
+        List<Integer> songCountsList = songCountsListBetweenPeriod(previousDate, currentDate, account);
+        List<String> accountDateList = accountDateListBetweenPeriod(previousDate, currentDate);
+
         AdminAccountDetailForm adminAccountDetailForm = new AdminAccountDetailForm(accountId, profile.getNickname(), warningCounts, reportedCounts, profile.getAccount().getLastLoginDate(),
-                playlistCounts, songCounts, likePlaylistCounts);
+                playlistCounts, songCounts, likePlaylistCounts, playlistCountsList, songCountsList, accountDateList);
         return adminAccountDetailForm;
         }
     }

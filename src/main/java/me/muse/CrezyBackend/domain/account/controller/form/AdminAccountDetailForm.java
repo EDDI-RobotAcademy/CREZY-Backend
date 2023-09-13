@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
@@ -16,4 +17,7 @@ public class AdminAccountDetailForm {
     final private Integer playlistCounts;
     final private Integer songCounts;
     final private Integer likePlaylistCounts;
+    final private List<Integer> playlistCountsList;
+    final private List<Integer> songCountsList;
+    final private List<String> accountDateList;
 }
