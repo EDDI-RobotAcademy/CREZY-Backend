@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -31,6 +34,8 @@ public class Song {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name="playlist_id")
     private Playlist playlist;
+    @CreationTimestamp
+    private LocalDate createDate;
 
     public Song(String title, String singer, String link, Playlist playlist) {
         this.title = title;
