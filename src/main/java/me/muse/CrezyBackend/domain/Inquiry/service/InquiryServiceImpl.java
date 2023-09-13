@@ -1,9 +1,10 @@
 package me.muse.CrezyBackend.domain.Inquiry.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryListResponseForm;
+import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryReadResponseForm;
 import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryRegisterRequestForm;
 import me.muse.CrezyBackend.domain.Inquiry.entity.*;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryCategoryTypeRepository;
@@ -14,9 +15,6 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -74,7 +72,7 @@ public class InquiryServiceImpl implements InquiryService {
         inquiryDetailRepository.save(inquiryDetail);
         inquiryRepository.save(inquiry);
 
-        return inquiry.getInquiryId();
+        return inquiryDetail.getInquiryDetailId();
     }
 
     @Override
@@ -108,4 +106,20 @@ public class InquiryServiceImpl implements InquiryService {
         return inquiryListResponseForms;
     }
 
+    @Override
+    @Transactional
+    public InquiryReadResponseForm read(Long inquiryId) {
+        Optional<InquiryDetail> maybeInquiryDetail = inquiryDetailRepository.findByInquiryId(inquiryId);
+        if (maybeInquiryDetail.isEmpty()) {
+            return null;
+        }
+
+        final InquiryDetail inquiryDetail = maybeInquiryDetail.get();
+        final List<InquiryImages> inquiryImagesList = inquiryImagesRepository.findByInquiryDetailId(inquiryDetail.getInquiryDetailId());
+
+        InquiryReadResponseForm responseForm = new InquiryReadResponseForm(
+                inquiryDetail.getInquiryTitle(), inquiryDetail.getInquiryContent(), inquiryImagesList);
+
+        return responseForm;
+    }
 }

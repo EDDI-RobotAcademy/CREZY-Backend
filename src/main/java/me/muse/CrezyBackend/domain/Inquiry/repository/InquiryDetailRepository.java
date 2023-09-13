@@ -12,9 +12,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InquiryDetailRepository extends JpaRepository<InquiryDetail, Long> {
-    @Query("SELECT id FROM InquiryDetail id WHERE id.inquiry = :inquiry")
-    Optional<InquiryDetail> findByInquiry(Inquiry inquiry);
-
     @Query("SELECT id FROM InquiryDetail id WHERE id.profile = :profile")
     List<InquiryDetail> findByProfile(Profile profile);
+    @Query("SELECT id FROM InquiryDetail id LEFT JOIN FETCH id.inquiry WHERE id.inquiry.inquiryId = :inquiryId")
+    Optional<InquiryDetail> findByInquiryId(Long inquiryId);
 }

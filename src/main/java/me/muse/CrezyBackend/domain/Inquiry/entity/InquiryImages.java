@@ -2,6 +2,7 @@ package me.muse.CrezyBackend.domain.Inquiry.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,6 +15,7 @@ public class InquiryImages {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Getter
     private String inquiryImagePath;
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
