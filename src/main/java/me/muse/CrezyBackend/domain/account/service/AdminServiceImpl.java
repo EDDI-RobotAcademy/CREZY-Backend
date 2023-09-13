@@ -215,6 +215,19 @@ public class AdminServiceImpl implements AdminService{
     }
 
     @Override
+    public Integer getBlacklistTotalPage() {
+        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
+        Integer totalReport = accountRepository.findByAccountRoleType(roleType);
+        log.info(String.valueOf(totalReport));
+        Integer size = 10;
+        if (totalReport % size == 0) {
+            return totalReport / size;
+        } else {
+            return totalReport / size + 1;
+        }
+    }
+
+    @Override
     public AdminAccountDetailForm accountDetail(HttpHeaders headers, Long accountId) {
         if (checkAdmin(headers)) return null;
         Account account = accountRepository.findById(accountId)
