@@ -29,7 +29,7 @@ public class Account {
     @UpdateTimestamp
     @Column(columnDefinition = "DATETIME")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
-    private Date lastLoginDate;
+    private LocalDate lastLoginDate;
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Playlist> playlist = new ArrayList<>();
