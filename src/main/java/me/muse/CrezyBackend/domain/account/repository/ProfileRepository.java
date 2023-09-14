@@ -23,5 +23,4 @@ public interface ProfileRepository extends JpaRepository<Profile,Long> {
     List<Profile> findAllBlacklistWithPage(Pageable pageable, AccountRoleType roleType);
     @Query("SELECT p FROM Profile p JOIN FETCH p.account WHERE p.account.accountId = :reportedAccountId")
     Optional<Profile> findByAccount_AccountId(Long reportedAccountId);
-
 }

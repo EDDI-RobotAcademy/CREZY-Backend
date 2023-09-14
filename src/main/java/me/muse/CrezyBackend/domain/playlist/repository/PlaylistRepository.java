@@ -2,6 +2,7 @@ package me.muse.CrezyBackend.domain.playlist.repository;
 
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -25,5 +26,12 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @Query("SELECT p FROM Playlist p WHERE p.account = :account AND p.createDate = :createDate")
     List<Playlist> countByAccountAndCreateDate(Account account, LocalDate createDate);
     List<Playlist> findByCreateDate(LocalDate localDate);
+    @Query("SELECT p FROM Playlist p JOIN FETCH p.songlist")
+    List<Playlist> findAllWithPage(Pageable pageable);
+    @Query("SELECT p FROM Playlist p ORDER BY SIZE(p.likePlaylist) DESC")
+    List<Playlist> findAllSortBylikePalylist(Pageable pageable);
+
+    @Query("SELECT p FROM Playlist p WHERE p.songlist IS EMPTY")
+    List<Playlist> findAllBySongEmpty(Pageable pageable);
 
 }

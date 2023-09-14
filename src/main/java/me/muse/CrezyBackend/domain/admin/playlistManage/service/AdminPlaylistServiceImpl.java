@@ -4,10 +4,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.todayStatusPlaylistResponseForm;
+import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
+import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +35,9 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     final private AccountRepository accountRepository;
     final private RedisService redisService;
     final private PlaylistRepository playlistRepository;
+    final private ProfileRepository profileRepository;
+    final private LikePlaylistRepository likePlaylistRepository;
+    final private SongRepository songRepository;
     final private Integer weeks = 6;
 
     @Override
@@ -105,6 +116,36 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
             return true;
         }
         return false;
+    }
+    @Override
+    public Page<AdminPlaylistSelectListForm> playlistRecentList(HttpHeaders headers, AdminPlaylistsRequestForm requestForm) {
+        if (checkAdmin(headers)) return null;
+        List<Playlist> playlists = new ArrayList<>();
+        Pageable pageable = null;
+        if(requestForm.getSortType().equals("recent")){
+        pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
+        playlists = playlistRepository.findAllWithPage(pageable);
+        } else if (requestForm.getSortType().equals("trending")) {
+            pageable = PageRequest.of(requestForm.getPage() - 1, 10);
+            playlists = playlistRepository.findAllSortBylikePalylist(pageable);
+
+        } else if (requestForm.getSortType().equals("empty")) {
+            pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
+            playlists = playlistRepository.findAllBySongEmpty(pageable);
+        }
+
+        final List<AdminPlaylistSelectListForm> adminPlaylistSelectListForms = new ArrayList<>();
+        for(Playlist isPlaylist : playlists){
+            Profile isProfile = profileRepository.findByAccount_AccountId(isPlaylist.getAccount().getAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("account 없음"));
+
+            Integer likeCounts = likePlaylistRepository.countByPlaylist(isPlaylist);
+            Integer songCounts = songRepository.countByPlaylist(isPlaylist);
+            AdminPlaylistSelectListForm adminPlaylistSelectListForm =
+                    new AdminPlaylistSelectListForm(isPlaylist.getPlaylistId(), isPlaylist.getPlaylistName(), isProfile.getNickname(), likeCounts, songCounts, isPlaylist.getCreateDate());
+            adminPlaylistSelectListForms.add(adminPlaylistSelectListForm);
+        }
+        return new PageImpl<>(adminPlaylistSelectListForms, pageable, adminPlaylistSelectListForms.size());
     }
 }
 
