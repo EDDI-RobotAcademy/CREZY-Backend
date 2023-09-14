@@ -24,4 +24,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     List<Playlist> findPlaylistIdByAccount(Account account);
     @Query("SELECT p FROM Playlist p WHERE p.account = :account AND p.createDate = :createDate")
     List<Playlist> countByAccountAndCreateDate(Account account, LocalDate createDate);
+    List<Playlist> findByCreateDate(LocalDate localDate);
+
 }
