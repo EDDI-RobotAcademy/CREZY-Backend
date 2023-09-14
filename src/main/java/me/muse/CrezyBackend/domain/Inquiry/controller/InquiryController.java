@@ -3,8 +3,10 @@ package me.muse.CrezyBackend.domain.Inquiry.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryListResponseForm;
+import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryReadResponseForm;
 import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryRegisterRequestForm;
 import me.muse.CrezyBackend.domain.Inquiry.service.InquiryService;
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -29,5 +31,11 @@ public class InquiryController {
     public List<InquiryListResponseForm> inquiryList(@RequestHeader HttpHeaders headers){
         log.info("inquiryList()");
         return inquiryService.list(headers);
+    }
+
+    @GetMapping("/{inquiryId}")
+    public InquiryReadResponseForm readInquiry(@PathVariable("inquiryId") Long inquiryId) {
+        log.info("readInquiry()");
+        return inquiryService.read(inquiryId);
     }
 }
