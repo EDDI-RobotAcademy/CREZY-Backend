@@ -11,6 +11,7 @@ import java.util.List;
 public class AdminAccountDetailForm {
     final private Long accountId;
     final private String nickname;
+    final private String email;
     final private Integer warningCounts;
     final private Integer reportedCounts;
     final private LocalDate lastLoginDate;
