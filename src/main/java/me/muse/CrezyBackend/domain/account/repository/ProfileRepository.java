@@ -1,11 +1,13 @@
 package me.muse.CrezyBackend.domain.account.repository;
 
 import me.muse.CrezyBackend.domain.account.entity.*;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface ProfileRepository extends JpaRepository<Profile,Long> {
@@ -19,4 +21,7 @@ public interface ProfileRepository extends JpaRepository<Profile,Long> {
     List<Profile> findAllWithPage(Pageable pageable);
     @Query("SELECT p FROM Profile p JOIN FETCH p.account a WHERE a.roleType = :roleType")
     List<Profile> findAllBlacklistWithPage(Pageable pageable, AccountRoleType roleType);
+    @Query("SELECT p FROM Profile p JOIN FETCH p.account WHERE p.account.accountId = :reportedAccountId")
+    Optional<Profile> findByAccount_AccountId(Long reportedAccountId);
+
 }

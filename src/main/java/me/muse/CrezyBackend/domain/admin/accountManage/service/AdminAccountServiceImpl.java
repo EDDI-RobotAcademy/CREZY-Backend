@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListRequestForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
@@ -15,24 +16,25 @@ import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import me.muse.CrezyBackend.domain.report.entity.Report;
 import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
+import me.muse.CrezyBackend.domain.report.entity.ReportStatus;
+import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
+import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.*;
 
@@ -50,6 +52,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     final private ReportRepository reportRepository;
     final private ReportDetailRepository reportDetailRepository;
     final private LikePlaylistRepository likePlaylistRepository;
+    final private ReportStatusTypeRepository reportStatusTypeRepository;
     final private Integer weeks = 6;
 
     @Override
@@ -218,7 +221,6 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     public Integer getBlacklistTotalPage() {
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
         Integer totalReport = accountRepository.findByAccountRoleType(roleType);
-        log.info(String.valueOf(totalReport));
         Integer size = 10;
         if (totalReport % size == 0) {
             return totalReport / size;
@@ -258,5 +260,83 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 playlistCounts, songCounts, likePlaylistCounts, playlistCountsList, songCountsList, accountDateList);
         return adminAccountDetailForm;
         }
+    @Override
+    public Page<AdminAccountListForm> accountWarningCountList(HttpHeaders headers, AdminAccountListRequestForm requestForm) {
+        if (checkAdmin(headers)) return null;
+        Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("account.accountId").descending());
+        ReportStatusType reportStatus = reportStatusTypeRepository.findByReportStatus(ReportStatus.APPROVE).get();
+        List<Report> reports = reportRepository.findByReportStatusType(reportStatus);
+        List<Profile> profiles = new ArrayList<>();
+        List<ReportDetail> reportDetails = new ArrayList<>();
+        for(Report report : reports) {
+            ReportDetail details = reportDetailRepository.findByReportId(report.getReportId()).get();
+            reportDetails.add(details);
+        }
+        for(ReportDetail reportDetail: reportDetails) {
+            Profile profile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId()).get();
+            profiles.add(profile);
+        }
+        Map<Long, Integer> accountCounts = new HashMap<>();
+        for(Profile profile : profiles){
+            Long accountId = profile.getAccount().getAccountId();
+            if(accountCounts.containsKey(accountId)){
+                int count = accountCounts.get(accountId);
+                accountCounts.put(accountId, count+1);
+            }else{
+                accountCounts.put(accountId, 1);
+            }
+        }
+        List<Profile> singleWarningCount = new ArrayList<>();
+        Set<Long> doubleWarningCountList = new HashSet<>();
+        Set<Long> tripleWarningCountList = new HashSet<>();
+        for(Profile profile : profiles){
+            Long accountId = profile.getAccount().getAccountId();
+            int count = accountCounts.get(accountId);
+            if(count == 1){
+                singleWarningCount.add(profile);
+            } else if (count == 2) {
+                doubleWarningCountList.add(accountId);
+            } else if (count == 3) {
+                tripleWarningCountList.add(accountId);
+            }
+        }
+        List<Profile> doubleWarningCount = doubleWarningCountList.stream()
+                .map(accountId -> profileRepository.findByAccount_AccountId(accountId).get())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        List<Profile> tripleWarningCount = tripleWarningCountList.stream()
+                .map(accountId -> profileRepository.findByAccount_AccountId(accountId).get())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        if(requestForm.getWarningCounts() == 1){
+            return makeAccountListForm(singleWarningCount, pageable);
+        }
+        if (requestForm.getWarningCounts() == 2) {
+            return makeAccountListForm(doubleWarningCount, pageable);
+        }
+        if (requestForm.getWarningCounts()  == 3) {
+            return makeAccountListForm(tripleWarningCount, pageable);
+        }
+        return null;
     }
+
+    private Page<AdminAccountListForm> makeAccountListForm(List<Profile> WarningCount, Pageable pageable) {
+        final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
+        for (Profile isProfile : WarningCount) {
+            Account isAccount = accountRepository.findById(isProfile.getAccount().getAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("account 없음"));
+            List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
+            Integer playlistCounts = playlists.size();
+            Integer songCounts = 0;
+            for (Playlist playlist : playlists) {
+                songCounts += songRepository.countByPlaylist(playlist);
+            }
+            Integer warningCounts = warningRepository.countByAccount(isAccount);
+            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts);
+            adminAccountListForms.add(adminAccountListForm);
+        }
+
+        return new PageImpl<>(adminAccountListForms, pageable, adminAccountListForms.size());
+    }
+}
 
