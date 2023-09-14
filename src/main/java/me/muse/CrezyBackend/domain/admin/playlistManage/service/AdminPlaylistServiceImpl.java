@@ -123,8 +123,8 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         List<Playlist> playlists = new ArrayList<>();
         Pageable pageable = null;
         if(requestForm.getSortType().equals("recent")){
-        pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
-        playlists = playlistRepository.findAllWithPage();
+            pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
+            playlists = playlistRepository.findAllWithPage();
         } else if (requestForm.getSortType().equals("trending")) {
             pageable = PageRequest.of(requestForm.getPage() - 1, 10);
             playlists = playlistRepository.findAllSortBylikePalylist();
@@ -145,7 +145,15 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
                     new AdminPlaylistSelectListForm(isPlaylist.getPlaylistId(), isPlaylist.getPlaylistName(), isProfile.getNickname(), likeCounts, songCounts, isPlaylist.getCreateDate());
             adminPlaylistSelectListForms.add(adminPlaylistSelectListForm);
         }
-        return new PageImpl<>(adminPlaylistSelectListForms, pageable, adminPlaylistSelectListForms.size());
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), adminPlaylistSelectListForms.size());
+
+        return new PageImpl<>(
+                adminPlaylistSelectListForms.subList(start, end),
+                pageable,
+                adminPlaylistSelectListForms.size()
+        );
     }
 }
 
