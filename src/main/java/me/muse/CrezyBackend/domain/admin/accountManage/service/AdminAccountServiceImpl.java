@@ -256,7 +256,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         List<Integer> songCountsList = songCountsListBetweenPeriod(previousDate, currentDate, account);
         List<String> accountDateList = accountDateListBetweenPeriod(previousDate, currentDate);
 
-        AdminAccountDetailForm adminAccountDetailForm = new AdminAccountDetailForm(accountId, profile.getNickname(), warningCounts, reportedCounts, profile.getAccount().getLastLoginDate(),
+        AdminAccountDetailForm adminAccountDetailForm = new AdminAccountDetailForm(accountId, profile.getNickname(), profile.getEmail(), warningCounts, reportedCounts, profile.getAccount().getLastLoginDate(),
                 playlistCounts, songCounts, likePlaylistCounts, playlistCountsList, songCountsList, accountDateList);
         return adminAccountDetailForm;
         }
