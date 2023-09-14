@@ -45,7 +45,7 @@ public class AdminAccountController {
         return adminService.getBlacklistTotalPage();
     }
 
-    @GetMapping("/account-warningCount-list")
+    @PostMapping("/account-warningCount-list")
     public Page<AdminAccountListForm> accountWarningCountList(@RequestHeader HttpHeaders headers, @RequestBody AdminAccountListRequestForm adminAccountListRequestForm) {
         log.info("accountWarningCountList()");
         return adminService.accountWarningCountList(headers, adminAccountListRequestForm);
