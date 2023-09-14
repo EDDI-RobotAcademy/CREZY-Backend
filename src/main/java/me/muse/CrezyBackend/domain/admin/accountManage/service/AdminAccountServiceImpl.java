@@ -159,7 +159,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 songCounts += songRepository.countByPlaylist(playlist);
             }
             Integer warningCounts = warningRepository.countByAccount(isAccount);
-            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts);
+            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts, isAccount.getRoleType().getRoleType().toString());
             adminAccountListForms.add(adminAccountListForm);
         }
         log.info(adminAccountListForms.toString());
