@@ -27,11 +27,11 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     List<Playlist> countByAccountAndCreateDate(Account account, LocalDate createDate);
     List<Playlist> findByCreateDate(LocalDate localDate);
     @Query("SELECT p FROM Playlist p JOIN FETCH p.songlist")
-    List<Playlist> findAllWithPage(Pageable pageable);
+    List<Playlist> findAllWithPage();
     @Query("SELECT p FROM Playlist p ORDER BY SIZE(p.likePlaylist) DESC")
-    List<Playlist> findAllSortBylikePalylist(Pageable pageable);
+    List<Playlist> findAllSortBylikePalylist();
 
     @Query("SELECT p FROM Playlist p WHERE p.songlist IS EMPTY")
-    List<Playlist> findAllBySongEmpty(Pageable pageable);
+    List<Playlist> findAllBySongEmpty();
 
 }
