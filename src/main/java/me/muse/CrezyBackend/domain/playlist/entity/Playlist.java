@@ -9,7 +9,9 @@ import lombok.Setter;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.song.entity.Song;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +44,8 @@ public class Playlist {
     private List<Song> songlist = new ArrayList<>();
     @Setter
     private String thumbnailName;
+    @CreationTimestamp
+    private LocalDate createDate;
 
     public Playlist(String playlistName, String thumbnailName, Account account) {
         this.playlistName = playlistName;

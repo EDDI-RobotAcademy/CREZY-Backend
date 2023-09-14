@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
@@ -21,4 +22,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     Integer countByAccount(Account isAccount);
     List<Playlist> findPlaylistIdByAccount(Account account);
+    @Query("SELECT p FROM Playlist p WHERE p.account = :account AND p.createDate = :createDate")
+    List<Playlist> countByAccountAndCreateDate(Account account, LocalDate createDate);
 }

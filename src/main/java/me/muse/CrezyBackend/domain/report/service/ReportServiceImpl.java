@@ -9,6 +9,8 @@ import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportProcessingForm;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportReadResponseForm;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportRegisterForm;
@@ -18,6 +20,7 @@ import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
+import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +50,7 @@ public class ReportServiceImpl implements ReportService {
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private ProfileRepository profileRepository;
     final private ReportedCategoryTypeRepository reportedCategoryTypeRepository;
+    final private SongRepository songRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -175,13 +179,17 @@ public class ReportServiceImpl implements ReportService {
         Long accountId = redisService.getValueByKey(authValues.get(0));
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
+        Account reportedAccount;
         ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.HOLDON).get();
         ReportedCategoryType categoryType = reportedCategoryTypeRepository.findByReportedCategory(ReportedCategory.valueOf(reportRegisterForm.getReportedCategoryType())).get();
-
-        Account reportedAccount = accountRepository.findByPlaylist_playlistId(reportRegisterForm.getReportedPlaylistId())
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
+        if(categoryType.getReportedCategory() == SONG){
+            Long playlistId = songRepository.findById(reportRegisterForm.getReportedId()).get().getPlaylist().getPlaylistId();
+            reportedAccount = accountRepository.findByPlaylist_playlistId(playlistId)
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        }else{
+            reportedAccount = accountRepository.findByPlaylist_playlistId(reportRegisterForm.getReportedId())
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        }
         final Report report = new Report(categoryType, statusType);
         final ReportDetail reportDetail = new ReportDetail(accountId, reportedAccount.getAccountId(), reportRegisterForm.getReportContent(), report);
 

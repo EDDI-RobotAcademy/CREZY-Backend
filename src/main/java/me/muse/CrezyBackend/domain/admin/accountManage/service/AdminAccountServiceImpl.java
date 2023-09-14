@@ -1,18 +1,23 @@
-package me.muse.CrezyBackend.domain.account.service;
+package me.muse.CrezyBackend.domain.admin.accountManage.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.account.controller.form.AdminAccountListForm;
-import me.muse.CrezyBackend.domain.account.controller.form.todayStatusAccountResponseForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
+import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
+import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
@@ -34,7 +39,7 @@ import static me.muse.CrezyBackend.domain.account.entity.RoleType.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class AdminServiceImpl implements AdminService{
+public class AdminAccountServiceImpl implements AdminAccountService {
     final private AccountRepository accountRepository;
     final private RedisService redisService;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
@@ -42,6 +47,9 @@ public class AdminServiceImpl implements AdminService{
     final private WarningRepository warningRepository;
     final private PlaylistRepository playlistRepository;
     final private SongRepository songRepository;
+    final private ReportRepository reportRepository;
+    final private ReportDetailRepository reportDetailRepository;
+    final private LikePlaylistRepository likePlaylistRepository;
     final private Integer weeks = 6;
 
     @Override
@@ -55,9 +63,9 @@ public class AdminServiceImpl implements AdminService{
         double increaseRate = 0;
         if(0 < todayAccount && previousAccount == 0){
             increaseRate = 100;
+        }else {
+            increaseRate = (double) (todayAccount - previousAccount) / previousAccount * 100;
         }
-        increaseRate =  (double)(todayAccount-previousAccount)/previousAccount * 100;
-
         Integer afterDay = compareDate(TransformToDate.transformToDate(date));
         Integer previousDay = weeks-afterDay;
 
@@ -92,28 +100,43 @@ public class AdminServiceImpl implements AdminService{
 
     public List<Integer> accountListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
         List<Integer> accountCounts = new ArrayList<>();
-        LocalDate currentDate = previousDate;
-
-        while (!currentDate.isAfter(afterDate)) {
+        while (!previousDate.isAfter(afterDate)) {
             AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(NORMAL).get();
-            Integer accounts = accountRepository.findByCreateDateAndAccountRoleType(currentDate,roleType);
+            Integer accounts = accountRepository.findByCreateDateAndAccountRoleType(previousDate,roleType);
             accountCounts.add(accounts);
-
-            currentDate = currentDate.plusDays(1);
+            previousDate = previousDate.plusDays(1);
         }
         return accountCounts;
     }
     public List<String> accountDateListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
         List<String> accountDateList = new ArrayList<>();
-        LocalDate currentDate = previousDate;
-
-        while (!currentDate.isAfter(afterDate)) {
-            accountDateList.add(currentDate.toString());
-
-            currentDate = currentDate.plusDays(1);
+        while (!previousDate.isAfter(afterDate)) {
+            accountDateList.add(previousDate.toString());
+            previousDate = previousDate.plusDays(1);
         }
-        log.info(accountDateList.toString());
         return accountDateList;
+    }
+    public List<Integer> songCountsListBetweenPeriod(LocalDate previousDate, LocalDate afterDate, Account account) {
+        List<Integer> songCounts = new ArrayList<>();
+        List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(account);
+        while (!previousDate.isAfter(afterDate)) {
+            int songCount = 0;
+            for (Playlist playlist : playlists) {
+                songCount += songRepository.countByPlaylistAndCreateDate(playlist, previousDate);
+            }
+            songCounts.add(songCount);
+            previousDate = previousDate.plusDays(1);
+        }
+        return songCounts;
+    }
+    public List<Integer> playlistCountsListBetweenPeriod(LocalDate previousDate, LocalDate afterDate, Account account){
+        List<Integer> playlistCounts = new ArrayList<>();
+        while (!previousDate.isAfter(afterDate)) {
+            List<Playlist> playlists = playlistRepository.countByAccountAndCreateDate(account, previousDate);
+            playlistCounts.add(playlists.size());
+            previousDate = previousDate.plusDays(1);
+        }
+        return playlistCounts;
     }
 
     @Override
@@ -177,8 +200,8 @@ public class AdminServiceImpl implements AdminService{
             Account isAccount = accountRepository.findAccountByAccountRoleType(roleType)
                     .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
-            Integer playlistCounts = playlistRepository.countByAccount(isAccount);
             List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
+            Integer playlistCounts = playlists.size();
             Integer songCounts = 0;
             for (Playlist playlist : playlists) {
                 songCounts += songRepository.countByPlaylist(playlist);
@@ -190,4 +213,50 @@ public class AdminServiceImpl implements AdminService{
         log.info(adminAccountListForms.toString());
         return adminAccountListForms;
     }
-}
+
+    @Override
+    public Integer getBlacklistTotalPage() {
+        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
+        Integer totalReport = accountRepository.findByAccountRoleType(roleType);
+        log.info(String.valueOf(totalReport));
+        Integer size = 10;
+        if (totalReport % size == 0) {
+            return totalReport / size;
+        } else {
+            return totalReport / size + 1;
+        }
+    }
+
+    @Override
+    public AdminAccountDetailForm accountDetail(HttpHeaders headers, Long accountId) {
+        if (checkAdmin(headers)) return null;
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("account 없음"));;
+        Profile profile = profileRepository.findByAccount(account).get();
+        List<ReportDetail> reportDetails = reportDetailRepository.findAllByReportedAccountId(accountId);
+        Integer reportedCounts = 0;
+        for(ReportDetail reportDetail : reportDetails){
+            reportedCounts += reportRepository.countByReportId(reportDetail.getReport().getReportId());
+        }
+        List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(account);
+        Integer playlistCounts = playlists.size();
+        Integer songCounts = 0;
+        for (Playlist playlist : playlists) {
+            songCounts += songRepository.countByPlaylist(playlist);
+        }
+        Integer warningCounts = warningRepository.countByAccount(account);
+        Integer likePlaylistCounts = likePlaylistRepository.countByAccount(account);
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate previousDate = LocalDate.now().minusDays(6);
+
+        List<Integer> playlistCountsList = playlistCountsListBetweenPeriod(previousDate, currentDate, account);
+        List<Integer> songCountsList = songCountsListBetweenPeriod(previousDate, currentDate, account);
+        List<String> accountDateList = accountDateListBetweenPeriod(previousDate, currentDate);
+
+        AdminAccountDetailForm adminAccountDetailForm = new AdminAccountDetailForm(accountId, profile.getNickname(), warningCounts, reportedCounts, profile.getAccount().getLastLoginDate(),
+                playlistCounts, songCounts, likePlaylistCounts, playlistCountsList, songCountsList, accountDateList);
+        return adminAccountDetailForm;
+        }
+    }
+

@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.report.repository;
 
+import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.report.entity.Report;
 import me.muse.CrezyBackend.domain.report.entity.ReportedCategory;
@@ -12,6 +13,7 @@ public interface ReportRepository extends JpaRepository<Report,Long> {
     List<Report> findByReportedCategoryType(ReportedCategory reportedCategory);
     @Query("SELECT COUNT(r) FROM Report r WHERE r.reportedCategoryType.reportedCategory = :reportedCategory")
     int countByReportedCategoryType(ReportedCategory reportedCategory);
+    Integer countByReportId(Long reportId);
 }
 
 
