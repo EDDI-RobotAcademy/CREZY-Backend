@@ -124,14 +124,14 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         Pageable pageable = null;
         if(requestForm.getSortType().equals("recent")){
         pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
-        playlists = playlistRepository.findAllWithPage(pageable);
+        playlists = playlistRepository.findAllWithPage();
         } else if (requestForm.getSortType().equals("trending")) {
             pageable = PageRequest.of(requestForm.getPage() - 1, 10);
-            playlists = playlistRepository.findAllSortBylikePalylist(pageable);
+            playlists = playlistRepository.findAllSortBylikePalylist();
 
         } else if (requestForm.getSortType().equals("empty")) {
             pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
-            playlists = playlistRepository.findAllBySongEmpty(pageable);
+            playlists = playlistRepository.findAllBySongEmpty();
         }
 
         final List<AdminPlaylistSelectListForm> adminPlaylistSelectListForms = new ArrayList<>();
