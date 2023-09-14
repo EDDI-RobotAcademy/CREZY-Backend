@@ -51,7 +51,7 @@ public class ReportServiceImpl implements ReportService {
                     .orElseThrow(() -> new IllegalArgumentException("Account not found"));
         }
         final Report report = new Report(categoryType, statusType);
-        final ReportDetail reportDetail = new ReportDetail(accountId, reportedAccount.getAccountId(), reportRegisterForm.getReportContent(), report);
+        final ReportDetail reportDetail = new ReportDetail(accountId, reportedAccount.getAccountId(), reportRegisterForm.getReportedId(), reportRegisterForm.getReportContent(), report);
 
         return reportDetailRepository.save(reportDetail).getReportDetailId();
     }

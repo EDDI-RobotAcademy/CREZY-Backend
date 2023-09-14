@@ -17,15 +17,17 @@ public class ReportDetail {
     private Long reportDetailId;
     private Long reporterAccountId;
     private Long reportedAccountId;
+    private Long reportedId;
     private String reportContent;
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Report report;
     @CreationTimestamp
     private LocalDate createReportDate;
 
-    public ReportDetail(Long reporterAccountId, Long reportedAccountId, String reportContent, Report report) {
+    public ReportDetail(Long reporterAccountId, Long reportedAccountId, Long reportedId, String reportContent, Report report) {
         this.reporterAccountId = reporterAccountId;
         this.reportedAccountId = reportedAccountId;
+        this.reportedId = reportedId;
         this.reportContent = reportContent;
         this.report = report;
     }
