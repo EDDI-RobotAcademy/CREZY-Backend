@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListRequestForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.service.AdminAccountService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +43,12 @@ public class AdminAccountController {
     @GetMapping("/list/blacklist-total-page")
     public Integer getBlacklistTotalPage() {
         return adminService.getBlacklistTotalPage();
+    }
+
+    @GetMapping("/account-warningCount-list")
+    public Page<AdminAccountListForm> accountWarningCountList(@RequestHeader HttpHeaders headers, @RequestBody AdminAccountListRequestForm adminAccountListRequestForm) {
+        log.info("accountWarningCountList()");
+        return adminService.accountWarningCountList(headers, adminAccountListRequestForm);
     }
 
     @GetMapping("/account-detail")
