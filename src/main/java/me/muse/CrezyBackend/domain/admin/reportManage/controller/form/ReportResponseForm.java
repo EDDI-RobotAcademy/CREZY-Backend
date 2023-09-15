@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class ReportResponseForm {
     final private Long reportId;
+    final private Long reportedId;
     final private String reportContent;
     final private String reportedCategoryType;
     final private String reportStatusType;
