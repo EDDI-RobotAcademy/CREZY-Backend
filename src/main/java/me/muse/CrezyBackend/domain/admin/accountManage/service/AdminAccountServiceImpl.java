@@ -146,7 +146,8 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     public List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page) {
         if (checkAdmin(headers)) return null;
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
-        List<Profile> profileList = profileRepository.findAllWithPage(pageable);
+        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(NORMAL).get();
+        List<Profile> profileList = profileRepository.findByAccount_RoleTypeWithPage(pageable, roleType);
         final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
         for(Profile isProfile : profileList){
             Account isAccount = accountRepository.findById(isProfile.getAccount().getAccountId())
@@ -269,11 +270,13 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         List<Profile> profiles = new ArrayList<>();
         List<ReportDetail> reportDetails = new ArrayList<>();
         for(Report report : reports) {
-            ReportDetail details = reportDetailRepository.findByReportId(report.getReportId()).get();
+            ReportDetail details = reportDetailRepository.findByReportId(report.getReportId())
+                    .orElseThrow(() -> new IllegalArgumentException("reportDetail 없음"));
             reportDetails.add(details);
         }
         for(ReportDetail reportDetail: reportDetails) {
-            Profile profile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId()).get();
+            Profile profile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("profile 없음"));
             profiles.add(profile);
         }
         Map<Long, Integer> accountCounts = new HashMap<>();
@@ -288,7 +291,6 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         }
         List<Profile> singleWarningCount = new ArrayList<>();
         Set<Long> doubleWarningCountList = new HashSet<>();
-        Set<Long> tripleWarningCountList = new HashSet<>();
         for(Profile profile : profiles){
             Long accountId = profile.getAccount().getAccountId();
             int count = accountCounts.get(accountId);
@@ -296,16 +298,11 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 singleWarningCount.add(profile);
             } else if (count == 2) {
                 doubleWarningCountList.add(accountId);
-            } else if (count == 3) {
-                tripleWarningCountList.add(accountId);
             }
         }
         List<Profile> doubleWarningCount = doubleWarningCountList.stream()
-                .map(accountId -> profileRepository.findByAccount_AccountId(accountId).get())
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        List<Profile> tripleWarningCount = tripleWarningCountList.stream()
-                .map(accountId -> profileRepository.findByAccount_AccountId(accountId).get())
+                .map(accountId -> profileRepository.findByAccount_AccountId(accountId)
+                        .orElseThrow(() -> new IllegalArgumentException("profile 없음")))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         if(requestForm.getWarningCounts() == 1){
@@ -315,7 +312,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             return makeAccountListForm(doubleWarningCount, pageable);
         }
         if (requestForm.getWarningCounts()  == 3) {
-            return makeAccountListForm(tripleWarningCount, pageable);
+            return makeBlacklistForm(pageable);
         }
         return null;
     }
@@ -335,8 +332,36 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts);
             adminAccountListForms.add(adminAccountListForm);
         }
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), adminAccountListForms.size());
+        return new PageImpl<>(adminAccountListForms.subList(start, end), pageable, adminAccountListForms.size());
+    }
+    public Page<AdminAccountListForm> makeBlacklistForm(Pageable pageable) {
+        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
+        List<Profile> profileList = profileRepository.findAllBlacklistWithPage(pageable, roleType);
+        final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
+        for (Profile isProfile : profileList) {
+            Account isAccount = accountRepository.findAccountByAccountRoleType(roleType)
+                    .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
-        return new PageImpl<>(adminAccountListForms, pageable, adminAccountListForms.size());
+            List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
+            Integer playlistCounts = playlists.size();
+            Integer songCounts = 0;
+            for (Playlist playlist : playlists) {
+                songCounts += songRepository.countByPlaylist(playlist);
+            }
+            Integer warningCounts = warningRepository.countByAccount(isAccount);
+            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts);
+            adminAccountListForms.add(adminAccountListForm);
+        }
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), adminAccountListForms.size());
+
+        return new PageImpl<>(
+                adminAccountListForms.subList(start, end),
+                pageable,
+                adminAccountListForms.size()
+        );
     }
 }
 

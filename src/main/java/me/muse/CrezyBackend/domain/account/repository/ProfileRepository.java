@@ -17,10 +17,12 @@ public interface ProfileRepository extends JpaRepository<Profile,Long> {
     Optional<Profile> findByNickname(String nickname);
     Optional<Profile> findByAccount(Account account);
     List<Profile> findByAccount_RoleType(AccountRoleType roleType);
-    @Query("SELECT p FROM Profile p JOIN FETCH p.account")
-    List<Profile> findAllWithPage(Pageable pageable);
+    @Query("SELECT p FROM Profile p JOIN FETCH p.account a WHERE a.roleType = :roleType")
+    List<Profile> findByAccount_RoleTypeWithPage(Pageable pageable, AccountRoleType roleType);
     @Query("SELECT p FROM Profile p JOIN FETCH p.account a WHERE a.roleType = :roleType")
     List<Profile> findAllBlacklistWithPage(Pageable pageable, AccountRoleType roleType);
     @Query("SELECT p FROM Profile p JOIN FETCH p.account WHERE p.account.accountId = :reportedAccountId")
     Optional<Profile> findByAccount_AccountId(Long reportedAccountId);
+    @Query("SELECT p FROM Profile p JOIN FETCH p.account WHERE p.account.accountId = :reportedAccountId AND p.account.roleType = :roleType")
+    Optional<Profile> findByAccount_AccountIdAndRoleType(Long reportedAccountId, AccountRoleType roleType);
 }
