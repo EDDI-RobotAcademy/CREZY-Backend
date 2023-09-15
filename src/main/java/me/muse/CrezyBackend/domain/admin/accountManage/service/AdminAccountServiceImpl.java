@@ -25,6 +25,7 @@ import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
+import me.muse.CrezyBackend.utility.RandomValue;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
@@ -362,6 +363,34 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 pageable,
                 adminAccountListForms.size()
         );
+    }
+
+    @Override
+    public void changeBadNickname(HttpHeaders headers, Long accountId) {
+        if (checkAdmin(headers)) return;
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("account 없음"));
+        Profile profile = profileRepository.findByAccount(account)
+                .orElseThrow(() -> new IllegalArgumentException("profile 없음"));
+
+        String[] genreList = {"락", "발라드", "힙합", "클래식", "재즈", "레게", "트로트", "알앤비"};
+
+        RandomValue randomValue = new RandomValue();
+        int value = randomValue.randomValue(genreList.length);
+
+        String randomAlphabet = null;
+        String randomNumber = null;
+
+        for(int i=0; i<2; i++){
+            randomAlphabet = (String.valueOf((char) ((Math.random() * 26) + 65)));
+            randomNumber = String.valueOf(randomValue.randomValue(9));
+        }
+
+        String newNickname = genreList[value] + "Muser" + randomAlphabet + randomNumber;
+        profile.setNickname(newNickname);
+
+        profileRepository.save(profile);
     }
 }
 

@@ -7,7 +7,7 @@ import java.util.Random;
 @Slf4j
 public class RandomValue {
 
-    public int[] randomValue(int size){
+    public int[] randomValueList(int size){
         Random random = new Random();
         int[] numArray = new int[10];
         for(int i=0; i<10; i++){
@@ -23,5 +23,10 @@ public class RandomValue {
             }
         }
         return numArray;
+    }
+
+    public int randomValue(int size){
+        Random random = new Random();
+        return random.nextInt(size);
     }
 }

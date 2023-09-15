@@ -114,7 +114,7 @@ public class EmotionServiceImpl implements EmotionService{
 
         RandomValue random = new RandomValue();
 
-        int[] valueArray = random.randomValue(labeledSongList.size());
+        int[] valueArray = random.randomValueList(labeledSongList.size());
         for(int i : valueArray){
             log.info(String.valueOf(i));
             labeledSongs.add(labeledSongList.get(i));
