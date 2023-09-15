@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.muse.CrezyBackend.domain.InquiryAnswer.InquiryAnswer;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -24,6 +25,8 @@ public class Inquiry {
     private LocalDate createInquiryDate;
     @OneToOne
     private InquiryCategoryType inquiryCategoryType;
+    @OneToOne
+    private InquiryAnswer inquiryAnswer;
     public Inquiry(InquiryCategoryType inquiryCategoryType) {
         this.inquiryCategoryType = inquiryCategoryType;
     }
