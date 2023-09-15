@@ -11,4 +11,5 @@ public interface AdminReportService {
     boolean processingReport(ReportProcessingForm processingForm, HttpHeaders headers);
     ReportReadResponseForm readReport(Long reportId, HttpHeaders headers);
     ReportReadAccountResponseForm readAccountReport(Long reportId, HttpHeaders headers);
+    ReportReadPlaylistResponseForm readPlaylistReport(Long reportId, HttpHeaders headers);
 }

@@ -10,6 +10,8 @@ import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
+import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.report.entity.Report;
 import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
 import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
@@ -45,6 +47,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private WarningRepository warningRepository;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private ProfileRepository profileRepository;
+    final private PlaylistRepository playlistRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -147,7 +150,7 @@ public class AdminReportServiceImpl implements AdminReportService {
 
     @Override
     public ReportReadAccountResponseForm readAccountReport(Long reportId, HttpHeaders headers) {
-//        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin(headers)) return null;
 
         ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
@@ -160,6 +163,27 @@ public class AdminReportServiceImpl implements AdminReportService {
                 reporterProfile.getNickname(),
                 reportedProfile.getNickname(),
                 reportedProfile.getProfileImageName());
+        return responseForm;
+    }
+
+    @Override
+    public ReportReadPlaylistResponseForm readPlaylistReport(Long reportId, HttpHeaders headers) {
+        if (!checkAdmin(headers)) return null;
+
+        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+        Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
+                .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
+        Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+        Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+
+        ReportReadPlaylistResponseForm responseForm = new ReportReadPlaylistResponseForm(
+                reporterProfile.getNickname(),
+                reportedProfile.getNickname(),
+                playlist.getPlaylistName(),
+                playlist.getThumbnailName());
         return responseForm;
     }
 }
