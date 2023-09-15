@@ -2,7 +2,6 @@ package me.muse.CrezyBackend.domain.admin.accountManage.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryCountResponseForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListRequestForm;
@@ -62,10 +61,9 @@ public class AdminAccountController {
     public void changeNickname(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId){
         adminService.changeBadNickname(headers, accountId);
     }
-
-    @GetMapping("/counting-inquiry")
-    public InquiryCountResponseForm countingInquiry(@RequestHeader HttpHeaders headers){
-        return adminService.countInquiry(headers);
-
+    @GetMapping("/account-change-RoleType-blacklist")
+    public void accountChangeRoleTypeToBlacklist(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId) {
+        log.info("accountChangeRoleTypeToBlacklist()");
+        adminService.accountChangeRoleTypeToBlacklist(headers, accountId);
     }
 }

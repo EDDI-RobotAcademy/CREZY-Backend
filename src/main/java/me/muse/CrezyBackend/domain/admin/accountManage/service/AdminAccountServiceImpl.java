@@ -3,9 +3,6 @@ package me.muse.CrezyBackend.domain.admin.accountManage.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryCountResponseForm;
-import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
-import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryRepository;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
@@ -57,8 +54,6 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     final private ReportDetailRepository reportDetailRepository;
     final private LikePlaylistRepository likePlaylistRepository;
     final private ReportStatusTypeRepository reportStatusTypeRepository;
-    final private InquiryRepository inquiryRepository;
-    final private InquiryDetailRepository inquiryDetailRepository;
     final private Integer weeks = 6;
 
     @Override
@@ -369,7 +364,6 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 adminAccountListForms.size()
         );
     }
-
     @Override
     public void changeBadNickname(HttpHeaders headers, Long accountId) {
         if (checkAdmin(headers)) return;
@@ -411,23 +405,16 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 
         return genreList[value] + "Muser" + randomAlphabet + randomNumber;
     }
-
     @Override
-    public InquiryCountResponseForm countInquiry(HttpHeaders headers){
-        if (checkAdmin(headers)) return null;
+    public void accountChangeRoleTypeToBlacklist(HttpHeaders headers, Long accountId) {
+        if (checkAdmin(headers)) return;
 
-        Long date = System.currentTimeMillis();
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
-        SimpleDateFormat sdt = new SimpleDateFormat();
-        sdt.applyPattern("yyyy-MM-dd");
-        String currentDate = sdt.format(date);
-
-        LocalDate transformCurrentDate = TransformToDate.transformToDate(currentDate);
-        int todayInquiryCount = inquiryRepository.countByCreateInquiryDate(transformCurrentDate);
-        int waitingAnswerInquiryCount = inquiryRepository.countWaitingAnswer();
-        long totalInquiryCount = inquiryRepository.count();
-
-        return new InquiryCountResponseForm(todayInquiryCount, waitingAnswerInquiryCount, totalInquiryCount);
+        AccountRoleType changeRoleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
+        account.setRoleType(changeRoleType);
+        accountRepository.save(account);
     }
 }
 
