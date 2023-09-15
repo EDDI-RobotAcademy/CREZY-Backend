@@ -25,7 +25,7 @@ public class InquiryDetail {
     private String inquiryContent;
     @JsonIgnore
     @JsonManagedReference
-    @OneToMany(mappedBy = "inquiryDetail", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "inquiryDetail", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Setter
     private List<InquiryImages> inquiryImageNames = new ArrayList<>();
     @ManyToOne

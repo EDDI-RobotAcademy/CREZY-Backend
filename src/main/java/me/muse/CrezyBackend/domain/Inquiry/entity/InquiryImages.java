@@ -14,7 +14,8 @@ public class InquiryImages {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Getter
+    private Long inquiryImagesId;
     @Getter
     private String inquiryImagePath;
     @JsonBackReference

@@ -10,4 +10,5 @@ public interface InquiryService {
     List<InquiryListResponseForm> list(HttpHeaders headers);
     InquiryReadResponseForm read(Long inquiryId, HttpHeaders headers);
     InquiryModifyResponseForm modify(InquiryModifyRequestForm requestForm, HttpHeaders headers);
+    boolean delete(Long inquiryId, HttpHeaders headers);
 }
