@@ -56,4 +56,9 @@ public class AdminAccountController {
         log.info("accountDetail()");
         return adminService.accountDetail(headers, accountId);
     }
+
+    @GetMapping("/change-nickname")
+    public void changeNickname(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId){
+        adminService.changeBadNickname(headers, accountId);
+    }
 }
