@@ -6,6 +6,7 @@ import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
+import me.muse.CrezyBackend.domain.account.entity.RoleType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
@@ -409,10 +410,21 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     public void accountChangeRoleTypeToBlacklist(HttpHeaders headers, Long accountId) {
         if (checkAdmin(headers)) return;
 
+        changeRoleType(accountId, BLACKLIST);
+    }
+
+    @Override
+    public void accountChangeRoleTypeToNormal(HttpHeaders headers, Long accountId) {
+        if (checkAdmin(headers)) return;
+
+        changeRoleType(accountId, NORMAL);
+    }
+
+    private void changeRoleType(Long accountId, RoleType roleType) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
-        AccountRoleType changeRoleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
+        AccountRoleType changeRoleType = accountRoleTypeRepository.findByRoleType(roleType).get();
         account.setRoleType(changeRoleType);
         accountRepository.save(account);
     }

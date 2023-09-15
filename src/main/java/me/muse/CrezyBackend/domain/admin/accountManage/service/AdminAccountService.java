@@ -19,4 +19,5 @@ public interface AdminAccountService {
     Page<AdminAccountListForm> accountWarningCountList(HttpHeaders headers, AdminAccountListRequestForm adminAccountListRequestForm);
     void changeBadNickname(HttpHeaders headers, Long accountId);
     void accountChangeRoleTypeToBlacklist(HttpHeaders headers, Long accountId);
+    void accountChangeRoleTypeToNormal(HttpHeaders headers, Long accountId);
 }
