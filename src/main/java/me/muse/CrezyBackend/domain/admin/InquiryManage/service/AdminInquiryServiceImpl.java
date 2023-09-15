@@ -3,17 +3,22 @@ package me.muse.CrezyBackend.domain.admin.InquiryManage.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.Inquiry.entity.Inquiry;
+import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryDetail;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryRepository;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.InquiryCountResponseForm;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,6 +32,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
     final private InquiryDetailRepository inquiryDetailRepository;
     final private AccountRepository accountRepository;
     final private RedisService redisService;
+
     @Override
     public InquiryCountResponseForm countInquiry(HttpHeaders headers) {
         if (!checkAdmin(headers)) return null;
@@ -58,5 +64,35 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
             return false;
         }
         return true;
+    }
+
+    @Override
+    @Transactional
+    public List<AdminInquiryListResponseForm> list(HttpHeaders headers) {
+        if (!checkAdmin(headers)) return null;
+
+        List<AdminInquiryListResponseForm> responseFormList = new ArrayList<>();
+
+        List<InquiryDetail> userInquiryDetails = inquiryDetailRepository.findAllDetailWithAnswer();
+
+        for (InquiryDetail inquiryDetail : userInquiryDetails) {
+            Inquiry inquiry = inquiryDetail.getInquiry();
+
+            AdminInquiryListResponseForm responseForm = new AdminInquiryListResponseForm(
+                    inquiry.getInquiryId(),
+                    inquiryDetail.getInquiryTitle(),
+                    inquiryDetail.getProfile().getNickname(),
+                    inquiry.getCreateInquiryDate(),
+                    inquiry.getInquiryCategoryType().getInquiryCategory().toString(),
+                    isExistAnswer(inquiry));
+
+            responseFormList.add(responseForm);
+        }
+
+        return responseFormList;
+    }
+
+    private boolean isExistAnswer(Inquiry inquiry){
+        return inquiry.getInquiryAnswer() != null;
     }
 }
