@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
-import me.muse.CrezyBackend.domain.report.entity.Report;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +19,14 @@ public class InquiryDetail {
     @Column(name = "inquiryDetailId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long inquiryDetailId;
+    @Setter
     private String inquiryTitle;
+    @Setter
     private String inquiryContent;
     @JsonIgnore
     @JsonManagedReference
     @OneToMany(mappedBy = "inquiryDetail", fetch = FetchType.LAZY)
+    @Setter
     private List<InquiryImages> inquiryImageNames = new ArrayList<>();
     @ManyToOne
     private Profile profile;

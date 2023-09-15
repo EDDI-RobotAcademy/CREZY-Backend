@@ -1,11 +1,11 @@
 package me.muse.CrezyBackend.domain.Inquiry.service;
 
+import me.muse.CrezyBackend.domain.Inquiry.controller.form.*;
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistModifyResponseForm;
+import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryListResponseForm;
-import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryReadResponseForm;
-import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryRegisterRequestForm;
 import me.muse.CrezyBackend.domain.Inquiry.entity.*;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
@@ -108,7 +108,15 @@ public class InquiryServiceImpl implements InquiryService {
 
     @Override
     @Transactional
-    public InquiryReadResponseForm read(Long inquiryId) {
+    public InquiryReadResponseForm read(Long inquiryId, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return null;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
         Optional<InquiryDetail> maybeInquiryDetail = inquiryDetailRepository.findByInquiryId(inquiryId);
         if (maybeInquiryDetail.isEmpty()) {
             return null;
@@ -117,9 +125,49 @@ public class InquiryServiceImpl implements InquiryService {
         final InquiryDetail inquiryDetail = maybeInquiryDetail.get();
         final List<InquiryImages> inquiryImagesList = inquiryImagesRepository.findByInquiryDetailId(inquiryDetail.getInquiryDetailId());
 
-        InquiryReadResponseForm responseForm = new InquiryReadResponseForm(
+        InquiryReadResponseForm responseForm = new InquiryReadResponseForm(inquiryDetail.getInquiry().getInquiryId(),
                 inquiryDetail.getInquiryTitle(), inquiryDetail.getInquiryContent(), inquiryImagesList);
 
         return responseForm;
+    }
+
+    @Override
+    @Transactional
+    public InquiryModifyResponseForm modify(InquiryModifyRequestForm requestForm, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return null;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
+        if (maybeAccount.isEmpty()) {
+            return null;
+        }
+
+        Optional<InquiryDetail> maybeInquiryDetail = inquiryDetailRepository.findByInquiryId(requestForm.getInquiryId());
+        if (maybeInquiryDetail.isEmpty()) {
+            return null;
+        }
+
+        InquiryDetail inquiryDetail = maybeInquiryDetail.get();
+        inquiryDetail.setInquiryTitle(requestForm.getInquiryTitle());
+        inquiryDetail.setInquiryContent(requestForm.getInquiryContent());
+        inquiryDetailRepository.save(inquiryDetail);
+
+        // 기존 이미지 삭제
+        inquiryImagesRepository.deleteAll(inquiryDetail.getInquiryImageNames());
+
+        final List<InquiryImages> inquiryImagesList = new ArrayList<>();
+
+        for (String inquiryImageName : requestForm.getInquiryImageNames()) {
+            InquiryImages inquiryImages = new InquiryImages(inquiryImageName);
+            inquiryImages.setInquiryDetail(inquiryDetail);
+            inquiryImagesList.add(inquiryImages);
+        }
+
+        inquiryImagesRepository.saveAll(inquiryImagesList);
+
+        return new InquiryModifyResponseForm(inquiryDetail.getInquiry().getInquiryId(),
+                inquiryDetail.getInquiryTitle(), inquiryDetail.getInquiryContent(), inquiryImagesList);
     }
 }
