@@ -3,16 +3,18 @@ package me.muse.CrezyBackend.domain.admin.accountManage.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListRequestForm;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
+import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
+import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryRepository;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListRequestForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
@@ -54,6 +56,8 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     final private ReportDetailRepository reportDetailRepository;
     final private LikePlaylistRepository likePlaylistRepository;
     final private ReportStatusTypeRepository reportStatusTypeRepository;
+    final private InquiryRepository inquiryRepository;
+    final private InquiryDetailRepository inquiryDetailRepository;
     final private Integer weeks = 6;
 
     @Override
@@ -374,23 +378,37 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         Profile profile = profileRepository.findByAccount(account)
                 .orElseThrow(() -> new IllegalArgumentException("profile 없음"));
 
+        String newNickname = makeNewNickname();
+        boolean duplicateNickname = true;
+
+        while(duplicateNickname){
+            Optional<Profile> maybeProfile = profileRepository.findByNickname(newNickname);
+            if(maybeProfile.isPresent()){
+                newNickname = makeNewNickname();
+            } else {
+                duplicateNickname = false;
+            }
+        }
+
+        profile.setNickname(newNickname);
+        profileRepository.save(profile);
+    }
+
+    private String makeNewNickname(){
         String[] genreList = {"락", "발라드", "힙합", "클래식", "재즈", "레게", "트로트", "알앤비"};
 
         RandomValue randomValue = new RandomValue();
         int value = randomValue.randomValue(genreList.length);
 
-        String randomAlphabet = null;
-        String randomNumber = null;
+        String randomAlphabet = "";
+        String randomNumber = "";
 
         for(int i=0; i<2; i++){
-            randomAlphabet = (String.valueOf((char) ((Math.random() * 26) + 65)));
-            randomNumber = String.valueOf(randomValue.randomValue(9));
+            randomAlphabet += (String.valueOf((char) ((Math.random() * 26) + 65)));
+            randomNumber += String.valueOf(randomValue.randomValue(9));
         }
 
-        String newNickname = genreList[value] + "Muser" + randomAlphabet + randomNumber;
-        profile.setNickname(newNickname);
-
-        profileRepository.save(profile);
+        return genreList[value] + "Muser" + randomAlphabet + randomNumber;
     }
 }
 
