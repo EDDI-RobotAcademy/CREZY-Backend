@@ -1,4 +1,4 @@
-package me.muse.CrezyBackend.domain.Inquiry.controller.form;
+package me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
