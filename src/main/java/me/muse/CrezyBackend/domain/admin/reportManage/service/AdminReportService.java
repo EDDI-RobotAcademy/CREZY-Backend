@@ -1,8 +1,8 @@
 package me.muse.CrezyBackend.domain.admin.reportManage.service;
 
 import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportResponseForm;
-import me.muse.CrezyBackend.domain.report.controller.form.ReportProcessingForm;
-import me.muse.CrezyBackend.domain.report.controller.form.ReportReadResponseForm;
+import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportProcessingForm;
+import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportReadResponseForm;
 import org.springframework.http.HttpHeaders;
 
 import java.util.List;
