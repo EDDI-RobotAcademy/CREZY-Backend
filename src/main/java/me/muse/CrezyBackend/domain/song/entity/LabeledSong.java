@@ -21,10 +21,10 @@ public class LabeledSong {
     private String artist;
 
     @Lob
-    @Setter
     @Column(name="LYRICS", length=4000)
     private String lyrics;
-
+    @Setter
+    private String link;
     private String label;
 
     @Override

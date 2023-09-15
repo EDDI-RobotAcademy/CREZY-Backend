@@ -21,6 +21,7 @@ import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.song.entity.LabeledSong;
 import me.muse.CrezyBackend.domain.song.repository.LabeledSongRepository;
+import me.muse.CrezyBackend.utility.Youtube;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
@@ -31,6 +32,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -55,6 +58,7 @@ public class DBInitializer {
     final private ReportedCategoryTypeRepository reportedCategoryType;
     final private InquiryCategoryTypeRepository inquiryCategoryTypeRepository;
     final private LabeledSongRepository labeledSongRepository;
+    final private Youtube youtube;
 
     @Value("${youtube.lyricsAddress}")
     private String lyricsAddress;
@@ -70,7 +74,7 @@ public class DBInitializer {
     }
 
     @PostConstruct
-    private void init(){
+    private void init() throws GeneralSecurityException, IOException {
         log.debug("initializer 시작");
 
         initAccountRoleTypes();
@@ -191,7 +195,7 @@ public class DBInitializer {
         }
     }
 
-    private void initLabeledSong(){
+    private void initLabeledSong() throws GeneralSecurityException, IOException {
         String url = "http://" + lyricsAddress + "/excel-data";
 
         RestTemplate restTemplate = new RestTemplate();
@@ -199,11 +203,13 @@ public class DBInitializer {
                 new ParameterizedTypeReference<List<LabeledSong>>() {});
 
         if(responseEntity.getStatusCode().is2xxSuccessful()){
-            List<LabeledSong> labeledSongList = labeledSongRepository.findAll();
+            List<LabeledSong> existingLabeledSongList = labeledSongRepository.findAll();
 
-            List<LabeledSong> labeledSongs = responseEntity.getBody();
-            for(LabeledSong labeledSong : labeledSongs){
-                if(!labeledSongList.contains(labeledSong)){
+            List<LabeledSong> newLabeledSongList = responseEntity.getBody();
+            for(LabeledSong labeledSong : newLabeledSongList){
+                if(!existingLabeledSongList.contains(labeledSong)){
+//                    String videoId = youtube.searchByKeyword(labeledSong.getTitle() + " " + labeledSong.getArtist());
+//                    labeledSong.setLink("https://www.youtube.com/watch?v=" + videoId);
                     labeledSongRepository.save(labeledSong);
                 }
             }
