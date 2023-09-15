@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.admin.accountManage.service;
 
+import me.muse.CrezyBackend.domain.Inquiry.controller.form.InquiryCountResponseForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListRequestForm;
@@ -18,4 +19,5 @@ public interface AdminAccountService {
     Integer getBlacklistTotalPage();
     Page<AdminAccountListForm> accountWarningCountList(HttpHeaders headers, AdminAccountListRequestForm adminAccountListRequestForm);
     void changeBadNickname(HttpHeaders headers, Long accountId);
+    InquiryCountResponseForm countInquiry(HttpHeaders headers);
 }
