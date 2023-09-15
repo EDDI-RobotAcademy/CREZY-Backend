@@ -1,4 +1,4 @@
-package me.muse.CrezyBackend.domain.InquiryAnswer;
+package me.muse.CrezyBackend.domain.admin.InquiryManage.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,4 +20,9 @@ public class InquiryAnswer {
     private LocalDate createInquiryAnswerDate;
     @OneToOne
     private Inquiry inquiry;
+
+    public InquiryAnswer(String inquiryAnswer, Inquiry inquiry) {
+        this.inquiryAnswer = inquiryAnswer;
+        this.inquiry = inquiry;
+    }
 }
