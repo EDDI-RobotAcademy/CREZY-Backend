@@ -9,9 +9,7 @@ import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportResponseForm;
-import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportProcessingForm;
-import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportReadResponseForm;
+import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
 import me.muse.CrezyBackend.domain.report.entity.Report;
 import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
 import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
@@ -114,7 +112,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     public ReportReadResponseForm readReport(Long reportId, HttpHeaders headers) {
         if (!checkAdmin(headers)) return null;
 
-        ReportDetail reportDetail = reportDetailRepository.findByReportId(reportId)
+        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
         Account reporterAccount = accountRepository.findById(reportDetail.getReporterAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("ReporterAccount not found"));
@@ -147,5 +145,22 @@ public class AdminReportServiceImpl implements AdminReportService {
         return true;
     }
 
+    @Override
+    public ReportReadAccountResponseForm readAccountReport(Long reportId, HttpHeaders headers) {
+//        if (!checkAdmin(headers)) return null;
+
+        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+        Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+        Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+
+        ReportReadAccountResponseForm responseForm = new ReportReadAccountResponseForm(
+                reporterProfile.getNickname(),
+                reportedProfile.getNickname(),
+                reportedProfile.getProfileImageName());
+        return responseForm;
+    }
 }
 

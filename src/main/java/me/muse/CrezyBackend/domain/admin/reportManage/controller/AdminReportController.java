@@ -2,10 +2,8 @@ package me.muse.CrezyBackend.domain.admin.reportManage.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
 import me.muse.CrezyBackend.domain.admin.reportManage.service.AdminReportService;
-import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportResponseForm;
-import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportProcessingForm;
-import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportReadResponseForm;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +33,11 @@ public class AdminReportController {
     public ReportReadResponseForm readReport(@RequestParam("reportId") Long reportId, @RequestHeader HttpHeaders headers) {
         log.info("readReport()");
         return adminService.readReport(reportId,headers);
+    }
+    @GetMapping("/read-account-report")
+    public ReportReadAccountResponseForm readAccountReport(@RequestParam("reportId") Long reportId, @RequestHeader HttpHeaders headers) {
+        log.info("readAccountReport()");
+        return adminService.readAccountReport(reportId,headers);
     }
 
 }

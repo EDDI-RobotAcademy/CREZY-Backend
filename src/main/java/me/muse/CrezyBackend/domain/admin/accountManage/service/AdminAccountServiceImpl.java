@@ -272,7 +272,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         List<Profile> profiles = new ArrayList<>();
         List<ReportDetail> reportDetails = new ArrayList<>();
         for(Report report : reports) {
-            ReportDetail details = reportDetailRepository.findByReportId(report.getReportId())
+            ReportDetail details = reportDetailRepository.findByReport_ReportId(report.getReportId())
                     .orElseThrow(() -> new IllegalArgumentException("reportDetail 없음"));
             reportDetails.add(details);
         }
