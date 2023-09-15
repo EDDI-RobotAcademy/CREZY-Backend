@@ -66,4 +66,9 @@ public class AdminAccountController {
         log.info("accountChangeRoleTypeToBlacklist()");
         adminService.accountChangeRoleTypeToBlacklist(headers, accountId);
     }
+    @GetMapping("/account-change-RoleType-normal")
+    public void accountChangeRoleTypeToNormal(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId) {
+        log.info("accountChangeRoleTypeToNormal()");
+        adminService.accountChangeRoleTypeToNormal(headers, accountId);
+    }
 }
