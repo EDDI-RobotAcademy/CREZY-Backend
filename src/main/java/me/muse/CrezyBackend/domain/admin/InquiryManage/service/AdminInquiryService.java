@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface AdminInquiryService {
     InquiryCountResponseForm countInquiry(HttpHeaders headers);
-
     List<AdminInquiryListResponseForm> list(HttpHeaders headers);
+    public List<AdminInquiryListResponseForm> waitingInquiryList(HttpHeaders headers);
 }
