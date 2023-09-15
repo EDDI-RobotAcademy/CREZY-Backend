@@ -19,10 +19,17 @@ import me.muse.CrezyBackend.domain.report.entity.ReportedCategory;
 import me.muse.CrezyBackend.domain.report.entity.ReportedCategoryType;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
+import me.muse.CrezyBackend.domain.song.entity.LabeledSong;
+import me.muse.CrezyBackend.domain.song.repository.LabeledSongRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Set;
@@ -37,6 +44,7 @@ import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 @PropertySource("classpath:admin.properties")
 @Getter
 @Setter
+@PropertySource("classpath:youtube.properties")
 public class DBInitializer {
 
     private final AccountRoleTypeRepository roleTypeRepository;
@@ -46,6 +54,10 @@ public class DBInitializer {
     final private ReportStatusTypeRepository reportStatusTypeRepository;
     final private ReportedCategoryTypeRepository reportedCategoryType;
     final private InquiryCategoryTypeRepository inquiryCategoryTypeRepository;
+    final private LabeledSongRepository labeledSongRepository;
+
+    @Value("${youtube.lyricsAddress}")
+    private String lyricsAddress;
 
     private List<Admin> admins;
 
@@ -67,6 +79,7 @@ public class DBInitializer {
         initReportStatusType();
         initReportedCategoryType();
         initInquiryCategoryType();
+        initLabeledSong();
 
         log.debug("initializer 종료");
 
@@ -175,6 +188,25 @@ public class DBInitializer {
         }
         catch (Exception e){
             log.error(e.getMessage(), e);
+        }
+    }
+
+    private void initLabeledSong(){
+        String url = "http://" + lyricsAddress + "/excel-data";
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<List<LabeledSong>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<LabeledSong>>() {});
+
+        if(responseEntity.getStatusCode().is2xxSuccessful()){
+            List<LabeledSong> labeledSongList = labeledSongRepository.findAll();
+
+            List<LabeledSong> labeledSongs = responseEntity.getBody();
+            for(LabeledSong labeledSong : labeledSongs){
+                if(!labeledSongList.contains(labeledSong)){
+                    labeledSongRepository.save(labeledSong);
+                }
+            }
         }
     }
 }
