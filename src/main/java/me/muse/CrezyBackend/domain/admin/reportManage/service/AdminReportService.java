@@ -12,4 +12,5 @@ public interface AdminReportService {
     ReportReadResponseForm readReport(Long reportId, HttpHeaders headers);
     ReportReadAccountResponseForm readAccountReport(Long reportId, HttpHeaders headers);
     ReportReadPlaylistResponseForm readPlaylistReport(Long reportId, HttpHeaders headers);
+    ReportReadSongResponseForm readSongReport(Long reportId, HttpHeaders headers);
 }

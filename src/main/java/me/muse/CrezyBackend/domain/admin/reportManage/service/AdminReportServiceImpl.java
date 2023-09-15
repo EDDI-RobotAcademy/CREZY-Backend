@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.admin.reportManage.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
@@ -18,6 +19,8 @@ import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
+import me.muse.CrezyBackend.domain.song.entity.Song;
+import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import org.springframework.data.domain.PageRequest;
@@ -48,10 +51,11 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private ProfileRepository profileRepository;
     final private PlaylistRepository playlistRepository;
+    final private SongRepository songRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
-//        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin(headers)) return null;
 
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("reportDetailId").descending());
         List<ReportDetail> reportDetailList = reportDetailRepository.findAllWithPage(pageable);
@@ -172,18 +176,43 @@ public class AdminReportServiceImpl implements AdminReportService {
 
         ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
-        Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
-                .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
         Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
         Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+        Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
+                .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
 
         ReportReadPlaylistResponseForm responseForm = new ReportReadPlaylistResponseForm(
                 reporterProfile.getNickname(),
                 reportedProfile.getNickname(),
                 playlist.getPlaylistName(),
                 playlist.getThumbnailName());
+        return responseForm;
+    }
+
+    @Override
+    @Transactional
+    public ReportReadSongResponseForm readSongReport(Long reportId, HttpHeaders headers) {
+        if (!checkAdmin(headers)) return null;
+
+        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+        Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+        Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+        Song song = songRepository.findById(reportDetail.getReportedId())
+                .orElseThrow(() -> new IllegalArgumentException("Song not found"));
+
+        ReportReadSongResponseForm responseForm = new ReportReadSongResponseForm(
+                reporterProfile.getNickname(),
+                reportedProfile.getNickname(),
+                song.getPlaylist().getPlaylistName(),
+                song.getTitle(),
+                song.getSinger(),
+                song.getLink(),
+                song.getLyrics());
         return responseForm;
     }
 }

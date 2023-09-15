@@ -44,5 +44,10 @@ public class AdminReportController {
         log.info("readPlaylistReport()");
         return adminService.readPlaylistReport(reportId,headers);
     }
+    @GetMapping("/read-song-report")
+    public ReportReadSongResponseForm readSongReport(@RequestParam("reportId") Long reportId, @RequestHeader HttpHeaders headers) {
+        log.info("readSongReport()");
+        return adminService.readSongReport(reportId,headers);
+    }
 
 }
