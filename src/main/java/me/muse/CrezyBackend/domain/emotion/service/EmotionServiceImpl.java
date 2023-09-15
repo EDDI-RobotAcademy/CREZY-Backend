@@ -3,15 +3,19 @@ package me.muse.CrezyBackend.domain.emotion.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.emotion.controller.form.AnalysisRequestForm;
+import me.muse.CrezyBackend.domain.emotion.controller.form.AnalysisResponseForm;
 import me.muse.CrezyBackend.domain.song.entity.LabeledSong;
 import me.muse.CrezyBackend.domain.song.repository.LabeledSongRepository;
 import me.muse.CrezyBackend.utility.RandomValue;
+import me.muse.CrezyBackend.utility.Youtube;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +27,7 @@ import java.util.Objects;
 public class EmotionServiceImpl implements EmotionService{
 
     final private LabeledSongRepository labeledSongRepository;
+    final private Youtube youtube;
 
     @Value("${youtube.lyricsAddress}")
     private String lyricsAddress;
@@ -78,7 +83,7 @@ public class EmotionServiceImpl implements EmotionService{
     }
 
     @Override
-    public List<LabeledSong> recommendSong(String emotion){
+    public List<AnalysisResponseForm> recommendSong(String emotion) throws GeneralSecurityException, IOException {
         emotion = emotion.replaceAll("\"", "");
         log.info("emotion : {}", emotion);
         String label = null;
@@ -110,17 +115,20 @@ public class EmotionServiceImpl implements EmotionService{
         log.info("label : {}", label);
 
         List<LabeledSong> labeledSongList = labeledSongRepository.findByLabel(label);
-        List<LabeledSong> labeledSongs = new ArrayList<>();
+        List<AnalysisResponseForm> responseFormList = new ArrayList<>();
 
         RandomValue random = new RandomValue();
 
         int[] valueArray = random.randomValueList(labeledSongList.size());
         for(int i : valueArray){
-            log.info(String.valueOf(i));
-            labeledSongs.add(labeledSongList.get(i));
+            LabeledSong labeledSong = labeledSongList.get(i);
+            String videoId = youtube.searchByKeyword(labeledSong.getTitle() + " " + labeledSong.getArtist());
+            
+            responseFormList.add(new AnalysisResponseForm(labeledSong.getLabeledSongId(), labeledSong.getTitle(), labeledSong.getArtist(),
+                    "https://www.youtube.com/watch?v=" + videoId, labeledSong.getLyrics()));
         }
 
-        return labeledSongs;
+        return responseFormList;
     }
 }
 
