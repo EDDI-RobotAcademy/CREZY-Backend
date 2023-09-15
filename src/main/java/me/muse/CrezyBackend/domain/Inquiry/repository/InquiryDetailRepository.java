@@ -16,4 +16,6 @@ public interface InquiryDetailRepository extends JpaRepository<InquiryDetail, Lo
     List<InquiryDetail> findByProfile(Profile profile);
     @Query("SELECT id FROM InquiryDetail id LEFT JOIN FETCH id.inquiry WHERE id.inquiry.inquiryId = :inquiryId")
     Optional<InquiryDetail> findByInquiryId(Long inquiryId);
+    @Query("SELECT id FROM InquiryDetail id LEFT JOIN FETCH id.inquiry idi LEFT JOIN FETCH idi.inquiryAnswer")
+    List<InquiryDetail> findAllDetailWithAnswer();
 }

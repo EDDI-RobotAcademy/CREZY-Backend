@@ -1,17 +1,12 @@
 package me.muse.CrezyBackend.domain.Inquiry.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import me.muse.CrezyBackend.domain.InquiryAnswer.InquiryAnswer;
-import me.muse.CrezyBackend.domain.account.entity.Profile;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.Entity.InquiryAnswer;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -26,6 +21,7 @@ public class Inquiry {
     @OneToOne
     private InquiryCategoryType inquiryCategoryType;
     @OneToOne
+    @PrimaryKeyJoinColumn(name = "inquiryAnswerId")
     private InquiryAnswer inquiryAnswer;
     public Inquiry(InquiryCategoryType inquiryCategoryType) {
         this.inquiryCategoryType = inquiryCategoryType;
