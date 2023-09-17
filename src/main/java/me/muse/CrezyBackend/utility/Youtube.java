@@ -42,7 +42,7 @@ public class Youtube {
         YouTube.Search.List search = youtube.search().list("id,snippet");
         search.setQ(queryTerm);
         search.setType("video");
-        search.setMaxResults(10L);
+        search.setMaxResults(3L);
         String apiKey = youtubeApiKey;
         search.setKey(apiKey);
 

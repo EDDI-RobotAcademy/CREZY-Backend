@@ -50,6 +50,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
 
         return new InquiryCountResponseForm(todayInquiryCount, waitingAnswerInquiryCount, totalInquiryCount);
     }
+
     private boolean checkAdmin(HttpHeaders headers) {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
         if (authValues.isEmpty()) {
@@ -94,5 +95,30 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
 
     private boolean isExistAnswer(Inquiry inquiry){
         return inquiry.getInquiryAnswer() != null;
+    }
+
+    @Override
+    public List<AdminInquiryListResponseForm> waitingInquiryList(HttpHeaders headers){
+        if (!checkAdmin(headers)) return null;
+
+        List<AdminInquiryListResponseForm> responseFormList = new ArrayList<>();
+
+        List<InquiryDetail> userInquiryDetails = inquiryDetailRepository.findOldestUnansweredInquiries();
+
+        for (InquiryDetail inquiryDetail : userInquiryDetails) {
+            Inquiry inquiry = inquiryDetail.getInquiry();
+
+            AdminInquiryListResponseForm responseForm = new AdminInquiryListResponseForm(
+                    inquiry.getInquiryId(),
+                    inquiryDetail.getInquiryTitle(),
+                    inquiryDetail.getProfile().getNickname(),
+                    inquiry.getCreateInquiryDate(),
+                    inquiry.getInquiryCategoryType().getInquiryCategory().toString(),
+                    isExistAnswer(inquiry));
+
+            responseFormList.add(responseForm);
+        }
+
+        return responseFormList;
     }
 }

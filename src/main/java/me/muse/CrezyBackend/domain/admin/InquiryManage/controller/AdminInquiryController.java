@@ -28,4 +28,9 @@ public class AdminInquiryController {
     public List<AdminInquiryListResponseForm> adminInquiryList(@RequestHeader HttpHeaders headers){
         return adminInquiryService.list(headers);
     }
+
+    @GetMapping("/waiting-inquiry-list")
+    public List<AdminInquiryListResponseForm> waitingInquiryList(@RequestHeader HttpHeaders headers){
+        return adminInquiryService.waitingInquiryList(headers);
+    }
 }

@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.admin.reportManage.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
@@ -9,15 +10,17 @@ import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportResponseForm;
-import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportProcessingForm;
-import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportReadResponseForm;
+import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
+import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.report.entity.Report;
 import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
 import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
+import me.muse.CrezyBackend.domain.song.entity.Song;
+import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +50,8 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private WarningRepository warningRepository;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private ProfileRepository profileRepository;
+    final private PlaylistRepository playlistRepository;
+    final private SongRepository songRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -62,7 +67,7 @@ public class AdminReportServiceImpl implements AdminReportService {
         List<ReportResponseForm> reportResponseForms = new ArrayList<>();
         for (ReportDetail reportDetail : reportDetailList) {
             ReportResponseForm responseForm = new ReportResponseForm(
-                    reportDetail.getReport().getReportId(), reportDetail.getReportContent(),
+                    reportDetail.getReport().getReportId(), reportDetail.getReportedId(), reportDetail.getReportContent(),
                     reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(), reportDetail.getReport().getReportStatusType().getReportStatus().toString(),
                     reportDetail.getCreateReportDate(), SongReportCount, PlaylistReportCount, AccountReportCount);
 
@@ -114,7 +119,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     public ReportReadResponseForm readReport(Long reportId, HttpHeaders headers) {
         if (!checkAdmin(headers)) return null;
 
-        ReportDetail reportDetail = reportDetailRepository.findByReportId(reportId)
+        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
         Account reporterAccount = accountRepository.findById(reportDetail.getReporterAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("ReporterAccount not found"));
@@ -147,5 +152,68 @@ public class AdminReportServiceImpl implements AdminReportService {
         return true;
     }
 
+    @Override
+    public ReportReadAccountResponseForm readAccountReport(Long reportId, HttpHeaders headers) {
+        if (!checkAdmin(headers)) return null;
+
+        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+        Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+        Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+
+        ReportReadAccountResponseForm responseForm = new ReportReadAccountResponseForm(
+                reporterProfile.getNickname(),
+                reportedProfile.getNickname(),
+                reportedProfile.getProfileImageName());
+        return responseForm;
+    }
+
+    @Override
+    public ReportReadPlaylistResponseForm readPlaylistReport(Long reportId, HttpHeaders headers) {
+        if (!checkAdmin(headers)) return null;
+
+        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+        Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+        Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+        Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
+                .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
+
+        ReportReadPlaylistResponseForm responseForm = new ReportReadPlaylistResponseForm(
+                reporterProfile.getNickname(),
+                reportedProfile.getNickname(),
+                playlist.getPlaylistName(),
+                playlist.getThumbnailName());
+        return responseForm;
+    }
+
+    @Override
+    @Transactional
+    public ReportReadSongResponseForm readSongReport(Long reportId, HttpHeaders headers) {
+        if (!checkAdmin(headers)) return null;
+
+        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+        Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+        Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+        Song song = songRepository.findById(reportDetail.getReportedId())
+                .orElseThrow(() -> new IllegalArgumentException("Song not found"));
+
+        ReportReadSongResponseForm responseForm = new ReportReadSongResponseForm(
+                reporterProfile.getNickname(),
+                reportedProfile.getNickname(),
+                song.getPlaylist().getPlaylistName(),
+                song.getTitle(),
+                song.getSinger(),
+                song.getLink(),
+                song.getLyrics());
+        return responseForm;
+    }
 }
 

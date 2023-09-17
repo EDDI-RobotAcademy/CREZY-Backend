@@ -11,8 +11,7 @@ import java.util.Optional;
 public interface ReportDetailRepository extends JpaRepository<ReportDetail,Long> {
     @Query("SELECT rd FROM ReportDetail rd JOIN FETCH rd.report")
     List<ReportDetail> findAllWithPage(Pageable pageable);
-    @Query("SELECT rd FROM ReportDetail rd LEFT JOIN FETCH rd.report WHERE rd.report.reportId = :reportId")
-    Optional<ReportDetail> findByReportId(Long reportId);
+    Optional<ReportDetail> findByReport_ReportId(Long reportId);
     List<ReportDetail> findAllByReportedAccountId(Long accountId);
 
 }

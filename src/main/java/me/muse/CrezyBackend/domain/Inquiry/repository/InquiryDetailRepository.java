@@ -18,4 +18,11 @@ public interface InquiryDetailRepository extends JpaRepository<InquiryDetail, Lo
     Optional<InquiryDetail> findByInquiryId(Long inquiryId);
     @Query("SELECT id FROM InquiryDetail id LEFT JOIN FETCH id.inquiry idi LEFT JOIN FETCH idi.inquiryAnswer")
     List<InquiryDetail> findAllDetailWithAnswer();
+
+    @Query("SELECT id FROM InquiryDetail id " +
+            "LEFT JOIN FETCH id.inquiry idi " +
+            "LEFT JOIN idi.inquiryAnswer ia " +
+            "WHERE ia.inquiryAnswerId IS NULL " +
+            "ORDER BY idi.createInquiryDate ASC LIMIT 10")
+    List<InquiryDetail> findOldestUnansweredInquiries();
 }
