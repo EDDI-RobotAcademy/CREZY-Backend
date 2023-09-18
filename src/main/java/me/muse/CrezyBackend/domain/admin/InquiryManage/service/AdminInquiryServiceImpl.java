@@ -161,10 +161,10 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
     @Override
     @Transactional
     public AdminInquiryReadResponseForm adminReadInquiry(HttpHeaders headers, Long inquiryId) {
-        if (!checkAdmin(headers)) return null;
+//        if (!checkAdmin(headers)) return null;
 
         Inquiry inquiry = inquiryRepository.findById(inquiryId)
-                .orElseThrow(() -> new IllegalArgumentException("InquiryDetail not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Inquiry not found"));
 
         InquiryDetail inquiryDetail = inquiryDetailRepository.findByInquiryId(inquiry.getInquiryId())
                 .orElseThrow(() -> new IllegalArgumentException("InquiryDetail not found"));
@@ -176,6 +176,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
                 inquiryDetail.getProfile().getNickname(),
                 inquiryDetail.getInquiry().getInquiryCategoryType().getInquiryCategory().toString(),
                 inquiryDetail.getInquiry().getCreateInquiryDate(),
+                inquiryDetail.getInquiry().getInquiryAnswer(),
                 inquiryDetail.getInquiryImageNames()
         );
     }
