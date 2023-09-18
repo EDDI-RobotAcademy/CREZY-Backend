@@ -163,7 +163,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     @Override
     @Transactional
     public AdminPlaylistReadResponseForm readPlaylist(HttpHeaders headers, Long playlistId) {
-        if (checkAdmin(headers)) return null;
+//        if (checkAdmin(headers)) return null;
 
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
@@ -178,7 +178,8 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
                         song.getSongId(),
                         song.getTitle(),
                         song.getSinger(),
-                        song.getCreateDate()
+                        song.getCreateDate(),
+                        song.getStatusType().getStatusType().toString()
             );
             songDetail.add(songs);
         }
