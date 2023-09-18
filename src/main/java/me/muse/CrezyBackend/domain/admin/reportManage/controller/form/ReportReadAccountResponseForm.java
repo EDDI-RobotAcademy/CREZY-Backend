@@ -9,4 +9,5 @@ public class ReportReadAccountResponseForm {
     final private String reporterProfileName;
     final private String reportedProfileName;
     final private String reportedProfileImageName;
+    final private String ReportedCategoryType;
 }
