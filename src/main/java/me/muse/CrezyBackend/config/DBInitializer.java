@@ -20,7 +20,10 @@ import me.muse.CrezyBackend.domain.report.entity.ReportedCategoryType;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.song.entity.LabeledSong;
+import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
+import me.muse.CrezyBackend.domain.song.entity.StatusType;
 import me.muse.CrezyBackend.domain.song.repository.LabeledSongRepository;
+import me.muse.CrezyBackend.domain.song.repository.SongStatusRepository;
 import me.muse.CrezyBackend.utility.Youtube;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -59,6 +62,8 @@ public class DBInitializer {
     final private InquiryCategoryTypeRepository inquiryCategoryTypeRepository;
     final private LabeledSongRepository labeledSongRepository;
     final private Youtube youtube;
+    final private SongStatusRepository songStatusRepository;
+
 
     @Value("${youtube.lyricsAddress}")
     private String lyricsAddress;
@@ -84,6 +89,7 @@ public class DBInitializer {
         initReportedCategoryType();
         initInquiryCategoryType();
         initLabeledSong();
+        initSongStatusType();
 
         log.debug("initializer 종료");
 
@@ -195,6 +201,7 @@ public class DBInitializer {
         }
     }
 
+
     private void initLabeledSong() throws GeneralSecurityException, IOException {
         String url = "http://" + lyricsAddress + "/excel-data";
 
@@ -213,6 +220,22 @@ public class DBInitializer {
                     labeledSongRepository.save(labeledSong);
                 }
             }
+        }
+    }
+    private void initSongStatusType() {
+        try {
+            final Set<StatusType> roles =
+                    songStatusRepository.findAll().stream()
+                            .map(SongStatusType::getStatusType)
+                            .collect(Collectors.toSet());
+            for (StatusType type : StatusType.values()) {
+                if (!roles.contains(type)) {
+                    final SongStatusType songStatusType = new SongStatusType(type);
+                    songStatusRepository.save(songStatusType);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 }
