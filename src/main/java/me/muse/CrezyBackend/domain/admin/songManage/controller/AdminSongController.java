@@ -16,9 +16,15 @@ public class AdminSongController {
     final private AdminSongService adminService;
 
     @GetMapping("/register-song-status-block")
-    public Boolean registerSongStatus (@RequestParam("songId") Long songId, @RequestHeader HttpHeaders headers) {
-        return adminService.registerSongStatus(songId, headers);
+    public Boolean registerSongStatusBlock (@RequestParam("songId") Long songId, @RequestHeader HttpHeaders headers) {
+        return adminService.registerSongStatusBlock(songId, headers);
     }
+
+    @GetMapping("/register-song-status-open")
+    public Boolean registerSongStatusOpen (@RequestParam("songId") Long songId, @RequestHeader HttpHeaders headers) {
+        return adminService.registerSongStatusOpen(songId, headers);
+    }
+
     @GetMapping("/read-song")
     public AdminPlaylistSongDetailReadResponseForm readSongDetail(@RequestHeader HttpHeaders headers, @RequestParam("songId") Long SongId) {
         log.info("readSongDetail()");

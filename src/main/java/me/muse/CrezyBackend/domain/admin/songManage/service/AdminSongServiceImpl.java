@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import static me.muse.CrezyBackend.domain.song.entity.StatusType.BLOCK;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
+import static me.muse.CrezyBackend.domain.song.entity.StatusType.OPEN;
 
 @Service
 @Slf4j
@@ -48,11 +49,19 @@ public class AdminSongServiceImpl implements AdminSongService{
     }
 
     @Override
-    public Boolean registerSongStatus(Long songId, HttpHeaders headers) {
+    public Boolean registerSongStatusBlock(Long songId, HttpHeaders headers) {
         if (!checkAdmin(headers))
             return false;
 
         changeSongStatus(songId, BLOCK);
+        return true;
+    }
+    @Override
+    public Boolean registerSongStatusOpen(Long songId, HttpHeaders headers) {
+        if (!checkAdmin(headers))
+            return false;
+
+        changeSongStatus(songId, OPEN);
         return true;
     }
 
