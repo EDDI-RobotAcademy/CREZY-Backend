@@ -34,4 +34,9 @@ public class AdminPlaylistController {
         log.info("readSongDetail()");
         return adminService.readSongDetail(headers, SongId);
     }
+    @GetMapping("/change-playlistName")
+    public void changePlaylistName(@RequestHeader HttpHeaders headers, @RequestParam("playlistId") Long playlistId) {
+        log.info("changePlaylistName()");
+        adminService.changePlaylistName(headers, playlistId);
+    }
 }

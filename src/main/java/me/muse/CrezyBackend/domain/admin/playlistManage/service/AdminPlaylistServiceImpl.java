@@ -15,6 +15,7 @@ import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
+import me.muse.CrezyBackend.utility.RandomValue;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +27,7 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
@@ -206,5 +208,36 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
                 song.getLink(),
                 song.getLyrics());
     }
+
+    @Override
+    public void changePlaylistName(HttpHeaders headers, Long playlistId) {
+        if (checkAdmin(headers)) return;
+
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new IllegalArgumentException("playlist 없음"));
+
+        String newPlaylistName = makeNewPlaylistName();
+
+        playlist.setPlaylistName(newPlaylistName);
+        playlistRepository.save(playlist);
+    }
+
+    private String makeNewPlaylistName(){
+        String[] genreList = {"락", "발라드", "힙합", "클래식", "재즈", "레게", "트로트", "알앤비"};
+
+        RandomValue randomValue = new RandomValue();
+        int value = randomValue.randomValue(genreList.length);
+
+        String randomAlphabet = "";
+        String randomNumber = "";
+
+        for(int i=0; i<2; i++){
+            randomAlphabet += (String.valueOf((char) ((Math.random() * 26) + 65)));
+            randomNumber += String.valueOf(randomValue.randomValue(9));
+        }
+
+        return genreList[value] + "Muser" + randomAlphabet + randomNumber;
+    }
+
 }
 
