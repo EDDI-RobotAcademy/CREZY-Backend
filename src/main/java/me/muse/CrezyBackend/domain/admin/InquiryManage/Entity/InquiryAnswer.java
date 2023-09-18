@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.admin.InquiryManage.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ public class InquiryAnswer {
     @CreationTimestamp
     private LocalDate createInquiryAnswerDate;
     @OneToOne
+    @JsonIgnore
     private Inquiry inquiry;
 
     public InquiryAnswer(String inquiryAnswer, Inquiry inquiry) {

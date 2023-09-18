@@ -5,5 +5,6 @@ import org.springframework.http.HttpHeaders;
 
 public interface AdminSongService {
     AdminPlaylistSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId);
+    Boolean registerSongStatus(Long songId, HttpHeaders headers);
 
 }

@@ -170,4 +170,31 @@ public class InquiryServiceImpl implements InquiryService {
         return new InquiryModifyResponseForm(inquiryDetail.getInquiry().getInquiryId(),
                 inquiryDetail.getInquiryTitle(), inquiryDetail.getInquiryContent(), inquiryImagesList);
     }
+
+    @Override
+    @Transactional
+    public boolean delete(Long inquiryId, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return false;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Optional<Account> maybeAccount = accountRepository.findById(accountId);
+        if (maybeAccount.isEmpty()) {
+            return false;
+        }
+
+        Optional<InquiryDetail> maybeInquiryDetail = inquiryDetailRepository.findByInquiryId(inquiryId);
+        if (maybeInquiryDetail.isEmpty()) {
+            return false;
+        }
+
+        InquiryDetail inquiryDetail = maybeInquiryDetail.get();
+
+        inquiryImagesRepository.deleteAllByInquiryDetailId(inquiryDetail.getInquiryDetailId());
+        inquiryRepository.deleteById(inquiryId);
+        inquiryDetailRepository.deleteById(inquiryDetail.getInquiryDetailId());
+
+        return true;
+    }
 }

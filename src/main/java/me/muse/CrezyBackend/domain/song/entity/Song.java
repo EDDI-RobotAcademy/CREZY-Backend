@@ -37,6 +37,10 @@ public class Song {
     @CreationTimestamp
     private LocalDate createDate;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @Setter
+    private SongStatusType statusType;
+
     public Song(String title, String singer, String link, Playlist playlist) {
         this.title = title;
         this.singer = singer;

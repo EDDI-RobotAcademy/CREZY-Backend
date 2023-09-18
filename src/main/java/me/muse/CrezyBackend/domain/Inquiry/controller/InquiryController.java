@@ -44,4 +44,10 @@ public class InquiryController {
         log.info("modifyInquiry()");
         return inquiryService.modify(requestForm, headers);
     }
+
+    @DeleteMapping("/{inquiryId}") // 플레이 리스트 삭제
+    public boolean deleteInquiry(@PathVariable("inquiryId") Long inquiryId, @RequestHeader HttpHeaders headers) {
+        log.info("deleteInquiry()");
+        return inquiryService.delete(inquiryId, headers);
+    }
 }
