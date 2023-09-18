@@ -224,5 +224,16 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         return genreList[value] + "Muser" + randomAlphabet + randomNumber;
     }
 
+    @Override
+    public void changePlaylistThumbnailName(HttpHeaders headers, Long playlistId) {
+        if (checkAdmin(headers)) return;
+
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new IllegalArgumentException("playlist 없음"));
+
+        playlist.setThumbnailName(null);
+        playlistRepository.save(playlist);
+
+    }
 }
 
