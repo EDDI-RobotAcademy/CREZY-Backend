@@ -148,8 +148,8 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     public List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page) {
         if (checkAdmin(headers)) return null;
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
-        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(NORMAL).get();
-        List<Profile> profileList = profileRepository.findByAccount_RoleTypeWithPage(pageable, roleType);
+        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
+        List<Profile> profileList = profileRepository.findByAccount_RoleTypeNotWithPage(pageable, roleType);
         final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
         for(Profile isProfile : profileList){
             Account isAccount = accountRepository.findById(isProfile.getAccount().getAccountId())
@@ -162,7 +162,14 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 songCounts += songRepository.countByPlaylist(playlist);
             }
             Integer warningCounts = warningRepository.countByAccount(isAccount);
-            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts, isAccount.getRoleType().getRoleType().toString());
+            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(
+                    isProfile.getAccount().getAccountId(),
+                    isProfile.getNickname(),
+                    playlistCounts,
+                    songCounts,
+                    isProfile.getAccount().getCreateDate(),
+                    warningCounts,
+                    isAccount.getRoleType().getRoleType().toString());
             adminAccountListForms.add(adminAccountListForm);
         }
         log.info(adminAccountListForms.toString());
@@ -331,7 +338,14 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 songCounts += songRepository.countByPlaylist(playlist);
             }
             Integer warningCounts = warningRepository.countByAccount(isAccount);
-            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts);
+            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(
+                    isProfile.getAccount().getAccountId(),
+                    isProfile.getNickname(),
+                    playlistCounts,
+                    songCounts,
+                    isProfile.getAccount().getCreateDate(),
+                    warningCounts,
+                    isAccount.getRoleType().getRoleType().toString());
             adminAccountListForms.add(adminAccountListForm);
         }
         int start = (int) pageable.getOffset();
@@ -353,7 +367,14 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 songCounts += songRepository.countByPlaylist(playlist);
             }
             Integer warningCounts = warningRepository.countByAccount(isAccount);
-            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts);
+            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(
+                    isProfile.getAccount().getAccountId(),
+                    isProfile.getNickname(),
+                    playlistCounts,
+                    songCounts,
+                    isProfile.getAccount().getCreateDate(),
+                    warningCounts,
+                    isAccount.getRoleType().getRoleType().toString());
             adminAccountListForms.add(adminAccountListForm);
         }
         int start = (int) pageable.getOffset();
