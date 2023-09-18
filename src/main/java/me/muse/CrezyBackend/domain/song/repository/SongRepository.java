@@ -16,4 +16,5 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     Integer countByPlaylist(Playlist playlist);
     @Query("SELECT COUNT(p) FROM Song p WHERE p.playlist = :playlist AND p.createDate = :createDate")
     Integer countByPlaylistAndCreateDate(Playlist playlist, LocalDate createDate);
+    List<Song> findByPlaylist_PlaylistId(Long playlistId);
 }
