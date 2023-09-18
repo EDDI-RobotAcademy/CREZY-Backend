@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.admin.playlistManage.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
@@ -7,12 +8,12 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.todayStatusPlaylistResponseForm;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.*;
+import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
 import org.springframework.data.domain.*;
@@ -25,6 +26,7 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 
@@ -154,6 +156,40 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
                 pageable,
                 adminPlaylistSelectListForms.size()
         );
+    }
+
+    @Override
+    @Transactional
+    public AdminPlaylistReadResponseForm readPlaylist(HttpHeaders headers, Long playlistId) {
+        if (checkAdmin(headers)) return null;
+
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
+        Profile profile = profileRepository.findByAccount(playlist.getAccount())
+                .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
+
+        List<AdminPlaylistSongDetailReadResponseForm> songDetail = new ArrayList<>();
+        List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlistId);
+        for(Song song : songlist){
+            AdminPlaylistSongDetailReadResponseForm songs =
+                    new AdminPlaylistSongDetailReadResponseForm(
+                        song.getSongId(),
+                        song.getTitle(),
+                        song.getSinger(),
+                        song.getCreateDate()
+            );
+            songDetail.add(songs);
+        }
+
+        List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
+        return new AdminPlaylistReadResponseForm(
+                playlist.getPlaylistName(),
+                profile.getNickname(),
+                playlist.getThumbnailName(),
+                playlist.getCreateDate(),
+                likePlaylists.size(),
+                songlist.size(),
+                songDetail);
     }
 }
 
