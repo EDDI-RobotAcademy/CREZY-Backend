@@ -10,8 +10,26 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class AdminPlaylistSongDetailReadResponseForm {
-    final private Long songId;
-    final private String title;
-    final private String singer;
-    final private LocalDate CreateDate;
+    private Long songId;
+    private String title;
+    private String singer;
+    private LocalDate CreateDate;
+    private String link;
+    private String lyrics;
+
+    public AdminPlaylistSongDetailReadResponseForm(Long songId, String title, String singer, LocalDate createDate, String link, String lyrics) {
+        this.songId = songId;
+        this.title = title;
+        this.singer = singer;
+        CreateDate = createDate;
+        this.link = link;
+        this.lyrics = lyrics;
+    }
+
+    public AdminPlaylistSongDetailReadResponseForm(Long songId, String title, String singer, LocalDate createDate) {
+        this.songId = songId;
+        this.title = title;
+        this.singer = singer;
+        CreateDate = createDate;
+    }
 }

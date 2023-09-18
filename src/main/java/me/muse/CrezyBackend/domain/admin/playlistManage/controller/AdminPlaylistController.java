@@ -2,10 +2,7 @@ package me.muse.CrezyBackend.domain.admin.playlistManage.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistReadResponseForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.todayStatusPlaylistResponseForm;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.*;
 import me.muse.CrezyBackend.domain.admin.playlistManage.service.AdminPlaylistService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -31,5 +28,10 @@ public class AdminPlaylistController {
     public AdminPlaylistReadResponseForm readPlaylist(@RequestHeader HttpHeaders headers, @RequestParam("playlistId") Long PlaylistId) {
         log.info("readPlaylist()");
         return adminService.readPlaylist(headers, PlaylistId);
+    }
+    @GetMapping("/read-playlist-song")
+    public AdminPlaylistSongDetailReadResponseForm readSongDetail(@RequestHeader HttpHeaders headers, @RequestParam("songId") Long SongId) {
+        log.info("readSongDetail()");
+        return adminService.readSongDetail(headers, SongId);
     }
 }
