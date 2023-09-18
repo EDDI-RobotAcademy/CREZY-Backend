@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
-    @Query("SELECT p FROM Playlist p JOIN FETCH p.account JOIN FETCH p.songlist")
+    @Query("SELECT p FROM Playlist p JOIN FETCH p.account LEFT JOIN FETCH p.songlist")
     List<Playlist> findAll();
 
     @Query("SELECT DISTINCT p FROM Playlist p LEFT JOIN FETCH p.songlist LEFT JOIN FETCH p.account WHERE p.id = :id")
@@ -26,7 +26,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @Query("SELECT p FROM Playlist p WHERE p.account = :account AND p.createDate = :createDate")
     List<Playlist> countByAccountAndCreateDate(Account account, LocalDate createDate);
     List<Playlist> findByCreateDate(LocalDate localDate);
-    @Query("SELECT p FROM Playlist p JOIN FETCH p.songlist")
+    @Query("SELECT p FROM Playlist p LEFT JOIN FETCH p.songlist")
     List<Playlist> findAllWithPage();
     @Query("SELECT p FROM Playlist p ORDER BY SIZE(p.likePlaylist) DESC")
     List<Playlist> findAllSortBylikePalylist();
