@@ -24,7 +24,7 @@ public class AdminInquiryController {
         return adminInquiryService.countInquiry(headers);
     }
 
-    @GetMapping("/inquiry-list")
+    @PostMapping("/inquiry-list")
     public Page<AdminInquiryListResponseForm> adminInquiryList(@RequestHeader HttpHeaders headers, @RequestBody AdminInquiryListRequestForm requestForm){
         return adminInquiryService.list(headers, requestForm);
     }
