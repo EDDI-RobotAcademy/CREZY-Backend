@@ -36,7 +36,8 @@ public class Song {
     private Playlist playlist;
     @CreationTimestamp
     private LocalDate createDate;
-
+    @Setter
+    private String blockedDate;
     @OneToOne(cascade = CascadeType.ALL)
     @Setter
     private SongStatusType statusType;
