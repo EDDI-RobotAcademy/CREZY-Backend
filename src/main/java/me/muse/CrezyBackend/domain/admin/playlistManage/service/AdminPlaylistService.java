@@ -14,4 +14,6 @@ public interface AdminPlaylistService {
     void changePlaylistName(HttpHeaders headers, Long playlistId);
 
     void changePlaylistThumbnailName(HttpHeaders headers, Long playlistId);
+
+    void deletePlaylist(HttpHeaders headers, Long playlistId);
 }

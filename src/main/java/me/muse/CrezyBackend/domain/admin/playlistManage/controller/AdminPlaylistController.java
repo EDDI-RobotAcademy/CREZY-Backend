@@ -39,4 +39,9 @@ public class AdminPlaylistController {
         log.info("changePlaylistThumbnailName()");
         adminService.changePlaylistThumbnailName(headers, playlistId);
     }
+    @DeleteMapping("/delete-playlist")
+    public void deletePlaylist(@RequestHeader HttpHeaders headers, @RequestParam("playlistId") Long playlistId) {
+        log.info("deletePlaylist()");
+        adminService.deletePlaylist(headers, playlistId);
+    }
 }

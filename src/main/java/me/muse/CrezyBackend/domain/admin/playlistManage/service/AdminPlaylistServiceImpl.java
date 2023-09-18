@@ -235,5 +235,20 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         playlistRepository.save(playlist);
 
     }
+
+    @Override
+    @Transactional
+    public void deletePlaylist(HttpHeaders headers, Long playlistId) {
+        if (checkAdmin(headers)) return;
+
+        Playlist maybePlaylist = playlistRepository.findById(playlistId)
+                .orElseThrow(()->new IllegalArgumentException("playlist 없음"));
+
+        for(LikePlaylist likePlaylist : maybePlaylist.getLikePlaylist()){
+            likePlaylistRepository.deleteById(likePlaylist.getLikePlaylistId());
+            }
+        playlistRepository.deleteById(playlistId);
+    }
+
 }
 
