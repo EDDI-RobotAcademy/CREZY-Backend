@@ -11,7 +11,9 @@ import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.controller.form.SongModifyRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
 import me.muse.CrezyBackend.domain.song.entity.Song;
+import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
+import me.muse.CrezyBackend.domain.song.repository.SongStatusRepository;
 import me.muse.CrezyBackend.utility.Youtube;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -29,6 +31,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static me.muse.CrezyBackend.domain.song.entity.StatusType.OPEN;
+
 
 @Slf4j
 @Service
@@ -41,6 +45,7 @@ public class SongServiceImpl implements SongService{
     final private Youtube youtube;
     final private RedisService redisService;
     final private AccountRepository accountRepository;
+    final private SongStatusRepository songStatusRepository;
 
     @Value("${youtube.lyricsAddress}")
     private String lyricsAddress;
@@ -63,6 +68,7 @@ public class SongServiceImpl implements SongService{
             return null;
         }
 
+
         final Song song = new Song(requestForm.getTitle(), requestForm.getSinger(), requestForm.getLink(), playlist);
         if(requestForm.getLink().equals("")){
             String videoId = youtube.searchByKeyword(requestForm.getSinger() + " " + requestForm.getTitle());
@@ -72,6 +78,8 @@ public class SongServiceImpl implements SongService{
         String lyrics = getLyrics(requestForm.getSinger() + " " + requestForm.getTitle());
         log.info(lyrics);
         song.setLyrics(lyrics);
+        SongStatusType statusType = songStatusRepository.findByStatusType(OPEN).get();
+        song.setStatusType(statusType);
         songRepository.save(song);
 
         return song.getSongId();
