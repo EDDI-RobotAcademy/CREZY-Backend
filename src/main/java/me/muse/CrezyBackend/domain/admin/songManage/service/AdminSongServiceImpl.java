@@ -16,6 +16,7 @@ import me.muse.CrezyBackend.domain.song.repository.SongStatusRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import static me.muse.CrezyBackend.domain.song.entity.StatusType.BLOCK;
@@ -42,7 +43,8 @@ public class AdminSongServiceImpl implements AdminSongService{
                 song.getSinger(),
                 song.getCreateDate(),
                 song.getLink(),
-                song.getLyrics());
+                song.getLyrics(),
+                song.getBlockedDate());
     }
 
     @Override
@@ -59,6 +61,7 @@ public class AdminSongServiceImpl implements AdminSongService{
                 .orElseThrow(() -> new IllegalArgumentException("No such song exists"));
 
         SongStatusType changeSongStatus = songStatusRepository.findByStatusType(statusType).get();
+        song.setBlockedDate(LocalDate.now().toString());
         song.setStatusType(changeSongStatus);
         songRepository.save(song);
     }

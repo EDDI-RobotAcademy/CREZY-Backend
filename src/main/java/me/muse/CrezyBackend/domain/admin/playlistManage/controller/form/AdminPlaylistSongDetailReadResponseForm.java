@@ -13,23 +13,25 @@ public class AdminPlaylistSongDetailReadResponseForm {
     private Long songId;
     private String title;
     private String singer;
-    private LocalDate CreateDate;
+    private LocalDate createDate;
     private String link;
     private String lyrics;
+    private String blockedDate;
 
-    public AdminPlaylistSongDetailReadResponseForm(Long songId, String title, String singer, LocalDate createDate, String link, String lyrics) {
+    public AdminPlaylistSongDetailReadResponseForm(Long songId, String title, String singer, LocalDate createDate, String link, String lyrics, String blockedDate) {
         this.songId = songId;
         this.title = title;
         this.singer = singer;
-        CreateDate = createDate;
+        this.createDate = createDate;
         this.link = link;
         this.lyrics = lyrics;
+        this.blockedDate = blockedDate;
     }
 
     public AdminPlaylistSongDetailReadResponseForm(Long songId, String title, String singer, LocalDate createDate) {
         this.songId = songId;
         this.title = title;
         this.singer = singer;
-        CreateDate = createDate;
+        this.createDate = createDate;
     }
 }
