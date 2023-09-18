@@ -29,11 +29,6 @@ public class AdminPlaylistController {
         log.info("readPlaylist()");
         return adminService.readPlaylist(headers, PlaylistId);
     }
-    @GetMapping("/read-playlist-song")
-    public AdminPlaylistSongDetailReadResponseForm readSongDetail(@RequestHeader HttpHeaders headers, @RequestParam("songId") Long SongId) {
-        log.info("readSongDetail()");
-        return adminService.readSongDetail(headers, SongId);
-    }
     @GetMapping("/change-playlistName")
     public void changePlaylistName(@RequestHeader HttpHeaders headers, @RequestParam("playlistId") Long playlistId) {
         log.info("changePlaylistName()");

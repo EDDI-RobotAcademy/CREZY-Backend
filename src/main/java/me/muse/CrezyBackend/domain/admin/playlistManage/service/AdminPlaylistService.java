@@ -11,7 +11,5 @@ public interface AdminPlaylistService {
 
     AdminPlaylistReadResponseForm readPlaylist(HttpHeaders headers, Long playlistId);
 
-    AdminPlaylistSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId);
-
     void changePlaylistName(HttpHeaders headers, Long playlistId);
 }

@@ -195,21 +195,6 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     }
 
     @Override
-    public AdminPlaylistSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId) {
-        if (checkAdmin(headers)) return null;
-        Song song= songRepository.findById(songId)
-                .orElseThrow(() -> new IllegalArgumentException("노래 없음"));
-
-        return new AdminPlaylistSongDetailReadResponseForm(
-                song.getSongId(),
-                song.getTitle(),
-                song.getSinger(),
-                song.getCreateDate(),
-                song.getLink(),
-                song.getLyrics());
-    }
-
-    @Override
     public void changePlaylistName(HttpHeaders headers, Long playlistId) {
         if (checkAdmin(headers)) return;
 
