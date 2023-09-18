@@ -2,6 +2,8 @@ package me.muse.CrezyBackend.domain.song.repository;
 
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.song.entity.Song;
+import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +19,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     @Query("SELECT COUNT(p) FROM Song p WHERE p.playlist = :playlist AND p.createDate = :createDate")
     Integer countByPlaylistAndCreateDate(Playlist playlist, LocalDate createDate);
     List<Song> findByPlaylist_PlaylistId(Long playlistId);
+    List<Song> findByStatusTypeOrderBySongIdAsc(SongStatusType songStatusType);
+    List<Song> findByStatusTypeOrderBySongIdDesc(SongStatusType songStatusType);
 }
