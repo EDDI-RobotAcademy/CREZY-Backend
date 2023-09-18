@@ -10,4 +10,5 @@ public class ReportReadPlaylistResponseForm {
     final private String reportedProfileName;
     final private String playlistName;
     final private String thumbnailName;
+    final private String ReportedCategoryType;
 }

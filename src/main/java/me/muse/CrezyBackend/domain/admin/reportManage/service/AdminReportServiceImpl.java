@@ -166,7 +166,8 @@ public class AdminReportServiceImpl implements AdminReportService {
         ReportReadAccountResponseForm responseForm = new ReportReadAccountResponseForm(
                 reporterProfile.getNickname(),
                 reportedProfile.getNickname(),
-                reportedProfile.getProfileImageName());
+                reportedProfile.getProfileImageName(),
+                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
         return responseForm;
     }
 
@@ -187,7 +188,8 @@ public class AdminReportServiceImpl implements AdminReportService {
                 reporterProfile.getNickname(),
                 reportedProfile.getNickname(),
                 playlist.getPlaylistName(),
-                playlist.getThumbnailName());
+                playlist.getThumbnailName(),
+                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
         return responseForm;
     }
 
@@ -212,7 +214,8 @@ public class AdminReportServiceImpl implements AdminReportService {
                 song.getTitle(),
                 song.getSinger(),
                 song.getLink(),
-                song.getLyrics());
+                song.getLyrics(),
+                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
         return responseForm;
     }
 }
