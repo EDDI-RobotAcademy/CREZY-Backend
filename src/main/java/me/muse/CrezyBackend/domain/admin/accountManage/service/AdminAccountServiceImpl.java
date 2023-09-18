@@ -10,10 +10,8 @@ import me.muse.CrezyBackend.domain.account.entity.RoleType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListRequestForm;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.*;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
@@ -448,6 +446,35 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         AccountRoleType changeRoleType = accountRoleTypeRepository.findByRoleType(roleType).get();
         account.setRoleType(changeRoleType);
         accountRepository.save(account);
+    }
+
+    @Override
+    public Page<AdminPlaylistSelectListForm> playlistFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm) {
+        if (checkAdmin(headers)) return null;
+        Pageable pageable = null;
+        pageable = PageRequest.of(requestForm.getPage() - 1, 10);
+        List<Playlist> playlists = playlistRepository.findPlaylistByAccount_AccountId(requestForm.getAccountId());
+
+        final List<AdminPlaylistSelectListForm> adminPlaylistSelectListForms = new ArrayList<>();
+        for(Playlist isPlaylist : playlists){
+            Profile isProfile = profileRepository.findByAccount_AccountId(isPlaylist.getAccount().getAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("account 없음"));
+
+            Integer likeCounts = likePlaylistRepository.countByPlaylist(isPlaylist);
+            Integer songCounts = songRepository.countByPlaylist(isPlaylist);
+            AdminPlaylistSelectListForm adminPlaylistSelectListForm =
+                    new AdminPlaylistSelectListForm(isPlaylist.getPlaylistId(), isPlaylist.getPlaylistName(), isProfile.getNickname(), likeCounts, songCounts, isPlaylist.getCreateDate());
+            adminPlaylistSelectListForms.add(adminPlaylistSelectListForm);
+        }
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), adminPlaylistSelectListForms.size());
+
+        return new PageImpl<>(
+                adminPlaylistSelectListForms.subList(start, end),
+                pageable,
+                adminPlaylistSelectListForms.size()
+        );
     }
 }
 
