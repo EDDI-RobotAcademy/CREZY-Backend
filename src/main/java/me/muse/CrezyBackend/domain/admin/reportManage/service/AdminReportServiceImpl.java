@@ -153,6 +153,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     }
 
     @Override
+    @Transactional
     public ReportReadAccountResponseForm readAccountReport(Long reportId, HttpHeaders headers) {
         if (!checkAdmin(headers)) return null;
 
@@ -172,6 +173,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     }
 
     @Override
+    @Transactional
     public ReportReadPlaylistResponseForm readPlaylistReport(Long reportId, HttpHeaders headers) {
         if (!checkAdmin(headers)) return null;
 
