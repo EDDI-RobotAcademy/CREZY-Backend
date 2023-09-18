@@ -34,4 +34,9 @@ public class AdminPlaylistController {
         log.info("changePlaylistName()");
         adminService.changePlaylistName(headers, playlistId);
     }
+    @GetMapping("/change-playlistThumbnailName")
+    public void changePlaylistThumbnailName(@RequestHeader HttpHeaders headers, @RequestParam("playlistId") Long playlistId) {
+        log.info("changePlaylistThumbnailName()");
+        adminService.changePlaylistThumbnailName(headers, playlistId);
+    }
 }

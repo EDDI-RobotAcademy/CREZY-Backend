@@ -12,4 +12,6 @@ public interface AdminPlaylistService {
     AdminPlaylistReadResponseForm readPlaylist(HttpHeaders headers, Long playlistId);
 
     void changePlaylistName(HttpHeaders headers, Long playlistId);
+
+    void changePlaylistThumbnailName(HttpHeaders headers, Long playlistId);
 }
