@@ -10,6 +10,7 @@ import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSongDetailReadResponseForm;
 import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongListRequestForm;
 import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongListResponseForm;
+import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongModifyLyricsRequestForm;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
 import me.muse.CrezyBackend.domain.song.entity.StatusType;
@@ -150,4 +151,12 @@ public class AdminSongServiceImpl implements AdminSongService{
         );
     }
 
+    @Override
+    public void modifyLyrics(HttpHeaders headers, AdminSongModifyLyricsRequestForm requestForm) {
+        if (!checkAdmin(headers)) return;
+        Song song = songRepository.findById(requestForm.getSongId())
+                .orElseThrow(()-> new IllegalArgumentException("song 없음"));
+        song.setLyrics(requestForm.getLyrics());
+        songRepository.save(song);
+    }
 }
