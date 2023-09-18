@@ -13,4 +13,5 @@ public interface AdminSongService {
     Boolean registerSongStatusOpen(Long songId, HttpHeaders headers);
     Page<AdminSongListResponseForm> list(HttpHeaders headers, AdminSongListRequestForm requestForm);
     void modifyLyrics(HttpHeaders headers, AdminSongModifyLyricsRequestForm requestForm);
+    void deleteSong(HttpHeaders headers, Long songId);
 }

@@ -43,4 +43,8 @@ public class AdminSongController {
     public void modifyLyrics(@RequestHeader HttpHeaders headers, @RequestBody AdminSongModifyLyricsRequestForm requestForm){
         adminService.modifyLyrics(headers, requestForm);
     }
+    @DeleteMapping("/delete-song")
+    public void deleteSong(@RequestHeader HttpHeaders headers, @RequestParam("songId") Long SongId){
+        adminService.deleteSong(headers, SongId);
+    }
 }

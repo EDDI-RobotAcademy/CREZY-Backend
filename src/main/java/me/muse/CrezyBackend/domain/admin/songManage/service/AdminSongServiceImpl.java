@@ -39,7 +39,7 @@ public class AdminSongServiceImpl implements AdminSongService{
     final private SongRepository songRepository;
     final private SongStatusRepository songStatusRepository;
     final private ProfileRepository profileRepository;
-    
+
     @Override
     public AdminPlaylistSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId) {
         if (!checkAdmin(headers)) return null;
@@ -158,5 +158,11 @@ public class AdminSongServiceImpl implements AdminSongService{
                 .orElseThrow(()-> new IllegalArgumentException("song 없음"));
         song.setLyrics(requestForm.getLyrics());
         songRepository.save(song);
+    }
+
+    @Override
+    public void deleteSong(HttpHeaders headers, Long songId) {
+        if (!checkAdmin(headers)) return;
+        songRepository.deleteById(songId);
     }
 }
