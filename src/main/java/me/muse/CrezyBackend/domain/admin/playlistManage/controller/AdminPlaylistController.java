@@ -29,7 +29,7 @@ public class AdminPlaylistController {
     }
     @GetMapping("/read-playlist")
     public AdminPlaylistReadResponseForm readPlaylist(@RequestHeader HttpHeaders headers, @RequestParam("playlistId") Long PlaylistId) {
-        log.info("statusTodayPlaylist()");
+        log.info("readPlaylist()");
         return adminService.readPlaylist(headers, PlaylistId);
     }
 }

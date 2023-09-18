@@ -8,10 +8,7 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistReadResponseForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.todayStatusPlaylistResponseForm;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.*;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
@@ -165,15 +162,34 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     @Transactional
     public AdminPlaylistReadResponseForm readPlaylist(HttpHeaders headers, Long playlistId) {
         if (checkAdmin(headers)) return null;
-        List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlistId);
+
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
-        List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
+        Profile profile = profileRepository.findByAccount(playlist.getAccount())
+                .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
 
+        List<AdminPlaylistSongDetailReadResponseForm> songDetail = new ArrayList<>();
+        List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlistId);
+        for(Song song : songlist){
+            AdminPlaylistSongDetailReadResponseForm songs =
+                    new AdminPlaylistSongDetailReadResponseForm(
+                        song.getSongId(),
+                        song.getTitle(),
+                        song.getSinger(),
+                        song.getCreateDate()
+            );
+            songDetail.add(songs);
+        }
+
+        List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
         return new AdminPlaylistReadResponseForm(
+                playlist.getPlaylistName(),
+                profile.getNickname(),
+                playlist.getThumbnailName(),
+                playlist.getCreateDate(),
                 likePlaylists.size(),
                 songlist.size(),
-                songlist);
+                songDetail);
     }
 }
 
