@@ -22,7 +22,6 @@ public class PlaylistController {
     final private PlaylistService playlistService;
     final private PlaylistRepository playlistRepository;
     final private RedisService redisService;
-    final private AccountRepository accountRepository;
 
 
 
