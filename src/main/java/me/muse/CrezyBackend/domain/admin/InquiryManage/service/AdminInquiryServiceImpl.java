@@ -10,6 +10,7 @@ import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryRepository;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryReadResponseForm;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.InquiryCountResponseForm;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
 import org.springframework.http.HttpHeaders;
@@ -120,5 +121,27 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
         }
 
         return responseFormList;
+    }
+
+    @Override
+    @Transactional
+    public AdminInquiryReadResponseForm adminReadInquiry(HttpHeaders headers, Long inquiryId) {
+        if (!checkAdmin(headers)) return null;
+
+        Inquiry inquiry = inquiryRepository.findById(inquiryId)
+                .orElseThrow(() -> new IllegalArgumentException("InquiryDetail not found"));
+
+        InquiryDetail inquiryDetail = inquiryDetailRepository.findByInquiryId(inquiry.getInquiryId())
+                .orElseThrow(() -> new IllegalArgumentException("InquiryDetail not found"));
+
+        return new AdminInquiryReadResponseForm(
+                inquiryDetail.getInquiryDetailId(),
+                inquiryDetail.getInquiryTitle(),
+                inquiryDetail.getInquiryContent(),
+                inquiryDetail.getProfile().getNickname(),
+                inquiryDetail.getInquiry().getInquiryCategoryType().getInquiryCategory().toString(),
+                inquiryDetail.getInquiry().getCreateInquiryDate(),
+                inquiryDetail.getInquiryImageNames()
+        );
     }
 }
