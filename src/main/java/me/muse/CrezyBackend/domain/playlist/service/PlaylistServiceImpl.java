@@ -14,6 +14,7 @@ import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
+import me.muse.CrezyBackend.domain.song.entity.StatusType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +68,11 @@ public class PlaylistServiceImpl implements PlaylistService{
             Playlist playlist = maybePlaylist.get();
 
             List<Song> resultList = playlist.getSonglist();
-            List<Song> distinctResult = resultList.stream().distinct().collect(Collectors.toList());
+
+            List<Song> openSongs = resultList.stream()
+                    .filter(song -> song.getStatusType() == null || song.getStatusType().getStatusType() != StatusType.BLOCK)
+                    .distinct()
+                    .collect(Collectors.toList());
 
             Profile profile = profileRepository.findByAccount(playlist.getAccount())
                     .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
@@ -78,7 +83,7 @@ public class PlaylistServiceImpl implements PlaylistService{
                     profile.getNickname(),
                     playlist.getThumbnailName(),
                     likePlaylists.size(),
-                    distinctResult);
+                    openSongs);
         }
         return null;
     }
