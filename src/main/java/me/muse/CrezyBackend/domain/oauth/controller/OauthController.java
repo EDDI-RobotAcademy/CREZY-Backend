@@ -27,7 +27,7 @@ public class OauthController {
     }
 
     @GetMapping("/google-check-exist")
-    public boolean googleCheckExist(@RequestParam String code) {
+    public String googleCheckExist(@RequestParam String code) {
         return googleService.checkDuplicateAccount(code);
     }
 

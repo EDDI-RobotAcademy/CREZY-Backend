@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import static me.muse.CrezyBackend.domain.account.entity.LoginType.GOOGLE;
 import static me.muse.CrezyBackend.domain.account.entity.LoginType.KAKAO;
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
 
 @Service
@@ -125,11 +126,17 @@ public class GoogleServiceImpl implements GoogleService {
         return profile.getAccount();
     }
 
-    public boolean isExistAccount(ResponseEntity<String> response){
+    public String isExistAccount(ResponseEntity<String> response){
         AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(GOOGLE).get();
         Optional<Profile> maybeProfile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType);
 
-        return (maybeProfile.isPresent());
+        if(maybeProfile.isEmpty()){ return "NEW"; }
+
+        if(maybeProfile.get().getAccount().getRoleType().getRoleType()==BLACKLIST){
+            return "BLACKLIST";
+        } else {
+            return "NORMAL";
+        }
     }
 
     @Override
@@ -168,7 +175,7 @@ public class GoogleServiceImpl implements GoogleService {
     }
 
     @Override
-    public boolean checkDuplicateAccount(String code) {
+    public String checkDuplicateAccount(String code) {
         GoogleOAuthToken googleOAuthToken = getAccessToken(code);
         refreshToken = googleOAuthToken.getRefresh_token();
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);
