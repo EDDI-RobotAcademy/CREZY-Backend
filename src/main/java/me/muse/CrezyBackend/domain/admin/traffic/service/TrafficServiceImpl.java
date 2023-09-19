@@ -28,4 +28,19 @@ public class TrafficServiceImpl implements TrafficService{
         }
         trafficRepository.save(traffic);
     }
+
+    @Override
+    public void loginCounting(){
+        Optional<Traffic> maybeTraffic = trafficRepository.findByDate(LocalDate.now());
+        Traffic traffic;
+
+        if(maybeTraffic.isEmpty()) {
+            traffic = new Traffic(LocalDate.now());
+            traffic.setLoginCount(1);
+        }else {
+            traffic = maybeTraffic.get();
+            traffic.setLoginCount(traffic.getLoginCount()+1);
+        }
+        trafficRepository.save(traffic);
+    }
 }
