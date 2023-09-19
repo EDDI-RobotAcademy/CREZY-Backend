@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.admin.accountManage.service;
 
+import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.*;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
 import org.springframework.data.domain.Page;
@@ -19,4 +20,5 @@ public interface AdminAccountService {
     void accountChangeRoleTypeToBlacklist(HttpHeaders headers, Long accountId);
     void accountChangeRoleTypeToNormal(HttpHeaders headers, Long accountId);
     Page<AdminPlaylistSelectListForm> playlistFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm);
+    Page<AdminInquiryListResponseForm> inquiryFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm);
 }

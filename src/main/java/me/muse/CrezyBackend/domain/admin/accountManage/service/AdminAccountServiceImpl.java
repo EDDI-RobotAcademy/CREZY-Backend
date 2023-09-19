@@ -1,8 +1,12 @@
 package me.muse.CrezyBackend.domain.admin.accountManage.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.Inquiry.entity.Inquiry;
+import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryDetail;
+import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
@@ -10,6 +14,7 @@ import me.muse.CrezyBackend.domain.account.entity.RoleType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.*;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
@@ -53,6 +58,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     final private ReportDetailRepository reportDetailRepository;
     final private LikePlaylistRepository likePlaylistRepository;
     final private ReportStatusTypeRepository reportStatusTypeRepository;
+    final private InquiryDetailRepository inquiryDetailRepository;
     final private Integer weeks = 6;
 
     @Override
@@ -451,8 +457,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Override
     public Page<AdminPlaylistSelectListForm> playlistFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm) {
         if (checkAdmin(headers)) return null;
-        Pageable pageable = null;
-        pageable = PageRequest.of(requestForm.getPage() - 1, 10);
+        Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
         List<Playlist> playlists = playlistRepository.findPlaylistByAccount_AccountId(requestForm.getAccountId());
 
         final List<AdminPlaylistSelectListForm> adminPlaylistSelectListForms = new ArrayList<>();
@@ -476,5 +481,40 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 adminPlaylistSelectListForms.size()
         );
     }
+
+    @Override
+    @Transactional
+    public Page<AdminInquiryListResponseForm> inquiryFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm) {
+        if (checkAdmin(headers)) return null;
+        Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
+        List<AdminInquiryListResponseForm> responseFormList = new ArrayList<>();
+        List<InquiryDetail> inquiryDetailList = inquiryDetailRepository.findByProfile_Account_accountId(requestForm.getAccountId());
+        for (InquiryDetail inquiryDetail : inquiryDetailList) {
+            Inquiry inquiry = inquiryDetail.getInquiry();
+
+            AdminInquiryListResponseForm responseForm = new AdminInquiryListResponseForm(
+                    inquiry.getInquiryId(),
+                    inquiryDetail.getInquiryTitle(),
+                    inquiryDetail.getProfile().getNickname(),
+                    inquiry.getCreateInquiryDate(),
+                    inquiry.getInquiryCategoryType().getInquiryCategory().toString(),
+                    isExistAnswer(inquiry));
+
+            responseFormList.add(responseForm);
+        }
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), responseFormList.size());
+
+        return new PageImpl<>(
+                responseFormList.subList(start, end),
+                pageable,
+                responseFormList.size()
+        );
+    }
+    private boolean isExistAnswer(Inquiry inquiry){
+        return inquiry.getInquiryAnswer() != null;
+    }
+
 }
 
