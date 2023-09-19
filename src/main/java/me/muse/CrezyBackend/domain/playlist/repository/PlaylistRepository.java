@@ -29,7 +29,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @Query("SELECT p FROM Playlist p LEFT JOIN FETCH p.songlist")
     List<Playlist> findAllWithPage();
     @Query("SELECT p FROM Playlist p ORDER BY SIZE(p.likePlaylist) DESC")
-    List<Playlist> findAllSortBylikePalylist();
+    List<Playlist> findAllSortByLikePlaylist();
 
     @Query("SELECT p FROM Playlist p WHERE p.songlist IS EMPTY")
     List<Playlist> findAllBySongEmpty();

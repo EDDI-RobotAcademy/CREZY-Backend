@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 @Getter
 @RequiredArgsConstructor
-public class todayStatusPlaylistResponseForm {
+public class TodayStatusPlaylistResponseForm {
     final private Integer todayPlaylist;
     final private Integer totalPlaylist;
     final private Integer increaseRate;
