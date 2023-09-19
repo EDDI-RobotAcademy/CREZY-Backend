@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.admin.traffic.controller.form.TodayTrafficCountResponseForm;
 import me.muse.CrezyBackend.domain.admin.traffic.controller.form.WeekTrafficCountResponseForm;
+import me.muse.CrezyBackend.domain.admin.traffic.controller.form.WeeklyRegistResponseForm;
 import me.muse.CrezyBackend.domain.admin.traffic.service.TrafficService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -27,5 +28,11 @@ public class TrafficController {
     public WeekTrafficCountResponseForm weekCount(@RequestParam("weekValue") int weekValue, @RequestHeader HttpHeaders headers) {
         log.info("weekCount()");
         return trafficService.weekCount(weekValue, headers);
+    }
+
+    @GetMapping("weekly-regist")
+    public WeeklyRegistResponseForm weeklyRegist(@RequestParam("weekValue") int weekValue, @RequestHeader HttpHeaders headers){
+        log.info("weeklyRegist()");
+        return trafficService.weeklyRegist(weekValue, headers);
     }
 }
