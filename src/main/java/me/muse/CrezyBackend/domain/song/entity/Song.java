@@ -38,9 +38,11 @@ public class Song {
     private LocalDate createDate;
     @Setter
     private String blockedDate;
-    @OneToOne(cascade = CascadeType.ALL)
+
+    @OneToOne
     @Setter
     private SongStatusType statusType;
+
 
     public Song(String title, String singer, String link, Playlist playlist) {
         this.title = title;

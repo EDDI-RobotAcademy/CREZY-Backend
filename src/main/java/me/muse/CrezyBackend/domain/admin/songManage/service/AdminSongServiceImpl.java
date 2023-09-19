@@ -76,10 +76,17 @@ public class AdminSongServiceImpl implements AdminSongService{
 
     private void changeSongStatus(Long songId, StatusType statusType) {
         Song song = songRepository.findById(songId)
-                .orElseThrow(() -> new IllegalArgumentException("No such song exists"));
+                .orElseThrow(() -> new IllegalArgumentException("노래가 존재하지 않습니다."));
 
-        SongStatusType changeSongStatus = songStatusRepository.findByStatusType(statusType).get();
-        song.setBlockedDate(LocalDate.now().toString());
+        SongStatusType changeSongStatus = songStatusRepository.findByStatusType(statusType)
+                .orElseThrow(() -> new IllegalArgumentException("상태 타입을 찾을 수 없습니다."));
+
+        if (statusType == StatusType.OPEN) {
+            song.setBlockedDate(null); 
+        } else {
+            song.setBlockedDate(LocalDate.now().toString());
+        }
+
         song.setStatusType(changeSongStatus);
         songRepository.save(song);
     }
