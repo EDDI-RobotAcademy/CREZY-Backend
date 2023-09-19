@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static me.muse.CrezyBackend.domain.account.entity.LoginType.*;
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
 
 @Service
@@ -162,14 +163,20 @@ public class NaverServiceImpl implements NaverService{
         return email;
     }
 
-    public boolean isExistAccount(ResponseEntity<String> response) {
+    public String isExistAccount(ResponseEntity<String> response) {
         AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(NAVER).get();
         Optional<Profile> maybeProfile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType);
 
-        return (maybeProfile.isPresent());
+        if(maybeProfile.isEmpty()){ return "NEW"; }
+
+        if(maybeProfile.get().getAccount().getRoleType().getRoleType()==BLACKLIST){
+            return "BLACKLIST";
+        } else {
+            return "NORMAL";
+        }
     }
 
-    public boolean checkDuplicateAccount(String code) {
+    public String checkDuplicateAccount(String code) {
         NaverOAuthToken naverOAuthToken = getAccessToken(code);
         refreshToken = naverOAuthToken.getRefresh_token();
         ResponseEntity<String> response = requestUserInfo(naverOAuthToken);

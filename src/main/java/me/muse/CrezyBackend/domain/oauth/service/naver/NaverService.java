@@ -8,5 +8,5 @@ public interface NaverService {
     String naverLoginAddress();
     LoginResponseForm getAccount();
     LoginResponseForm getNewAccount(LoginRequestForm requestForm);
-    boolean checkDuplicateAccount(String code);
+    String checkDuplicateAccount(String code);
 }
