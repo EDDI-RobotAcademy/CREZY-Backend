@@ -10,4 +10,5 @@ public class SongRegisterRequestForm {
     final private String title;
     final private String singer;
     final private String link;
+    final private String lyrics;
 }
