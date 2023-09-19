@@ -119,16 +119,16 @@ public class AdminSongServiceImpl implements AdminSongService{
 
         if(requestForm.getSongStatusType().equals("TOTAL")){
             switch (requestForm.getSortType()){
-                case "ASC" -> songList = songRepository.findAll(Sort.by(Sort.Direction.ASC, "songId"));
-                case "DESC" -> songList = songRepository.findAll(Sort.by(Sort.Direction.DESC, "songId"));
+                case "ASC" -> songList = songRepository.findAll(Sort.by(Sort.Direction.ASC, "title"));
+                case "DESC" -> songList = songRepository.findAll(Sort.by(Sort.Direction.DESC, "title"));
             }
         }else {
             SongStatusType songStatusType = songStatusRepository.findByStatusType(StatusType.valueOf(requestForm.getSongStatusType()))
                     .orElseThrow(() -> new IllegalArgumentException("SongStatusType not found"));
 
             switch (requestForm.getSortType()){
-                case "ASC" -> songList = songRepository.findByStatusTypeOrderBySongIdAsc(songStatusType);
-                case "DESC" -> songList = songRepository.findByStatusTypeOrderBySongIdDesc(songStatusType);
+                case "ASC" -> songList = songRepository.findByStatusTypeOrderByTitleAsc(songStatusType);
+                case "DESC" -> songList = songRepository.findByStatusTypeOrderByTitleDesc(songStatusType);
             }
         }
 
