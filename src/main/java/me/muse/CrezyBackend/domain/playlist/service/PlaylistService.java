@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface PlaylistService {
     Page<PlaylistResponseForm> list(Integer page);
-    PlaylistReadResponseForm read(Long playlistId);
     long register(PlaylistRegisterRequestForm requestForm, HttpHeaders headers);
 
     PlaylistModifyResponseForm modify(PlaylistModifyRequestForm requestForm, HttpHeaders headers);
@@ -17,4 +16,7 @@ public interface PlaylistService {
 
     List<MyPlaylistResponseForm> myPlaylist(HttpHeaders headers);
 
+    PlaylistReadResponseForm readPlayList(Long playlistId);
+
+    PlaylistReadResponseForm readMyPagePlaylist(Long playlistId);
 }

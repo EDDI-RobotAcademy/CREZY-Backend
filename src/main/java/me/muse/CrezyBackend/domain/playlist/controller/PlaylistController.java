@@ -32,10 +32,16 @@ public class PlaylistController {
         return playlistService.list(page);
     }
 
-    @GetMapping("/{playlistId}")
+    @GetMapping("playlists/{playlistId}")
     public PlaylistReadResponseForm readPlayList(@PathVariable("playlistId") Long playlistId) {
         log.info("readPlayList()");
-        return playlistService.read(playlistId);
+        return playlistService.readPlayList(playlistId);
+    }
+
+    @GetMapping("MyPage/{playlistId}")
+    public PlaylistReadResponseForm readMyPagePlaylist(@PathVariable("playlistId") Long playlistId) {
+        log.info("readPlayList()");
+        return playlistService.readMyPagePlaylist(playlistId);
     }
 
     @PostMapping("/register") // 플레이 리스트 등록
