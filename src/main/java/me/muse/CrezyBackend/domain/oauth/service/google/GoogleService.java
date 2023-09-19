@@ -10,6 +10,6 @@ public interface GoogleService {
     String googleLoginAddress();
     LoginResponseForm getAccount();
     LoginResponseForm getNewAccount(LoginRequestForm requestForm);
-    boolean checkDuplicateAccount(String code);
+    String checkDuplicateAccount(String code);
 
 }
