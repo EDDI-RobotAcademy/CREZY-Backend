@@ -170,6 +170,7 @@ public class AdminSongServiceImpl implements AdminSongService{
     }
 
     @Override
+    @Transactional
     public void deleteSong(HttpHeaders headers, Long songId) {
         if (!checkAdmin(headers)) return;
         songRepository.deleteById(songId);
