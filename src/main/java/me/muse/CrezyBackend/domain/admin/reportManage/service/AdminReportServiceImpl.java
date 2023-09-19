@@ -65,6 +65,7 @@ public class AdminReportServiceImpl implements AdminReportService {
         Integer AccountReportCount = reportRepository.countByReportedCategoryType(ACCOUNT);
 
         List<ReportResponseForm> reportResponseForms = new ArrayList<>();
+
         for (ReportDetail reportDetail : reportDetailList) {
             ReportResponseForm responseForm = new ReportResponseForm(
                     reportDetail.getReport().getReportId(), reportDetail.getReportedId(), reportDetail.getReportContent(),
@@ -75,6 +76,7 @@ public class AdminReportServiceImpl implements AdminReportService {
         }
         return reportResponseForms;
     }
+
     @Override
     public Integer getTotalPage() {
         Integer totalReport = (int) reportRepository.count();
@@ -85,6 +87,7 @@ public class AdminReportServiceImpl implements AdminReportService {
             return totalReport / size + 1;
         }
     }
+
     @Override
     public boolean processingReport(ReportProcessingForm processingForm, HttpHeaders headers) {
         if (!checkAdmin(headers))
@@ -115,6 +118,7 @@ public class AdminReportServiceImpl implements AdminReportService {
         reportRepository.save(report);
         return true;
     }
+
     @Override
     public ReportReadResponseForm readReport(Long reportId, HttpHeaders headers) {
         if (!checkAdmin(headers)) return null;
@@ -136,6 +140,7 @@ public class AdminReportServiceImpl implements AdminReportService {
                 reportDetail.getCreateReportDate());
         return responseForm;
     }
+
     private boolean checkAdmin(HttpHeaders headers) {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
         if (authValues.isEmpty()) {
@@ -221,4 +226,3 @@ public class AdminReportServiceImpl implements AdminReportService {
         return responseForm;
     }
 }
-

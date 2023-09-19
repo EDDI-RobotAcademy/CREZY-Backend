@@ -8,7 +8,10 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.*;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistReadResponseForm;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.todayStatusPlaylistResponseForm;
 import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
@@ -46,15 +49,19 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     @Override
     public todayStatusPlaylistResponseForm todayStatusPlaylist(HttpHeaders headers, String date) {
         if (checkAdmin(headers)) return null;
+
         Integer todayPlaylist = playlistRepository.findByCreateDate(TransformToDate.transformToDate(date)).size();
         Integer totalPlaylist = playlistRepository.findAll().size();
         Integer previousPlaylist = playlistRepository.findByCreateDate((TransformToDate.transformToDate(date)).minusDays(1)).size();
+
         double increaseRate = 0;
+
         if(0 < todayPlaylist && previousPlaylist == 0){
             increaseRate = 100;
         }else {
             increaseRate = (double) (todayPlaylist - previousPlaylist) / previousPlaylist * 100;
         }
+
         Integer afterDay = compareDate(TransformToDate.transformToDate(date));
         Integer previousDay = weeks-afterDay;
 
@@ -89,6 +96,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
 
     public List<Integer> playlistBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
         List<Integer> playlistCounts = new ArrayList<>();
+
         while (!previousDate.isAfter(afterDate)) {
             Integer playlists = playlistRepository.findByCreateDate(previousDate).size();
             playlistCounts.add(playlists);
@@ -98,6 +106,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     }
     public List<String> playlistDateListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
         List<String> playlistDateList = new ArrayList<>();
+
         while (!previousDate.isAfter(afterDate)) {
             playlistDateList.add(previousDate.toString());
             previousDate = previousDate.plusDays(1);
@@ -107,6 +116,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
 
     private boolean checkAdmin(HttpHeaders headers) {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+
         if (authValues.isEmpty()) {
             return true;
         }
@@ -123,27 +133,30 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     @Override
     public Page<AdminPlaylistSelectListForm> playlistRecentList(HttpHeaders headers, AdminPlaylistsRequestForm requestForm) {
         if (checkAdmin(headers)) return null;
+
         List<Playlist> playlists = new ArrayList<>();
         Pageable pageable = null;
+
         if(requestForm.getSortType().equals("recent")){
             pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
             playlists = playlistRepository.findAllWithPage();
         } else if (requestForm.getSortType().equals("trending")) {
             pageable = PageRequest.of(requestForm.getPage() - 1, 10);
             playlists = playlistRepository.findAllSortBylikePalylist();
-
         } else if (requestForm.getSortType().equals("empty")) {
             pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
             playlists = playlistRepository.findAllBySongEmpty();
         }
 
         final List<AdminPlaylistSelectListForm> adminPlaylistSelectListForms = new ArrayList<>();
+
         for(Playlist isPlaylist : playlists){
             Profile isProfile = profileRepository.findByAccount_AccountId(isPlaylist.getAccount().getAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
             Integer likeCounts = likePlaylistRepository.countByPlaylist(isPlaylist);
             Integer songCounts = songRepository.countByPlaylist(isPlaylist);
+
             AdminPlaylistSelectListForm adminPlaylistSelectListForm =
                     new AdminPlaylistSelectListForm(isPlaylist.getPlaylistId(), isPlaylist.getPlaylistName(), isProfile.getNickname(), likeCounts, songCounts, isPlaylist.getCreateDate());
             adminPlaylistSelectListForms.add(adminPlaylistSelectListForm);
@@ -162,7 +175,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     @Override
     @Transactional
     public AdminPlaylistReadResponseForm readPlaylist(HttpHeaders headers, Long playlistId) {
-//        if (checkAdmin(headers)) return null;
+        if (checkAdmin(headers)) return null;
 
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
@@ -171,6 +184,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
 
         List<AdminSongDetailReadResponseForm> songDetail = new ArrayList<>();
         List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlistId);
+
         for(Song song : songlist){
             AdminSongDetailReadResponseForm songs =
                     new AdminSongDetailReadResponseForm(
@@ -184,6 +198,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         }
 
         List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
+
         return new AdminPlaylistReadResponseForm(
                 playlist.getPlaylistName(),
                 profile.getNickname(),
@@ -251,4 +266,3 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     }
 
 }
-

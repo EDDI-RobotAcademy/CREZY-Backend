@@ -21,8 +21,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -162,6 +162,7 @@ public class AdminSongServiceImpl implements AdminSongService{
     @Override
     public void modifyLyrics(HttpHeaders headers, AdminSongModifyLyricsRequestForm requestForm) {
         if (!checkAdmin(headers)) return;
+
         Song song = songRepository.findById(requestForm.getSongId())
                 .orElseThrow(()-> new IllegalArgumentException("song 없음"));
         song.setLyrics(requestForm.getLyrics());
