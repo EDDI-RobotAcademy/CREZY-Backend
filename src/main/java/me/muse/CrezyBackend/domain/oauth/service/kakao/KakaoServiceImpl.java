@@ -32,6 +32,7 @@ import java.util.UUID;
 
 import static me.muse.CrezyBackend.domain.account.entity.LoginType.GOOGLE;
 import static me.muse.CrezyBackend.domain.account.entity.LoginType.KAKAO;
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
 
 @Service
@@ -69,17 +70,23 @@ public class KakaoServiceImpl implements KakaoService{
     }
 
     @Override
-    public boolean checkDuplicateAccount(String code) {
+    public String checkDuplicateAccount(String code) {
         KakaoOAuthToken kakaoOAuthToken = getAccessToken(code);
         refreshToken = kakaoOAuthToken.getRefresh_token();
         ResponseEntity<String> response = requestUserInfo(kakaoOAuthToken);
-        return isExitAccount(response);
+        return isExistAccount(response);
     }
-    public boolean isExitAccount(ResponseEntity<String> response){
+    public String isExistAccount(ResponseEntity<String> response){
         AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(KAKAO).get();
         Optional<Profile> maybeProfile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType);
 
-        return (maybeProfile.isPresent());
+        if(maybeProfile.isEmpty()){ return "NEW"; }
+
+        if(maybeProfile.get().getAccount().getRoleType().getRoleType()==BLACKLIST){
+            return "BLACKLIST";
+        } else {
+            return "NORMAL";
+        }
     }
 
     public String findEmail(ResponseEntity<String> response){
