@@ -1,7 +1,6 @@
 package me.muse.CrezyBackend.domain.emotion.service;
 
 import me.muse.CrezyBackend.domain.emotion.controller.form.AnalysisResponseForm;
-import me.muse.CrezyBackend.domain.song.entity.LabeledSong;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
