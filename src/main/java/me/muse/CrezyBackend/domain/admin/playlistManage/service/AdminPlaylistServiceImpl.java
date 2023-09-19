@@ -208,7 +208,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     }
 
     private String makeNewPlaylistName(){
-        String[] genreList = {"락", "발라드", "힙합", "클래식", "재즈", "레게", "트로트", "알앤비"};
+        String[] genreList = {"신나는", "감성적인", "힙한", "슬픈", "화난", "놀란", "행복한", "무서운"};
 
         RandomValue randomValue = new RandomValue();
         int value = randomValue.randomValue(genreList.length);
@@ -221,7 +221,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
             randomNumber += String.valueOf(randomValue.randomValue(9));
         }
 
-        return genreList[value] + "Muser" + randomAlphabet + randomNumber;
+        return genreList[value] + "CrezyList" + randomAlphabet + randomNumber;
     }
 
     @Override
