@@ -179,7 +179,7 @@ public class AdminSongServiceImpl implements AdminSongService{
 
     @Override
     public TodayStatusSongResponseForm todayStatusSong(HttpHeaders headers, String date) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin(headers)) return null;
 
         Integer todaySong = songRepository.findByCreateDate(TransformToDate.transformToDate(date)).size();
         Integer totalSong = songRepository.findAll().size();
