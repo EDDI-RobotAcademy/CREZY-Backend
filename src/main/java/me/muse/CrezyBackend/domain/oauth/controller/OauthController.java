@@ -48,7 +48,7 @@ public class OauthController {
         return kakaoService.kakaoLoginAddress();
     }
     @GetMapping("/kakao-check-exist")
-    public boolean kakaoCheckExist(@RequestParam String code) {
+    public String kakaoCheckExist(@RequestParam String code) {
         return kakaoService.checkDuplicateAccount(code);
     }
 
