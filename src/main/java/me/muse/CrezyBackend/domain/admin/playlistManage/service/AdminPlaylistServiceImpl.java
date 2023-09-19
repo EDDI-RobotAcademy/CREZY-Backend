@@ -51,7 +51,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         if (checkAdmin(headers)) return null;
 
         Integer todayPlaylist = playlistRepository.findByCreateDate(TransformToDate.transformToDate(date)).size();
-        Integer totalPlaylist = playlistRepository.findAll().size();
+        Integer totalPlaylist = playlistRepository.findAllPlaylist().size();
         Integer previousPlaylist = playlistRepository.findByCreateDate((TransformToDate.transformToDate(date)).minusDays(1)).size();
 
         double increaseRate = 0;
