@@ -6,10 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.controller.form.SongModifyRequestForm;
-import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
@@ -24,8 +24,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import org.springframework.http.HttpHeaders;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Objects;
@@ -52,12 +50,11 @@ public class SongServiceImpl implements SongService{
 
     @Override
     @Transactional
-    public Long register(SongRegisterRequestForm requestForm, HttpHeaders headers) throws GeneralSecurityException, IOException {
-
+    public Long registerSong(SongRegisterRequestForm requestForm, HttpHeaders headers) throws GeneralSecurityException, IOException {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
 
         if (authValues.isEmpty()) {
-            return 0L;
+            return null;
         }
 
         Long accountId = redisService.getValueByKey(authValues.get(0));
@@ -68,20 +65,19 @@ public class SongServiceImpl implements SongService{
             return null;
         }
 
-
-        final Song song = new Song(requestForm.getTitle(), requestForm.getSinger(), requestForm.getLink(), playlist);
+        final Song song = new Song(requestForm.getTitle(), requestForm.getSinger(), requestForm.getLink(), requestForm.getLyrics(), playlist);
         if(requestForm.getLink().equals("")){
             String videoId = youtube.searchByKeyword(requestForm.getSinger() + " " + requestForm.getTitle());
             song.setLink("https://www.youtube.com/watch?v=" + videoId);
         }
-
-        String lyrics = getLyrics(requestForm.getSinger() + " " + requestForm.getTitle());
-        log.info(lyrics);
-        song.setLyrics(lyrics);
+        if(requestForm.getLyrics().equals("")){
+            String lyrics = getLyrics(requestForm.getSinger() + " " + requestForm.getTitle());
+            log.info(lyrics);
+            song.setLyrics(lyrics);
+        }
         SongStatusType statusType = songStatusRepository.findByStatusType(OPEN).get();
         song.setStatusType(statusType);
         songRepository.save(song);
-
         return song.getSongId();
     }
 

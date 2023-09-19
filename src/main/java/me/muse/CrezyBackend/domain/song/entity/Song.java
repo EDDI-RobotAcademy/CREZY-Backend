@@ -43,11 +43,11 @@ public class Song {
     @Setter
     private SongStatusType statusType;
 
-
-    public Song(String title, String singer, String link, Playlist playlist) {
+    public Song(String title, String singer, String link, String lyrics, Playlist playlist) {
         this.title = title;
         this.singer = singer;
         this.link = link;
+        this.lyrics = lyrics;
         this.playlist = playlist;
     }
 }

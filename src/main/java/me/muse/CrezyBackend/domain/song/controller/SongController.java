@@ -1,9 +1,8 @@
 package me.muse.CrezyBackend.domain.song.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.domain.song.controller.form.SongModifyRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
-import me.muse.CrezyBackend.domain.song.entity.Song;
+import me.muse.CrezyBackend.domain.song.controller.form.SongModifyRequestForm;
 import me.muse.CrezyBackend.domain.song.service.SongService;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
@@ -19,10 +18,9 @@ public class SongController {
 
     final private SongService songService;
 
-    @PostMapping("/register") // 노래 등록
-    public Long songRegister (@RequestBody SongRegisterRequestForm requestForm, @RequestHeader HttpHeaders headers) throws GeneralSecurityException, IOException {
-
-        return songService.register(requestForm, headers);
+    @PostMapping("/register")
+    public Long registerSong(@RequestBody SongRegisterRequestForm requestForm, @RequestHeader HttpHeaders headers) throws GeneralSecurityException, IOException{
+        return songService.registerSong(requestForm, headers);
     }
 
     @DeleteMapping("/{songId}") // 노래 삭제(하나만 삭제 -추후 다른 곳 이용)
