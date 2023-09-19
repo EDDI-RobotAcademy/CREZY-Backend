@@ -7,7 +7,7 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSongDetailReadResponseForm;
+import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
 import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongListRequestForm;
 import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongListResponseForm;
 import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongModifyLyricsRequestForm;
@@ -41,19 +41,20 @@ public class AdminSongServiceImpl implements AdminSongService{
     final private ProfileRepository profileRepository;
 
     @Override
-    public AdminPlaylistSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId) {
+    public AdminSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId) {
         if (!checkAdmin(headers)) return null;
         Song song= songRepository.findById(songId)
                 .orElseThrow(() -> new IllegalArgumentException("노래 없음"));
 
-        return new AdminPlaylistSongDetailReadResponseForm(
+        return new AdminSongDetailReadResponseForm(
                 song.getSongId(),
                 song.getTitle(),
                 song.getSinger(),
                 song.getCreateDate(),
                 song.getLink(),
                 song.getLyrics(),
-                song.getBlockedDate());
+                song.getBlockedDate(),
+                song.getStatusType().getStatusType().toString());
     }
 
     @Override

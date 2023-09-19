@@ -2,7 +2,7 @@ package me.muse.CrezyBackend.domain.admin.playlistManage.controller.form;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import me.muse.CrezyBackend.domain.song.entity.Song;
+import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,5 +16,5 @@ public class AdminPlaylistReadResponseForm {
     final private LocalDate playlistCreateDate;
     final private Integer likeCounts;
     final private Integer songCounts;
-    final private List<AdminPlaylistSongDetailReadResponseForm> songDetail;
+    final private List<AdminSongDetailReadResponseForm> songDetail;
 }
