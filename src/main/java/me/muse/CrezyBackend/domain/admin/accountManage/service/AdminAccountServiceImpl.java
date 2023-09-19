@@ -69,12 +69,15 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 
         Integer totalAccount = accountRepository.findByAccountRoleType(roleType);
         Integer previousAccount = accountRepository.findByCreateDateAndAccountRoleType((TransformToDate.transformToDate(date)).minusDays(1), roleType);
+
         double increaseRate = 0;
+
         if(0 < todayAccount && previousAccount == 0){
             increaseRate = 100;
         }else {
             increaseRate = (double) (todayAccount - previousAccount) / previousAccount * 100;
         }
+
         Integer afterDay = compareDate(TransformToDate.transformToDate(date));
         Integer previousDay = weeks-afterDay;
 
@@ -117,6 +120,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         }
         return accountCounts;
     }
+
     public List<String> accountDateListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
         List<String> accountDateList = new ArrayList<>();
         while (!previousDate.isAfter(afterDate)) {
@@ -125,9 +129,11 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         }
         return accountDateList;
     }
+
     public List<Integer> songCountsListBetweenPeriod(LocalDate previousDate, LocalDate afterDate, Account account) {
         List<Integer> songCounts = new ArrayList<>();
         List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(account);
+
         while (!previousDate.isAfter(afterDate)) {
             int songCount = 0;
             for (Playlist playlist : playlists) {
@@ -138,8 +144,10 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         }
         return songCounts;
     }
+
     public List<Integer> playlistCountsListBetweenPeriod(LocalDate previousDate, LocalDate afterDate, Account account){
         List<Integer> playlistCounts = new ArrayList<>();
+
         while (!previousDate.isAfter(afterDate)) {
             List<Playlist> playlists = playlistRepository.countByAccountAndCreateDate(account, previousDate);
             playlistCounts.add(playlists.size());
@@ -151,21 +159,27 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Override
     public List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page) {
         if (checkAdmin(headers)) return null;
+
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
         List<Profile> profileList = profileRepository.findByAccount_RoleTypeNotWithPage(pageable, roleType);
+
         final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
+
         for(Profile isProfile : profileList){
             Account isAccount = accountRepository.findById(isProfile.getAccount().getAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
             Integer playlistCounts = playlistRepository.countByAccount(isAccount);
             List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
+
             Integer songCounts = 0;
+
             for(Playlist playlist : playlists){
                 songCounts += songRepository.countByPlaylist(playlist);
             }
             Integer warningCounts = warningRepository.countByAccount(isAccount);
+
             AdminAccountListForm adminAccountListForm = new AdminAccountListForm(
                     isProfile.getAccount().getAccountId(),
                     isProfile.getNickname(),
@@ -209,10 +223,13 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Override
     public List<AdminAccountListForm> accountBlacklist(HttpHeaders headers, Integer page) {
         if (checkAdmin(headers)) return null;
+
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
         List<Profile> profileList = profileRepository.findAllBlacklistWithPage(pageable, roleType);
+
         final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
+
         for (Profile isProfile : profileList) {
             Account isAccount = accountRepository.findAccountByAccountRoleType(roleType)
                     .orElseThrow(() -> new IllegalArgumentException("account 없음"));
@@ -220,10 +237,12 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
             Integer playlistCounts = playlists.size();
             Integer songCounts = 0;
+
             for (Playlist playlist : playlists) {
                 songCounts += songRepository.countByPlaylist(playlist);
             }
             Integer warningCounts = warningRepository.countByAccount(isAccount);
+
             AdminAccountListForm adminAccountListForm = new AdminAccountListForm(isProfile.getAccount().getAccountId(), isProfile.getNickname(), playlistCounts, songCounts, isProfile.getAccount().getCreateDate(), warningCounts);
             adminAccountListForms.add(adminAccountListForm);
         }
@@ -246,17 +265,21 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Override
     public AdminAccountDetailForm accountDetail(HttpHeaders headers, Long accountId) {
         if (checkAdmin(headers)) return null;
+
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("account 없음"));;
         Profile profile = profileRepository.findByAccount(account).get();
         List<ReportDetail> reportDetails = reportDetailRepository.findAllByReportedAccountId(accountId);
+
         Integer reportedCounts = 0;
+
         for(ReportDetail reportDetail : reportDetails){
             reportedCounts += reportRepository.countByReportId(reportDetail.getReport().getReportId());
         }
         List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(account);
         Integer playlistCounts = playlists.size();
         Integer songCounts = 0;
+
         for (Playlist playlist : playlists) {
             songCounts += songRepository.countByPlaylist(playlist);
         }
@@ -277,21 +300,26 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Override
     public Page<AdminAccountListForm> accountWarningCountList(HttpHeaders headers, AdminAccountListRequestForm requestForm) {
         if (checkAdmin(headers)) return null;
+
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("account.accountId").descending());
         ReportStatusType reportStatus = reportStatusTypeRepository.findByReportStatus(ReportStatus.APPROVE).get();
         List<Report> reports = reportRepository.findByReportStatusType(reportStatus);
+
         List<Profile> profiles = new ArrayList<>();
         List<ReportDetail> reportDetails = new ArrayList<>();
+
         for(Report report : reports) {
             ReportDetail details = reportDetailRepository.findByReport_ReportId(report.getReportId())
                     .orElseThrow(() -> new IllegalArgumentException("reportDetail 없음"));
             reportDetails.add(details);
         }
+
         for(ReportDetail reportDetail: reportDetails) {
             Profile profile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("profile 없음"));
             profiles.add(profile);
         }
+
         Map<Long, Integer> accountCounts = new HashMap<>();
         for(Profile profile : profiles){
             Long accountId = profile.getAccount().getAccountId();
@@ -302,8 +330,10 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 accountCounts.put(accountId, 1);
             }
         }
+
         List<Profile> singleWarningCount = new ArrayList<>();
         Set<Long> doubleWarningCountList = new HashSet<>();
+
         for(Profile profile : profiles){
             Long accountId = profile.getAccount().getAccountId();
             int count = accountCounts.get(accountId);
@@ -313,18 +343,20 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 doubleWarningCountList.add(accountId);
             }
         }
+
         List<Profile> doubleWarningCount = doubleWarningCountList.stream()
                 .map(accountId -> profileRepository.findByAccount_AccountId(accountId)
                         .orElseThrow(() -> new IllegalArgumentException("profile 없음")))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+
         if(requestForm.getWarningCounts() == 1){
             return makeAccountListForm(singleWarningCount, pageable);
         }
         if (requestForm.getWarningCounts() == 2) {
             return makeAccountListForm(doubleWarningCount, pageable);
         }
-        if (requestForm.getWarningCounts()  == 3) {
+        if (requestForm.getWarningCounts() == 3) {
             return makeBlacklistForm(pageable);
         }
         return null;
@@ -332,16 +364,19 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 
     private Page<AdminAccountListForm> makeAccountListForm(List<Profile> WarningCount, Pageable pageable) {
         final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
+
         for (Profile isProfile : WarningCount) {
             Account isAccount = accountRepository.findById(isProfile.getAccount().getAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("account 없음"));
             List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
             Integer playlistCounts = playlists.size();
             Integer songCounts = 0;
+
             for (Playlist playlist : playlists) {
                 songCounts += songRepository.countByPlaylist(playlist);
             }
             Integer warningCounts = warningRepository.countByAccount(isAccount);
+
             AdminAccountListForm adminAccountListForm = new AdminAccountListForm(
                     isProfile.getAccount().getAccountId(),
                     isProfile.getNickname(),
@@ -360,6 +395,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
         List<Profile> profileList = profileRepository.findAllBlacklistWithPage(pageable, roleType);
         final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
+
         for (Profile isProfile : profileList) {
             Account isAccount = accountRepository.findAccountByAccountRoleType(roleType)
                     .orElseThrow(() -> new IllegalArgumentException("account 없음"));
@@ -367,10 +403,12 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
             Integer playlistCounts = playlists.size();
             Integer songCounts = 0;
+
             for (Playlist playlist : playlists) {
                 songCounts += songRepository.countByPlaylist(playlist);
             }
             Integer warningCounts = warningRepository.countByAccount(isAccount);
+
             AdminAccountListForm adminAccountListForm = new AdminAccountListForm(
                     isProfile.getAccount().getAccountId(),
                     isProfile.getNickname(),
@@ -457,16 +495,19 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Override
     public Page<AdminPlaylistSelectListForm> playlistFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm) {
         if (checkAdmin(headers)) return null;
+
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
         List<Playlist> playlists = playlistRepository.findPlaylistByAccount_AccountId(requestForm.getAccountId());
 
         final List<AdminPlaylistSelectListForm> adminPlaylistSelectListForms = new ArrayList<>();
+
         for(Playlist isPlaylist : playlists){
             Profile isProfile = profileRepository.findByAccount_AccountId(isPlaylist.getAccount().getAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
             Integer likeCounts = likePlaylistRepository.countByPlaylist(isPlaylist);
             Integer songCounts = songRepository.countByPlaylist(isPlaylist);
+
             AdminPlaylistSelectListForm adminPlaylistSelectListForm =
                     new AdminPlaylistSelectListForm(isPlaylist.getPlaylistId(), isPlaylist.getPlaylistName(), isProfile.getNickname(), likeCounts, songCounts, isPlaylist.getCreateDate());
             adminPlaylistSelectListForms.add(adminPlaylistSelectListForm);
@@ -486,9 +527,11 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Transactional
     public Page<AdminInquiryListResponseForm> inquiryFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm) {
         if (checkAdmin(headers)) return null;
+
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
         List<AdminInquiryListResponseForm> responseFormList = new ArrayList<>();
         List<InquiryDetail> inquiryDetailList = inquiryDetailRepository.findByProfile_Account_accountId(requestForm.getAccountId());
+
         for (InquiryDetail inquiryDetail : inquiryDetailList) {
             Inquiry inquiry = inquiryDetail.getInquiry();
 
