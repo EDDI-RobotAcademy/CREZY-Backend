@@ -7,7 +7,9 @@ import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountInfoResponseForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginRequestForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginResponseForm;
-import me.muse.CrezyBackend.domain.account.entity.*;
+import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
+import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
@@ -104,7 +106,8 @@ public class AccountServiceImpl implements AccountService{
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
         Profile profile = profileRepository.findByAccount(account)
-                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));;
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
         final AccountInfoResponseForm responseForm = new AccountInfoResponseForm(
                account.getAccountId(), profile.getEmail(), profile.getNickname(), account.getPlaylist().size(),
                 account.getLikePlaylist().size(), profile.getProfileImageName()
@@ -139,11 +142,14 @@ public class AccountServiceImpl implements AccountService{
         if (maybeAccount.isEmpty()) {
             return null;
         }
+
         final Profile profile = maybeAccount.get();
+
         if (passwordEncoder.matches(accountLoginRequestForm.getPassword(), profile.getPassword())) {
             final String userToken = UUID.randomUUID().toString();
             redisService.setKeyAndValue(userToken, profile.getAccount().getAccountId());
             AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
+
             return new AccountLoginResponseForm(profile.getNickname(),roleType.getRoleType().toString(),userToken);
         }
         return null;
