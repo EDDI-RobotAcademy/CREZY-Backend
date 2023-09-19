@@ -8,9 +8,9 @@ import me.muse.CrezyBackend.domain.account.repository.AccountLoginTypeRepository
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.admin.traffic.service.TrafficService;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
-import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
 import me.muse.CrezyBackend.domain.oauth.dto.KakaoOAuthToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -24,13 +24,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static me.muse.CrezyBackend.domain.account.entity.LoginType.GOOGLE;
 import static me.muse.CrezyBackend.domain.account.entity.LoginType.KAKAO;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
@@ -45,6 +42,7 @@ public class KakaoServiceImpl implements KakaoService{
     final private AccountLoginTypeRepository accountLoginTypeRepository;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private ProfileRepository profileRepository;
+    final private TrafficService trafficService;
     @Value("${kakao.kakaoLoginUrl}")
     private String kakaoLoginUrl;
     @Value("${kakao.client-id}")
@@ -113,7 +111,9 @@ public class KakaoServiceImpl implements KakaoService{
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
         Profile profile = profileRepository.findByAccount(account)
-                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));;
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        trafficService.loginCounting();
 
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
@@ -133,6 +133,9 @@ public class KakaoServiceImpl implements KakaoService{
         redisService.setKeyAndValue(userToken, account.getAccountId());
         account.setLastLoginDate(null);
         accountRepository.save(account);
+
+        trafficService.loginCounting();
+
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 

@@ -8,12 +8,10 @@ import me.muse.CrezyBackend.domain.account.repository.AccountLoginTypeRepository
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.admin.traffic.service.TrafficService;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
-import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
-import me.muse.CrezyBackend.domain.oauth.dto.KakaoOAuthToken;
 import me.muse.CrezyBackend.domain.oauth.dto.NaverOAuthToken;
-import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.*;
@@ -43,6 +41,7 @@ public class NaverServiceImpl implements NaverService{
     final private RedisService redisService;
     final private ProfileRepository profileRepository;
     final private AccountRepository accountRepository;
+    final private TrafficService trafficService;
 
     @Value("${naver.naverLoginUrl}")
     private String naverLoginUrl;
@@ -81,6 +80,9 @@ public class NaverServiceImpl implements NaverService{
         redisService.setKeyAndValue(userToken, account.getAccountId());
         account.setLastLoginDate(null);
         accountRepository.save(account);
+
+        trafficService.loginCounting();
+
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 
@@ -94,7 +96,9 @@ public class NaverServiceImpl implements NaverService{
         final String userToken = UUID.randomUUID().toString();
         redisService.setKeyAndValue(userToken, account.getAccountId());
         Profile profile = profileRepository.findByAccount(account)
-                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));;
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        trafficService.loginCounting();
 
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
