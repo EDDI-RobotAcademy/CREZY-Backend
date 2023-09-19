@@ -3,7 +3,6 @@ package me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryImages;
-import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.Entity.InquiryAnswer;
 
 import java.time.LocalDate;

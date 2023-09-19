@@ -17,7 +17,10 @@ import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInqu
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryReadResponseForm;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.InquiryCountResponseForm;
 import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +55,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
         String currentDate = sdt.format(date);
 
         LocalDate transformCurrentDate = TransformToDate.transformToDate(currentDate);
+
         int todayInquiryCount = inquiryRepository.countByCreateInquiryDate(transformCurrentDate);
         int waitingAnswerInquiryCount = inquiryRepository.countWaitingAnswer();
         long totalInquiryCount = inquiryRepository.count();
@@ -161,7 +165,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
     @Override
     @Transactional
     public AdminInquiryReadResponseForm adminReadInquiry(HttpHeaders headers, Long inquiryId) {
-//        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin(headers)) return null;
 
         Inquiry inquiry = inquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new IllegalArgumentException("Inquiry not found"));
