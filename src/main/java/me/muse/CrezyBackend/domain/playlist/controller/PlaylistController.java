@@ -8,6 +8,7 @@ import me.muse.CrezyBackend.domain.likePlaylist.Service.LikePlaylistService;
 import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.service.PlaylistService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,9 +28,9 @@ public class PlaylistController {
 
 
     @GetMapping("/list")
-    public List<PlaylistResponseForm> playList(){
+    public Page<PlaylistResponseForm> playList(@RequestParam("page") Integer page){
         log.info("playList()");
-        return playlistService.list();
+        return playlistService.list(page);
     }
 
     @GetMapping("/{playlistId}")
