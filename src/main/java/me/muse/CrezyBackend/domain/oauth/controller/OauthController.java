@@ -70,7 +70,7 @@ public class OauthController {
     }
 
     @GetMapping("/naver-check-exist")
-    public boolean naverCheckExist(@RequestParam String code) {
+    public String naverCheckExist(@RequestParam String code) {
         return naverService.checkDuplicateAccount(code);
     }
 
