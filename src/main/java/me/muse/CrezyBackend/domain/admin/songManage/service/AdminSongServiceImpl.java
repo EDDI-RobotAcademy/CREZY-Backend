@@ -7,21 +7,21 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
-import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
-import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongListRequestForm;
-import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongListResponseForm;
-import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongModifyLyricsRequestForm;
+import me.muse.CrezyBackend.domain.admin.songManage.controller.form.*;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
 import me.muse.CrezyBackend.domain.song.entity.StatusType;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongStatusRepository;
+import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +39,7 @@ public class AdminSongServiceImpl implements AdminSongService{
     final private SongRepository songRepository;
     final private SongStatusRepository songStatusRepository;
     final private ProfileRepository profileRepository;
+    final private Integer weeks = 6;
 
     @Override
     public AdminSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId) {
@@ -173,5 +174,73 @@ public class AdminSongServiceImpl implements AdminSongService{
     public void deleteSong(HttpHeaders headers, Long songId) {
         if (!checkAdmin(headers)) return;
         songRepository.deleteById(songId);
+    }
+
+    @Override
+    public TodayStatusSongResponseForm todayStatusSong(HttpHeaders headers, String date) {
+        if (checkAdmin(headers)) return null;
+
+        Integer todaySong = songRepository.findByCreateDate(TransformToDate.transformToDate(date)).size();
+        Integer totalSong = songRepository.findAll().size();
+        Integer previousSong = songRepository.findByCreateDate((TransformToDate.transformToDate(date)).minusDays(1)).size();
+
+        double increaseRate = 0;
+
+        if(0 < todaySong && previousSong == 0){
+            increaseRate = 100;
+        }else {
+            increaseRate = (double) (todaySong - previousSong) / previousSong * 100;
+        }
+
+        Integer afterDay = compareDate(TransformToDate.transformToDate(date));
+        Integer previousDay = weeks-afterDay;
+
+        LocalDate previousDate = (TransformToDate.transformToDate(date)).minusDays(previousDay);
+        LocalDate afterDate = (TransformToDate.transformToDate(date)).plusDays(afterDay);
+
+        List<Integer> playlistCounts = songBetweenPeriod(previousDate, afterDate);
+        List<String> playlistDateList = songDateListBetweenPeriod(previousDate, afterDate);
+
+        return new TodayStatusSongResponseForm(todaySong, totalSong, (int)increaseRate, playlistCounts, playlistDateList);
+    }
+
+    public Integer compareDate(LocalDate compareDate) {
+        Long date = System.currentTimeMillis();
+
+        SimpleDateFormat sdt = new SimpleDateFormat();
+        sdt.applyPattern("yyyy-MM-dd");
+        String currentDate = sdt.format(date);
+
+        LocalDate transformCurrentDate = TransformToDate.transformToDate(currentDate);
+
+        LocalDate date1 = transformCurrentDate;
+        LocalDate date2 = compareDate;
+
+        Period period = date2.until(date1);
+        int days = period.getDays();
+        if(days < 3) {
+            return days;
+        }
+        return 3;
+    }
+
+    public List<Integer> songBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
+        List<Integer> songCounts = new ArrayList<>();
+
+        while (!previousDate.isAfter(afterDate)) {
+            Integer playlists = songRepository.findByCreateDate(previousDate).size();
+            songCounts.add(playlists);
+            previousDate = previousDate.plusDays(1);
+        }
+        return songCounts;
+    }
+    public List<String> songDateListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
+        List<String> songDateList = new ArrayList<>();
+
+        while (!previousDate.isAfter(afterDate)) {
+            songDateList.add(previousDate.toString());
+            previousDate = previousDate.plusDays(1);
+        }
+        return songDateList;
     }
 }
