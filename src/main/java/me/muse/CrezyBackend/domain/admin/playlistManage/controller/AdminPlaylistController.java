@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.todayStatusPlaylistResponseForm;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.TodayStatusPlaylistResponseForm;
 import me.muse.CrezyBackend.domain.admin.playlistManage.service.AdminPlaylistService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminPlaylistController {
     final private AdminPlaylistService adminService;
     @GetMapping("/check-playlist")
-    public todayStatusPlaylistResponseForm todayStatusPlaylist(@RequestHeader HttpHeaders headers, @RequestParam("date") String date) {
+    public TodayStatusPlaylistResponseForm todayStatusPlaylist(@RequestHeader HttpHeaders headers, @RequestParam("date") String date) {
         log.info("statusTodayPlaylist()");
         return adminService.todayStatusPlaylist(headers, date);
     }

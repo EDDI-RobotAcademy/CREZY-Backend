@@ -11,7 +11,7 @@ import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
-import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.todayStatusPlaylistResponseForm;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.TodayStatusPlaylistResponseForm;
 import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
@@ -47,7 +47,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     final private Integer weeks = 6;
 
     @Override
-    public todayStatusPlaylistResponseForm todayStatusPlaylist(HttpHeaders headers, String date) {
+    public TodayStatusPlaylistResponseForm todayStatusPlaylist(HttpHeaders headers, String date) {
         if (checkAdmin(headers)) return null;
 
         Integer todayPlaylist = playlistRepository.findByCreateDate(TransformToDate.transformToDate(date)).size();
@@ -71,7 +71,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         List<Integer> playlistCounts = playlistBetweenPeriod(previousDate, afterDate);
         List<String> playlistDateList = playlistDateListBetweenPeriod(previousDate, afterDate);
 
-        return new todayStatusPlaylistResponseForm(todayPlaylist, totalPlaylist, (int)increaseRate, playlistCounts, playlistDateList);
+        return new TodayStatusPlaylistResponseForm(todayPlaylist, totalPlaylist, (int)increaseRate, playlistCounts, playlistDateList);
     }
 
     public Integer compareDate(LocalDate compareDate) {
@@ -142,7 +142,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
             playlists = playlistRepository.findAllWithPage();
         } else if (requestForm.getSortType().equals("trending")) {
             pageable = PageRequest.of(requestForm.getPage() - 1, 10);
-            playlists = playlistRepository.findAllSortBylikePalylist();
+            playlists = playlistRepository.findAllSortByLikePlaylist();
         } else if (requestForm.getSortType().equals("empty")) {
             pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
             playlists = playlistRepository.findAllBySongEmpty();
