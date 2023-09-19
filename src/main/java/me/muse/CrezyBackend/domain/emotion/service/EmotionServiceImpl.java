@@ -2,8 +2,7 @@ package me.muse.CrezyBackend.domain.emotion.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.domain.admin.traffic.entity.Traffic;
-import me.muse.CrezyBackend.domain.admin.traffic.repository.TrafficRepository;
+import me.muse.CrezyBackend.domain.admin.traffic.service.TrafficService;
 import me.muse.CrezyBackend.domain.emotion.controller.form.AnalysisRequestForm;
 import me.muse.CrezyBackend.domain.emotion.controller.form.AnalysisResponseForm;
 import me.muse.CrezyBackend.domain.song.entity.LabeledSong;
@@ -18,11 +17,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -32,7 +29,7 @@ public class EmotionServiceImpl implements EmotionService{
 
     final private LabeledSongRepository labeledSongRepository;
     final private Youtube youtube;
-    final private TrafficRepository trafficRepository;
+    final private TrafficService trafficService;
 
     @Value("${youtube.lyricsAddress}")
     private String lyricsAddress;
@@ -72,16 +69,7 @@ public class EmotionServiceImpl implements EmotionService{
 
         RestTemplate restTemplate = new RestTemplate();
 
-        Optional<Traffic> maybeTraffic = trafficRepository.findByDate(LocalDate.now());
-        Traffic traffic;
-        if(maybeTraffic.isEmpty()) {
-            traffic = new Traffic(LocalDate.now());
-            traffic.setAnalysisCount(1);
-        }else {
-            traffic = maybeTraffic.get();
-            traffic.setAnalysisCount(traffic.getAnalysisCount()+1);
-        }
-        trafficRepository.save(traffic);
+        trafficService.analysisCounting();
 
         try {
             Thread.sleep(3000); // 3초 대기
