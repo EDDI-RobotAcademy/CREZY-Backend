@@ -2,6 +2,7 @@ package me.muse.CrezyBackend.domain.admin.accountManage.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
 import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.*;
 import me.muse.CrezyBackend.domain.admin.accountManage.service.AdminAccountService;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
@@ -73,5 +74,10 @@ public class AdminAccountController {
     public Page<AdminPlaylistSelectListForm> playlistFindByAccount(@RequestHeader HttpHeaders headers, @RequestBody AdminPlaylistFindByAccountRequestForm requestForm) {
         log.info("playlistFindByAccount()");
         return adminService.playlistFindByAccount(headers, requestForm);
+    }
+    @PostMapping("/account-inquiry")
+    public Page<AdminInquiryListResponseForm> inquiryFindByAccount(@RequestHeader HttpHeaders headers, @RequestBody AdminPlaylistFindByAccountRequestForm requestForm) {
+        log.info("inquiryFindByAccount()");
+        return adminService.inquiryFindByAccount(headers, requestForm);
     }
 }
