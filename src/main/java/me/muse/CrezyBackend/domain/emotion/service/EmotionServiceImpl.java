@@ -86,31 +86,16 @@ public class EmotionServiceImpl implements EmotionService{
     public List<AnalysisResponseForm> recommendSong(String emotion) throws GeneralSecurityException, IOException {
         emotion = emotion.replaceAll("\"", "");
         log.info("emotion : {}", emotion);
-        String label = null;
-
-        switch (emotion){
-            case "공포":
-                label = "0";
-                break;
-            case "놀람":
-                label = "1";
-                break;
-            case "분노":
-                label = "2";
-                break;
-            case "슬픔":
-                label = "3";
-                break;
-            case "중립":
-                label = "4";
-                break;
-            case "행복":
-                label = "5";
-                break;
-            case "혐오":
-                label = "6";
-                break;
-        }
+        String label = switch (emotion) {
+            case "공포" -> "0";
+            case "놀람" -> "1";
+            case "분노" -> "2";
+            case "슬픔" -> "3";
+            case "중립" -> "4";
+            case "행복" -> "5";
+            case "혐오" -> "6";
+            default -> null;
+        };
 
         log.info("label : {}", label);
 
@@ -131,4 +116,3 @@ public class EmotionServiceImpl implements EmotionService{
         return responseFormList;
     }
 }
-
