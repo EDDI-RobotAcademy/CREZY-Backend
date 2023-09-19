@@ -21,4 +21,5 @@ public class AdminAccountDetailForm {
     final private List<Integer> playlistCountsList;
     final private List<Integer> songCountsList;
     final private List<String> accountDateList;
+    final private String accountRoleType;
 }
