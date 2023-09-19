@@ -21,4 +21,5 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     List<Song> findByPlaylist_PlaylistId(Long playlistId);
     List<Song> findByStatusTypeOrderBySongIdAsc(SongStatusType songStatusType);
     List<Song> findByStatusTypeOrderBySongIdDesc(SongStatusType songStatusType);
+    List<Song> findByCreateDate(LocalDate localDate);
 }
