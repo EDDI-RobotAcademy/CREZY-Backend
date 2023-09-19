@@ -2,11 +2,10 @@ package me.muse.CrezyBackend.domain.admin.accountManage.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountDetailForm;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListForm;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.AdminAccountListRequestForm;
-import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.todayStatusAccountResponseForm;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
+import me.muse.CrezyBackend.domain.admin.accountManage.controller.form.*;
 import me.muse.CrezyBackend.domain.admin.accountManage.service.AdminAccountService;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -70,5 +69,15 @@ public class AdminAccountController {
     public void accountChangeRoleTypeToNormal(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId) {
         log.info("accountChangeRoleTypeToNormal()");
         adminService.accountChangeRoleTypeToNormal(headers, accountId);
+    }
+    @PostMapping("/account-playlist")
+    public Page<AdminPlaylistSelectListForm> playlistFindByAccount(@RequestHeader HttpHeaders headers, @RequestBody AdminPlaylistFindByAccountRequestForm requestForm) {
+        log.info("playlistFindByAccount()");
+        return adminService.playlistFindByAccount(headers, requestForm);
+    }
+    @PostMapping("/account-inquiry")
+    public Page<AdminInquiryListResponseForm> inquiryFindByAccount(@RequestHeader HttpHeaders headers, @RequestBody AdminPlaylistFindByAccountRequestForm requestForm) {
+        log.info("inquiryFindByAccount()");
+        return adminService.inquiryFindByAccount(headers, requestForm);
     }
 }

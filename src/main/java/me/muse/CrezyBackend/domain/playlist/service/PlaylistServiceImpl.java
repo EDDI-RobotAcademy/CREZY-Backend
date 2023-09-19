@@ -15,6 +15,10 @@ import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.entity.StatusType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -36,9 +40,9 @@ public class PlaylistServiceImpl implements PlaylistService{
     final private LikePlaylistRepository likePlaylistRepository;
     @Override
     @Transactional
-    public List<PlaylistResponseForm> list() {
+    public Page<PlaylistResponseForm> list(Integer page) {
         List<Playlist> playlists = playlistRepository.findAll();
-
+        Pageable pageable = PageRequest.of(page - 1, 10);
         List<PlaylistResponseForm> responseForms = new ArrayList<>();
         for (Playlist playlist : playlists) {
             String thumbnailName = playlist.getThumbnailName();
@@ -57,7 +61,13 @@ public class PlaylistServiceImpl implements PlaylistService{
 
             responseForms.add(responseForm);
         }
-        return responseForms;
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), responseForms.size());
+
+        return new PageImpl<>(
+                responseForms.subList(start, end),
+                pageable,
+                responseForms.size());
     }
 
     @Override

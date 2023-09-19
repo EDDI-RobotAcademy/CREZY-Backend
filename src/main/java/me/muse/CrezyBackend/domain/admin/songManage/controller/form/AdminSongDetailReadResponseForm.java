@@ -1,15 +1,13 @@
-package me.muse.CrezyBackend.domain.admin.playlistManage.controller.form;
+package me.muse.CrezyBackend.domain.admin.songManage.controller.form;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import me.muse.CrezyBackend.domain.song.entity.Song;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class AdminPlaylistSongDetailReadResponseForm {
+public class AdminSongDetailReadResponseForm {
     private Long songId;
     private String title;
     private String singer;
@@ -19,7 +17,7 @@ public class AdminPlaylistSongDetailReadResponseForm {
     private String blockedDate;
     private String songStatus;
 
-    public AdminPlaylistSongDetailReadResponseForm(Long songId, String title, String singer, LocalDate createDate, String link, String lyrics, String blockedDate) {
+    public AdminSongDetailReadResponseForm(Long songId, String title, String singer, LocalDate createDate, String link, String lyrics, String blockedDate, String songStatus) {
         this.songId = songId;
         this.title = title;
         this.singer = singer;
@@ -27,9 +25,10 @@ public class AdminPlaylistSongDetailReadResponseForm {
         this.link = link;
         this.lyrics = lyrics;
         this.blockedDate = blockedDate;
+        this.songStatus = songStatus;
     }
 
-    public AdminPlaylistSongDetailReadResponseForm(Long songId, String title, String singer, LocalDate createDate, String songStatus) {
+    public AdminSongDetailReadResponseForm(Long songId, String title, String singer, LocalDate createDate, String songStatus) {
         this.songId = songId;
         this.title = title;
         this.singer = singer;

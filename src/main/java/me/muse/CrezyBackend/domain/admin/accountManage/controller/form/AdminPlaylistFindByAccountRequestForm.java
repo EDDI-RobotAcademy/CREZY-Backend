@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class AdminAccountListRequestForm {
-    final private Integer warningCounts;
+public class AdminPlaylistFindByAccountRequestForm {
+    final private Long accountId;
     final private Integer page;
 }

@@ -9,6 +9,7 @@ import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.*;
+import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
@@ -27,8 +28,6 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 
@@ -170,11 +169,11 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         Profile profile = profileRepository.findByAccount(playlist.getAccount())
                 .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
 
-        List<AdminPlaylistSongDetailReadResponseForm> songDetail = new ArrayList<>();
+        List<AdminSongDetailReadResponseForm> songDetail = new ArrayList<>();
         List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlistId);
         for(Song song : songlist){
-            AdminPlaylistSongDetailReadResponseForm songs =
-                    new AdminPlaylistSongDetailReadResponseForm(
+            AdminSongDetailReadResponseForm songs =
+                    new AdminSongDetailReadResponseForm(
                         song.getSongId(),
                         song.getTitle(),
                         song.getSinger(),

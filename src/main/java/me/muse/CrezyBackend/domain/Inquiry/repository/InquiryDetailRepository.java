@@ -39,4 +39,6 @@ public interface InquiryDetailRepository extends JpaRepository<InquiryDetail, Lo
     List<InquiryDetail> findOldestUnansweredInquiries();
 
     List<InquiryDetail> findByInquiry_CreateInquiryDateAndInquiry_InquiryCategoryType(LocalDate createInquiryDate, InquiryCategoryType inquiryCategoryType);
+
+    List<InquiryDetail> findByProfile_Account_accountId(Long accountId);
 }
