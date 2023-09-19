@@ -27,7 +27,7 @@ public class OauthController {
     }
 
     @GetMapping("/google-check-exist")
-    public boolean googleCheckExist(@RequestParam String code) {
+    public String googleCheckExist(@RequestParam String code) {
         return googleService.checkDuplicateAccount(code);
     }
 
@@ -48,7 +48,7 @@ public class OauthController {
         return kakaoService.kakaoLoginAddress();
     }
     @GetMapping("/kakao-check-exist")
-    public boolean kakaoCheckExist(@RequestParam String code) {
+    public String kakaoCheckExist(@RequestParam String code) {
         return kakaoService.checkDuplicateAccount(code);
     }
 
@@ -70,7 +70,7 @@ public class OauthController {
     }
 
     @GetMapping("/naver-check-exist")
-    public boolean naverCheckExist(@RequestParam String code) {
+    public String naverCheckExist(@RequestParam String code) {
         return naverService.checkDuplicateAccount(code);
     }
 

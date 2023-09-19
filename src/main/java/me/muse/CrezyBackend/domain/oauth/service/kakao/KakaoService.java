@@ -9,6 +9,6 @@ public interface KakaoService {
     String kakaoLoginAddress();
     LoginResponseForm getAccount();
     LoginResponseForm getNewAccount(LoginRequestForm requestForm);
-    boolean checkDuplicateAccount(String code);
+    String checkDuplicateAccount(String code);
 
 }

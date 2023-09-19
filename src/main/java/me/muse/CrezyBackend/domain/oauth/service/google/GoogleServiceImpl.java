@@ -9,11 +9,10 @@ import me.muse.CrezyBackend.domain.account.repository.AccountLoginTypeRepository
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.admin.traffic.service.TrafficService;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginRequestForm;
 import me.muse.CrezyBackend.domain.oauth.controller.form.LoginResponseForm;
 import me.muse.CrezyBackend.domain.oauth.dto.GoogleOAuthToken;
-import me.muse.CrezyBackend.domain.oauth.service.google.GoogleService;
-import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.*;
@@ -28,7 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static me.muse.CrezyBackend.domain.account.entity.LoginType.GOOGLE;
-import static me.muse.CrezyBackend.domain.account.entity.LoginType.KAKAO;
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.NORMAL;
 
 @Service
@@ -40,6 +39,7 @@ public class GoogleServiceImpl implements GoogleService {
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private RedisService redisService;
     final private ProfileRepository profileRepository;
+    final private TrafficService trafficService;
     @Value("${google.googleLoginUrl}")
     private String googleLoginUrl;
     @Value("${google.GOOGLE_TOKEN_REQUEST_URL}")
@@ -125,11 +125,17 @@ public class GoogleServiceImpl implements GoogleService {
         return profile.getAccount();
     }
 
-    public boolean isExistAccount(ResponseEntity<String> response){
+    public String isExistAccount(ResponseEntity<String> response){
         AccountLoginType loginType = accountLoginTypeRepository.findByLoginType(GOOGLE).get();
         Optional<Profile> maybeProfile = profileRepository.findByEmailAndAccount_LoginType(findEmail(response), loginType);
 
-        return (maybeProfile.isPresent());
+        if(maybeProfile.isEmpty()){ return "NEW"; }
+
+        if(maybeProfile.get().getAccount().getRoleType().getRoleType()==BLACKLIST){
+            return "BLACKLIST";
+        } else {
+            return "NORMAL";
+        }
     }
 
     @Override
@@ -148,6 +154,9 @@ public class GoogleServiceImpl implements GoogleService {
         redisService.setKeyAndValue(userToken, account.getAccountId());
         account.setLastLoginDate(null);
         accountRepository.save(account);
+
+        trafficService.loginCounting();
+
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 
@@ -164,11 +173,13 @@ public class GoogleServiceImpl implements GoogleService {
         Profile profile = profileRepository.findByAccount(account)
                 .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
 
+        trafficService.loginCounting();
+
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
 
     @Override
-    public boolean checkDuplicateAccount(String code) {
+    public String checkDuplicateAccount(String code) {
         GoogleOAuthToken googleOAuthToken = getAccessToken(code);
         refreshToken = googleOAuthToken.getRefresh_token();
         ResponseEntity<String> response = requestUserInfo(googleOAuthToken);

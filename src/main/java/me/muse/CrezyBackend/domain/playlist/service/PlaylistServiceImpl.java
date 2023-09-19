@@ -72,7 +72,7 @@ public class PlaylistServiceImpl implements PlaylistService{
 
     @Override
     @Transactional
-    public PlaylistReadResponseForm read(Long playlistId) {
+    public PlaylistReadResponseForm readPlayList(Long playlistId) {
         Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
         if (maybePlaylist.isPresent()) {
             Playlist playlist = maybePlaylist.get();
@@ -97,6 +97,32 @@ public class PlaylistServiceImpl implements PlaylistService{
         }
         return null;
     }
+
+    @Override
+    @Transactional
+    public PlaylistReadResponseForm readMyPagePlaylist(Long playlistId) {
+        Optional<Playlist> maybePlaylist = playlistRepository.findById(playlistId);
+        if (maybePlaylist.isPresent()) {
+            Playlist playlist = maybePlaylist.get();
+
+            List<Song> resultList = playlist.getSonglist();
+
+            List<Song> distinctResult = resultList.stream().distinct().collect(Collectors.toList());
+
+            Profile profile = profileRepository.findByAccount(playlist.getAccount())
+                    .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
+
+            List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
+
+            return new PlaylistReadResponseForm(playlist.getPlaylistName(),
+                    profile.getNickname(),
+                    playlist.getThumbnailName(),
+                    likePlaylists.size(),
+                    distinctResult);
+        }
+        return null;
+    }
+
     @Override
     @Transactional
     public long register(PlaylistRegisterRequestForm requestForm, HttpHeaders headers) {

@@ -2,6 +2,7 @@ package me.muse.CrezyBackend.domain.emotion.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.admin.traffic.service.TrafficService;
 import me.muse.CrezyBackend.domain.emotion.controller.form.AnalysisRequestForm;
 import me.muse.CrezyBackend.domain.emotion.controller.form.AnalysisResponseForm;
 import me.muse.CrezyBackend.domain.song.entity.LabeledSong;
@@ -28,6 +29,7 @@ public class EmotionServiceImpl implements EmotionService{
 
     final private LabeledSongRepository labeledSongRepository;
     final private Youtube youtube;
+    final private TrafficService trafficService;
 
     @Value("${youtube.lyricsAddress}")
     private String lyricsAddress;
@@ -66,6 +68,8 @@ public class EmotionServiceImpl implements EmotionService{
         String result_url = "http://" + lyricsAddress + "/ai-response";
 
         RestTemplate restTemplate = new RestTemplate();
+
+        trafficService.analysisCounting();
 
         try {
             Thread.sleep(3000); // 3초 대기
