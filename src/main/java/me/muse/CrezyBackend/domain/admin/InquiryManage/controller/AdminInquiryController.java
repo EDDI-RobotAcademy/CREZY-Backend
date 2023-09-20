@@ -2,10 +2,7 @@ package me.muse.CrezyBackend.domain.admin.InquiryManage.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListRequestForm;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryReadResponseForm;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.InquiryCountResponseForm;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.*;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.service.AdminInquiryService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -37,5 +34,10 @@ public class AdminInquiryController {
     @GetMapping("/{inquiryId}")
     public AdminInquiryReadResponseForm adminReadInquiry(@RequestHeader HttpHeaders headers, @PathVariable("inquiryId") Long inquiryId){
         return adminInquiryService.adminReadInquiry(headers, inquiryId);
+    }
+
+    @PostMapping("/inquiry-answer")
+    public Long inquiryAnswerRegist(@RequestHeader HttpHeaders headers, @RequestBody AdminInquiryAnswerRegisterForm registerForm){
+        return adminInquiryService.registAnswer(headers, registerForm);
     }
 }

@@ -9,10 +9,9 @@ import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryDetail;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryRepository;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListRequestForm;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryReadResponseForm;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.InquiryCountResponseForm;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.Entity.InquiryAnswer;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.Repository.InquiryAnswerRepository;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.*;
 import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
 import me.muse.CrezyBackend.utility.transformToDate.TransformToDate;
 import org.springframework.data.domain.Page;
@@ -37,6 +36,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
     final private InquiryDetailRepository inquiryDetailRepository;
     final private InquiryCategoryTypeRepository inquiryCategoryTypeRepository;
     final private CheckAdmin checkAdmin;
+    final private InquiryAnswerRepository inquiryAnswerRepository;
 
     @Override
     public InquiryCountResponseForm countInquiry(HttpHeaders headers) {
@@ -161,5 +161,18 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
                 inquiryDetail.getInquiry().getInquiryAnswer(),
                 inquiryDetail.getInquiryImageNames()
         );
+    }
+
+    @Override
+    public Long registAnswer(HttpHeaders headers, AdminInquiryAnswerRegisterForm registerForm) {
+//        if (!checkAdmin.checkAdmin(headers)) return null;
+
+        Inquiry inquiry = inquiryRepository.findById(registerForm.getInquiryId())
+                .orElseThrow(() -> new IllegalArgumentException("Inquiry not found"));
+        InquiryAnswer inquiryAnswer = new InquiryAnswer(registerForm.getInquiryAnswer(), inquiry);
+
+        inquiryAnswerRepository.save(inquiryAnswer);
+
+        return inquiry.getInquiryId();
     }
 }

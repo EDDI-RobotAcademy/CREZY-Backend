@@ -15,5 +15,5 @@ public interface TrafficService {
 
     WeekTrafficCountResponseForm weekCount(int weekValue, HttpHeaders headers);
 
-    WeeklyRegistResponseForm weeklyRegist(int weekValue, HttpHeaders headers);
+    List<WeeklyRegistResponseForm> weeklyRegist(int weekValue, HttpHeaders headers);
 }

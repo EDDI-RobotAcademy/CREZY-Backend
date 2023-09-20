@@ -8,7 +8,7 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class WeeklyRegistResponseForm {
-    final private List<Integer> accountCount;
-    final private List<Integer> playlistCount;
-    final private List<Integer> songCount;
+    final private int accountCount;
+    final private int playlistCount;
+    final private int songCount;
 }
