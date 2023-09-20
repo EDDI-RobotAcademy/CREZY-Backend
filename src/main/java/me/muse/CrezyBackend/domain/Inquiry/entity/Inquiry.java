@@ -15,7 +15,7 @@ public class Inquiry {
     private Long inquiryId;
     @OneToOne
     private InquiryCategoryType inquiryCategoryType;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     @PrimaryKeyJoinColumn(name = "inquiryAnswerId")
     private InquiryAnswer inquiryAnswer;
     public Inquiry(InquiryCategoryType inquiryCategoryType) {
