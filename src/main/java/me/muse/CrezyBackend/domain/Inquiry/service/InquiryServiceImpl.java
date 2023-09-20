@@ -155,7 +155,7 @@ public class InquiryServiceImpl implements InquiryService {
         inquiryDetailRepository.save(inquiryDetail);
 
         // 기존 이미지 삭제
-        inquiryImagesRepository.deleteAll(inquiryDetail.getInquiryImageNames());
+        inquiryImagesRepository.deleteAllByInquiryDetailId(inquiryDetail.getInquiryDetailId());
 
         final List<InquiryImages> inquiryImagesList = new ArrayList<>();
 
