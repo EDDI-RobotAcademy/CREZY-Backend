@@ -165,7 +165,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
 
     @Override
     public Long registAnswer(HttpHeaders headers, AdminInquiryAnswerRegisterForm registerForm) {
-//        if (!checkAdmin.checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Inquiry inquiry = inquiryRepository.findById(registerForm.getInquiryId())
                 .orElseThrow(() -> new IllegalArgumentException("Inquiry not found"));
