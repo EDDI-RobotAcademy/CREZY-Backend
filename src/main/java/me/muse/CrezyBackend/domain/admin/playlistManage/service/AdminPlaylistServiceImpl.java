@@ -3,10 +3,7 @@ package me.muse.CrezyBackend.domain.admin.playlistManage.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
-import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistReadResponseForm;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistSelectListForm;
@@ -20,7 +17,8 @@ import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.utility.RandomValue;
-import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
+import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
+import me.muse.CrezyBackend.utility.transformToDate.TransformToDate;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -30,25 +28,21 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class AdminPlaylistServiceImpl implements AdminPlaylistService {
-    final private AccountRepository accountRepository;
-    final private RedisService redisService;
     final private PlaylistRepository playlistRepository;
     final private ProfileRepository profileRepository;
     final private LikePlaylistRepository likePlaylistRepository;
     final private SongRepository songRepository;
     final private Integer weeks = 6;
+    final private CheckAdmin checkAdmin;
 
     @Override
     public TodayStatusPlaylistResponseForm todayStatusPlaylist(HttpHeaders headers, String date) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Integer todayPlaylist = playlistRepository.findByCreateDate(TransformToDate.transformToDate(date)).size();
         Integer totalPlaylist = playlistRepository.findAllPlaylist().size();
@@ -114,25 +108,9 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         return playlistDateList;
     }
 
-    private boolean checkAdmin(HttpHeaders headers) {
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-
-        if (authValues.isEmpty()) {
-            return true;
-        }
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
-        if (account.getRoleType().getRoleType() != ADMIN) {
-            return true;
-        }
-        return false;
-    }
     @Override
     public Page<AdminPlaylistSelectListForm> playlistRecentList(HttpHeaders headers, AdminPlaylistsRequestForm requestForm) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         List<Playlist> playlists = new ArrayList<>();
         Pageable pageable = null;
@@ -175,7 +153,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     @Override
     @Transactional
     public AdminPlaylistReadResponseForm readPlaylist(HttpHeaders headers, Long playlistId) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
@@ -211,7 +189,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
 
     @Override
     public void changePlaylistName(HttpHeaders headers, Long playlistId) {
-        if (checkAdmin(headers)) return;
+        if (!checkAdmin.checkAdmin(headers)) return;
 
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new IllegalArgumentException("playlist 없음"));
@@ -241,7 +219,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
 
     @Override
     public void changePlaylistThumbnailName(HttpHeaders headers, Long playlistId) {
-        if (checkAdmin(headers)) return;
+        if (!checkAdmin.checkAdmin(headers)) return;
 
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new IllegalArgumentException("playlist 없음"));
@@ -254,7 +232,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
     @Override
     @Transactional
     public void deletePlaylist(HttpHeaders headers, Long playlistId) {
-        if (checkAdmin(headers)) return;
+        if (!checkAdmin.checkAdmin(headers)) return;
 
         Playlist maybePlaylist = playlistRepository.findById(playlistId)
                 .orElseThrow(()->new IllegalArgumentException("playlist 없음"));

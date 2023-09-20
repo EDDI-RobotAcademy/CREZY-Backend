@@ -2,10 +2,7 @@ package me.muse.CrezyBackend.domain.admin.songManage.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
-import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.admin.songManage.controller.form.*;
 import me.muse.CrezyBackend.domain.song.entity.Song;
@@ -13,7 +10,8 @@ import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
 import me.muse.CrezyBackend.domain.song.entity.StatusType;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongStatusRepository;
-import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
+import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
+import me.muse.CrezyBackend.utility.transformToDate.TransformToDate;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -24,9 +22,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 import static me.muse.CrezyBackend.domain.song.entity.StatusType.BLOCK;
 import static me.muse.CrezyBackend.domain.song.entity.StatusType.OPEN;
 
@@ -34,16 +30,15 @@ import static me.muse.CrezyBackend.domain.song.entity.StatusType.OPEN;
 @Slf4j
 @RequiredArgsConstructor
 public class AdminSongServiceImpl implements AdminSongService{
-    final private AccountRepository accountRepository;
-    final private RedisService redisService;
     final private SongRepository songRepository;
     final private SongStatusRepository songStatusRepository;
     final private ProfileRepository profileRepository;
+    final private CheckAdmin checkAdmin;
     final private Integer weeks = 6;
 
     @Override
     public AdminSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
         Song song= songRepository.findById(songId)
                 .orElseThrow(() -> new IllegalArgumentException("노래 없음"));
 
@@ -60,16 +55,14 @@ public class AdminSongServiceImpl implements AdminSongService{
 
     @Override
     public Boolean registerSongStatusBlock(Long songId, HttpHeaders headers) {
-        if (!checkAdmin(headers))
-            return false;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         changeSongStatus(songId, BLOCK);
         return true;
     }
     @Override
     public Boolean registerSongStatusOpen(Long songId, HttpHeaders headers) {
-        if (!checkAdmin(headers))
-            return false;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         changeSongStatus(songId, OPEN);
         return true;
@@ -92,26 +85,10 @@ public class AdminSongServiceImpl implements AdminSongService{
         songRepository.save(song);
     }
 
-    private boolean checkAdmin(HttpHeaders headers) {
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-        if (authValues.isEmpty()) {
-            return false;
-        }
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
-        if (account.getRoleType().getRoleType() != ADMIN) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     @Transactional
     public Page<AdminSongListResponseForm> list(HttpHeaders headers, AdminSongListRequestForm requestForm) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         List<Song> songList = new ArrayList<>();
 
@@ -162,7 +139,7 @@ public class AdminSongServiceImpl implements AdminSongService{
 
     @Override
     public void modifyLyrics(HttpHeaders headers, AdminSongModifyLyricsRequestForm requestForm) {
-        if (!checkAdmin(headers)) return;
+        if (!checkAdmin.checkAdmin(headers)) return;
 
         Song song = songRepository.findById(requestForm.getSongId())
                 .orElseThrow(()-> new IllegalArgumentException("song 없음"));
@@ -173,13 +150,13 @@ public class AdminSongServiceImpl implements AdminSongService{
     @Override
     @Transactional
     public void deleteSong(HttpHeaders headers, Long songId) {
-        if (!checkAdmin(headers)) return;
+        if (!checkAdmin.checkAdmin(headers)) return;
         songRepository.deleteById(songId);
     }
 
     @Override
     public TodayStatusSongResponseForm todayStatusSong(HttpHeaders headers, String date) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Integer todaySong = songRepository.findByCreateDate(TransformToDate.transformToDate(date)).size();
         Integer totalSong = songRepository.findAll().size();

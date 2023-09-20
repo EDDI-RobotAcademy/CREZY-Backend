@@ -1,4 +1,4 @@
-package me.muse.CrezyBackend.utility.TransformToDate;
+package me.muse.CrezyBackend.utility.transformToDate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

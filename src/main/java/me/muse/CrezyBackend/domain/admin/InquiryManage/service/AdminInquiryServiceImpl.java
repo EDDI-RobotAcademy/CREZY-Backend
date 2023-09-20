@@ -2,7 +2,6 @@ package me.muse.CrezyBackend.domain.admin.InquiryManage.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.Inquiry.entity.Inquiry;
 import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryCategory;
 import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryCategoryType;
@@ -10,13 +9,12 @@ import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryDetail;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryRepository;
-import me.muse.CrezyBackend.domain.account.entity.Account;
-import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListRequestForm;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryReadResponseForm;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.InquiryCountResponseForm;
-import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
+import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
+import me.muse.CrezyBackend.utility.transformToDate.TransformToDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -30,9 +28,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-
-import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 
 @Service
 @Slf4j
@@ -40,13 +35,12 @@ import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 public class AdminInquiryServiceImpl implements AdminInquiryService {
     final private InquiryRepository inquiryRepository;
     final private InquiryDetailRepository inquiryDetailRepository;
-    final private AccountRepository accountRepository;
-    final private RedisService redisService;
     final private InquiryCategoryTypeRepository inquiryCategoryTypeRepository;
+    final private CheckAdmin checkAdmin;
 
     @Override
     public InquiryCountResponseForm countInquiry(HttpHeaders headers) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Long date = System.currentTimeMillis();
 
@@ -63,26 +57,10 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
         return new InquiryCountResponseForm(todayInquiryCount, waitingAnswerInquiryCount, totalInquiryCount);
     }
 
-    private boolean checkAdmin(HttpHeaders headers) {
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-        if (authValues.isEmpty()) {
-            return false;
-        }
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
-        if (account.getRoleType().getRoleType() != ADMIN) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     @Transactional
     public Page<AdminInquiryListResponseForm> list(HttpHeaders headers, AdminInquiryListRequestForm requestForm) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         List<InquiryDetail> inquiryDetailList = new ArrayList<>();
 
@@ -139,7 +117,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
 
     @Override
     public List<AdminInquiryListResponseForm> waitingInquiryList(HttpHeaders headers){
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         List<AdminInquiryListResponseForm> responseFormList = new ArrayList<>();
 
@@ -165,7 +143,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
     @Override
     @Transactional
     public AdminInquiryReadResponseForm adminReadInquiry(HttpHeaders headers, Long inquiryId) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Inquiry inquiry = inquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new IllegalArgumentException("Inquiry not found"));

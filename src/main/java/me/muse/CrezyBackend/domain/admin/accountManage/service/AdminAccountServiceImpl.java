@@ -30,7 +30,8 @@ import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import me.muse.CrezyBackend.utility.RandomValue;
-import me.muse.CrezyBackend.utility.TransformToDate.TransformToDate;
+import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
+import me.muse.CrezyBackend.utility.transformToDate.TransformToDate;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -60,10 +61,11 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     final private ReportStatusTypeRepository reportStatusTypeRepository;
     final private InquiryDetailRepository inquiryDetailRepository;
     final private Integer weeks = 6;
+    final private CheckAdmin checkAdmin;
 
     @Override
     public todayStatusAccountResponseForm todayStatusAccount(HttpHeaders headers, String date) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(NORMAL).get();
         Integer todayAccount = accountRepository.findByCreateDateAndAccountRoleType(TransformToDate.transformToDate(date), roleType);
 
@@ -158,7 +160,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 
     @Override
     public List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
@@ -194,22 +196,6 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         return adminAccountListForms;
     }
 
-    private boolean checkAdmin(HttpHeaders headers) {
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-        if (authValues.isEmpty()) {
-            return true;
-        }
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
-        if (account.getRoleType().getRoleType() != ADMIN) {
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public Integer getTotalPage() {
         Integer totalReport = (int) accountRepository.count();
@@ -222,7 +208,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     }
     @Override
     public List<AdminAccountListForm> accountBlacklist(HttpHeaders headers, Integer page) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
@@ -264,7 +250,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 
     @Override
     public AdminAccountDetailForm accountDetail(HttpHeaders headers, Long accountId) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("account 없음"));;
@@ -311,7 +297,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         }
     @Override
     public Page<AdminAccountListForm> accountWarningCountList(HttpHeaders headers, AdminAccountListRequestForm requestForm) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("account.accountId").descending());
         ReportStatusType reportStatus = reportStatusTypeRepository.findByReportStatus(ReportStatus.APPROVE).get();
@@ -442,7 +428,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     }
     @Override
     public void changeBadNickname(HttpHeaders headers, Long accountId) {
-        if (checkAdmin(headers)) return;
+        if (!checkAdmin.checkAdmin(headers)) return;
 
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("account 없음"));
@@ -483,14 +469,14 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     }
     @Override
     public void accountChangeRoleTypeToBlacklist(HttpHeaders headers, Long accountId) {
-        if (checkAdmin(headers)) return;
+        if (!checkAdmin.checkAdmin(headers)) return;
 
         changeRoleType(accountId, BLACKLIST);
     }
 
     @Override
     public void accountChangeRoleTypeToNormal(HttpHeaders headers, Long accountId) {
-        if (checkAdmin(headers)) return;
+        if (!checkAdmin.checkAdmin(headers)) return;
 
         changeRoleType(accountId, NORMAL);
     }
@@ -506,7 +492,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 
     @Override
     public Page<AdminPlaylistSelectListForm> playlistFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
         List<Playlist> playlists = playlistRepository.findPlaylistByAccount_AccountId(requestForm.getAccountId());
@@ -538,7 +524,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Override
     @Transactional
     public Page<AdminInquiryListResponseForm> inquiryFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm) {
-        if (checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
         List<AdminInquiryListResponseForm> responseFormList = new ArrayList<>();
