@@ -11,4 +11,5 @@ public interface WarningRepository extends JpaRepository<Warning, Long> {
     int countByAccount(Account account);
     @Query("SELECT w FROM Warning w WHERE w.account = :account GROUP BY w.id HAVING COUNT(w) = 1")
     List<Warning> findWarningCountByAccount(Account account);
+    List<Warning> findByAccount_AccountId(Long accountId);
 }

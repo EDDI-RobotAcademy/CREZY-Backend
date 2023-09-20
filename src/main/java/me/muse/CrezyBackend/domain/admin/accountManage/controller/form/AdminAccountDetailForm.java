@@ -2,6 +2,7 @@ package me.muse.CrezyBackend.domain.admin.accountManage.controller.form;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import me.muse.CrezyBackend.domain.warning.entity.Warning;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,4 +23,5 @@ public class AdminAccountDetailForm {
     final private List<Integer> songCountsList;
     final private List<String> accountDateList;
     final private String accountRoleType;
+    final private List<AdminWarningDetailForm> warninglist;
 }
