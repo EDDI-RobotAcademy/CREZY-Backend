@@ -11,6 +11,9 @@ import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
+import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
+import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
+import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.report.entity.Report;
@@ -52,6 +55,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private SongRepository songRepository;
     final private CheckAdmin checkAdmin;
     final private InquiryDetailRepository inquiryDetailRepository;
+    final private LikePlaylistRepository likePlaylistRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -189,12 +193,17 @@ public class AdminReportServiceImpl implements AdminReportService {
         Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
                 .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
 
+        List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlist.getPlaylistId());
+        List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
+
         ReportReadPlaylistResponseForm responseForm = new ReportReadPlaylistResponseForm(
                 reporterProfile.getNickname(),
                 reportedProfile.getNickname(),
                 playlist.getPlaylistName(),
                 playlist.getThumbnailName(),
-                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
+                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                songlist.size(),
+                likePlaylists.size());
         return responseForm;
     }
 
