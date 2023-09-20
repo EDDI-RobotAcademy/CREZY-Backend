@@ -10,4 +10,7 @@ public class ReportReadAccountResponseForm {
     final private String reportedProfileName;
     final private String reportedProfileImageName;
     final private String ReportedCategoryType;
+    final private int reportedCounts;
+    final private int warningCounts;
+    final private int inquiryCounts;
 }

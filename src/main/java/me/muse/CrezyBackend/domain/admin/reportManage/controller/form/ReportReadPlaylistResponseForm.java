@@ -11,4 +11,6 @@ public class ReportReadPlaylistResponseForm {
     final private String playlistName;
     final private String thumbnailName;
     final private String ReportedCategoryType;
+    final private int likeCounts;
+    final private int songCounts;
 }

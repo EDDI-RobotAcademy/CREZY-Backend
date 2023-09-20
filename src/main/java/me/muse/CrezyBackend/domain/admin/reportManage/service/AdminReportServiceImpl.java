@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.admin.reportManage.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
@@ -10,6 +11,9 @@ import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
+import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
+import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
+import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.report.entity.Report;
@@ -50,6 +54,8 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private PlaylistRepository playlistRepository;
     final private SongRepository songRepository;
     final private CheckAdmin checkAdmin;
+    final private InquiryDetailRepository inquiryDetailRepository;
+    final private LikePlaylistRepository likePlaylistRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -158,11 +164,18 @@ public class AdminReportServiceImpl implements AdminReportService {
         Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
 
+        int reportedCounts = reportDetailRepository.findAllByReportedAccountId(reportDetail.getReportedAccountId()).size();
+        int warningCounts = warningRepository.countByAccount(reportedProfile.getAccount());
+        int inquiryCounts = inquiryDetailRepository.findByProfile_Account_accountId(reportDetail.getReportedAccountId()).size();
+
         ReportReadAccountResponseForm responseForm = new ReportReadAccountResponseForm(
                 reporterProfile.getNickname(),
                 reportedProfile.getNickname(),
                 reportedProfile.getProfileImageName(),
-                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
+                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                reportedCounts,
+                warningCounts,
+                inquiryCounts);
         return responseForm;
     }
 
@@ -180,12 +193,17 @@ public class AdminReportServiceImpl implements AdminReportService {
         Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
                 .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
 
+        List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlist.getPlaylistId());
+        List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
+
         ReportReadPlaylistResponseForm responseForm = new ReportReadPlaylistResponseForm(
                 reporterProfile.getNickname(),
                 reportedProfile.getNickname(),
                 playlist.getPlaylistName(),
                 playlist.getThumbnailName(),
-                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
+                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                songlist.size(),
+                likePlaylists.size());
         return responseForm;
     }
 
