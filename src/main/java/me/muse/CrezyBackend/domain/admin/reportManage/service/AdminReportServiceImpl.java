@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.admin.reportManage.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
@@ -50,6 +51,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private PlaylistRepository playlistRepository;
     final private SongRepository songRepository;
     final private CheckAdmin checkAdmin;
+    final private InquiryDetailRepository inquiryDetailRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -158,11 +160,18 @@ public class AdminReportServiceImpl implements AdminReportService {
         Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
 
+        int reportedCounts = reportDetailRepository.findAllByReportedAccountId(reportDetail.getReportedAccountId()).size();
+        int warningCounts = warningRepository.countByAccount(reportedProfile.getAccount());
+        int inquiryCounts = inquiryDetailRepository.findByProfile_Account_accountId(reportDetail.getReportedAccountId()).size();
+
         ReportReadAccountResponseForm responseForm = new ReportReadAccountResponseForm(
                 reporterProfile.getNickname(),
                 reportedProfile.getNickname(),
                 reportedProfile.getProfileImageName(),
-                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
+                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                reportedCounts,
+                warningCounts,
+                inquiryCounts);
         return responseForm;
     }
 
