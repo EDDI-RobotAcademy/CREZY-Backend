@@ -49,5 +49,10 @@ public class AdminReportController {
         log.info("readSongReport()");
         return adminService.readSongReport(reportId,headers);
     }
+    @DeleteMapping("/delete-warning")
+    public void deleteWarning(@RequestParam("warningId")Long warningId, @RequestHeader HttpHeaders headers){
+        log.info("deleteWarning()");
+        adminService.deleteWarning(warningId, headers);
+    }
 
 }

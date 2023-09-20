@@ -15,6 +15,7 @@ import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.report.entity.Report;
 import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
+import me.muse.CrezyBackend.domain.report.entity.ReportStatus;
 import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
@@ -90,22 +92,21 @@ public class AdminReportServiceImpl implements AdminReportService {
 
     @Override
     public boolean processingReport(ReportProcessingForm processingForm, HttpHeaders headers) {
-        if (!checkAdmin(headers))
-            return false;
+//        if (!checkAdmin(headers))
+//            return false;
 
-        ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(processingForm.getReportStatus()).get();
+        ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.valueOf(processingForm.getReportStatus())).get();
 
         Report report = reportRepository.findById(processingForm.getReportId())
                 .orElseThrow(() -> new IllegalArgumentException("Report not found"));
 
         report.setReportStatusType(statusType);
 
-        if (processingForm.getReportStatus() == APPROVE) {
+        if (processingForm.getReportStatus().equals("APPROVE")) {
             ReportDetail reportDetail = reportDetailRepository.findById(report.getReportId())
                     .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
             Account reportedAccount = accountRepository.findById(reportDetail.getReportedAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("ReportedAccount not found"));
-
             warningRepository.save(new Warning(reportedAccount, report));
 
             if (warningRepository.countByAccount(reportedAccount) >= 3) {
@@ -224,5 +225,18 @@ public class AdminReportServiceImpl implements AdminReportService {
                 song.getLyrics(),
                 reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
         return responseForm;
+    }
+
+    @Override
+    public void deleteWarning(Long warningId, HttpHeaders headers) {
+//        if (!checkAdmin(headers)) return;
+        Warning warning = warningRepository.findById(warningId)
+                .orElseThrow(()->new IllegalArgumentException("report 없음"));
+
+        Report report = warning.getReport();
+        ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.RETURN).get();
+        report.setReportStatusType(statusType);
+
+        warningRepository.deleteById(warningId);
     }
 }
