@@ -8,4 +8,10 @@ import lombok.RequiredArgsConstructor;
 public class TodayTrafficCountResponseForm {
     final private int loginCount;
     final private int analysisCount;
+    final private int reportCount;
+    final private int inquiryCount;
+    final private int loginCountRate;
+    final private int analysisCountRate;
+    final private int reportCountRate;
+    final private int inquiryCountRate;
 }

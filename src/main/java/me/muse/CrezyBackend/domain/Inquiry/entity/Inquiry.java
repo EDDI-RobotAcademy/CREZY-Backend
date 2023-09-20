@@ -4,9 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.Entity.InquiryAnswer;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDate;
 
 @Entity
 @NoArgsConstructor
@@ -16,8 +13,6 @@ public class Inquiry {
     @Column(name = "inquiryId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long inquiryId;
-    @CreationTimestamp
-    private LocalDate createInquiryDate;
     @OneToOne
     private InquiryCategoryType inquiryCategoryType;
     @OneToOne

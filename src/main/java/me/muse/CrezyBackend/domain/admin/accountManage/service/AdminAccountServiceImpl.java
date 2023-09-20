@@ -545,7 +545,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                     inquiry.getInquiryId(),
                     inquiryDetail.getInquiryTitle(),
                     inquiryDetail.getProfile().getNickname(),
-                    inquiry.getCreateInquiryDate(),
+                    inquiryDetail.getCreateInquiryDate(),
                     inquiry.getInquiryCategoryType().getInquiryCategory().toString(),
                     isExistAnswer(inquiry));
 

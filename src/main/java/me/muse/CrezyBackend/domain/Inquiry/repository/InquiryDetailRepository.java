@@ -22,8 +22,8 @@ public interface InquiryDetailRepository extends JpaRepository<InquiryDetail, Lo
     @Query("SELECT id FROM InquiryDetail id LEFT JOIN FETCH id.inquiry idi LEFT JOIN FETCH idi.inquiryAnswer WHERE idi.inquiryCategoryType = :inquiryCategoryType")
     List<InquiryDetail> findAllDetailWithAnswerByInquiryCategoryType(InquiryCategoryType inquiryCategoryType);
 
-    @Query("SELECT id FROM InquiryDetail id LEFT JOIN FETCH id.inquiry idi WHERE idi.createInquiryDate = :createInquiryDate")
-    List<InquiryDetail> findByInquiry_CreateInquiryDate(LocalDate createInquiryDate);
+//    @Query("SELECT id FROM InquiryDetail id LEFT JOIN FETCH id.inquiry idi WHERE idi.createInquiryDate = :createInquiryDate")
+    List<InquiryDetail> findByCreateInquiryDate(LocalDate createInquiryDate);
 
     @Query("SELECT id FROM InquiryDetail id LEFT JOIN id.inquiry i LEFT JOIN i.inquiryAnswer ia WHERE ia.inquiryAnswerId IS NULL")
     List<InquiryDetail> findWaitingAnswer();
@@ -35,10 +35,11 @@ public interface InquiryDetailRepository extends JpaRepository<InquiryDetail, Lo
             "LEFT JOIN FETCH id.inquiry idi " +
             "LEFT JOIN idi.inquiryAnswer ia " +
             "WHERE ia.inquiryAnswerId IS NULL " +
-            "ORDER BY idi.createInquiryDate ASC LIMIT 10")
+            "ORDER BY createInquiryDate ASC LIMIT 10")
     List<InquiryDetail> findOldestUnansweredInquiries();
 
-    List<InquiryDetail> findByInquiry_CreateInquiryDateAndInquiry_InquiryCategoryType(LocalDate createInquiryDate, InquiryCategoryType inquiryCategoryType);
+    List<InquiryDetail> findByCreateInquiryDateAndInquiry_InquiryCategoryType(LocalDate createInquiryDate, InquiryCategoryType inquiryCategoryType);
 
     List<InquiryDetail> findByProfile_Account_accountId(Long accountId);
+    int countByCreateInquiryDate(LocalDate localDate);
 }

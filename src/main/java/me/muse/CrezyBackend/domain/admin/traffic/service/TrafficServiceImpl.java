@@ -2,6 +2,7 @@ package me.muse.CrezyBackend.domain.admin.traffic.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.admin.traffic.controller.form.TodayTrafficCountResponseForm;
@@ -11,6 +12,7 @@ import me.muse.CrezyBackend.domain.admin.traffic.entity.Traffic;
 import me.muse.CrezyBackend.domain.admin.traffic.repository.TrafficRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
+import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
@@ -32,6 +34,8 @@ public class TrafficServiceImpl implements TrafficService{
     final private PlaylistRepository playlistRepository;
     final private SongRepository songRepository;
     final private CheckAdmin checkAdmin;
+    final private ReportDetailRepository reportDetailRepository;
+    final private InquiryDetailRepository inquiryDetailRepository;
 
     @Override
     public void analysisCounting(){
@@ -71,7 +75,27 @@ public class TrafficServiceImpl implements TrafficService{
         Traffic traffic = trafficRepository.findByDate(LocalDate.now())
                 .orElseThrow(() -> new IllegalArgumentException("Traffic not found"));
 
-        return new TodayTrafficCountResponseForm(traffic.getLoginCount(), traffic.getAnalysisCount());
+        Optional<Traffic> maybePreviousTraffic = trafficRepository.findByDate(LocalDate.now().minusDays(1));
+        Traffic previousTraffic;
+        if(maybePreviousTraffic.isEmpty()){
+            previousTraffic = new Traffic(LocalDate.now().minusDays(1));
+            trafficRepository.save(previousTraffic);
+        }else{
+            previousTraffic = maybePreviousTraffic.get();
+        }
+
+        int loginCountRate = calculateIncreaseRate(traffic.getLoginCount(), previousTraffic.getLoginCount());
+        int analysisCountRate = calculateIncreaseRate(traffic.getAnalysisCount(), previousTraffic.getAnalysisCount());
+
+        int reportCount = reportDetailRepository.countByCreateReportDate(LocalDate.now());
+        int previousReportCount = reportDetailRepository.countByCreateReportDate(LocalDate.now().minusDays(1));
+        int reportCountRate = calculateIncreaseRate(reportCount,previousReportCount);
+
+        int inquiryCount = inquiryDetailRepository.countByCreateInquiryDate(LocalDate.now());
+        int previousInquiryCount = inquiryDetailRepository.countByCreateInquiryDate(LocalDate.now().minusDays(1));
+        int inquiryCountRate = calculateIncreaseRate(inquiryCount,previousInquiryCount);
+
+        return new TodayTrafficCountResponseForm(traffic.getLoginCount(), traffic.getAnalysisCount(), reportCount, inquiryCount, loginCountRate, analysisCountRate, reportCountRate, inquiryCountRate);
     }
 
     @Override
@@ -134,5 +158,16 @@ public class TrafficServiceImpl implements TrafficService{
         }
 
         return new WeeklyRegistResponseForm(accountCountList, playlistCountList, songCountList);
+    }
+
+    public int calculateIncreaseRate(int todayCount,int previousCount){
+        double increaseRate=0;
+
+        if(0 < todayCount && previousCount == 0){
+            increaseRate = 100;
+        }else {
+            increaseRate = (double) (todayCount - previousCount) / previousCount * 100;
+        }
+        return (int)increaseRate;
     }
 }

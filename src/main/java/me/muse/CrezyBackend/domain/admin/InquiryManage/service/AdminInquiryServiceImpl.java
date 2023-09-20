@@ -50,7 +50,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
 
         LocalDate transformCurrentDate = TransformToDate.transformToDate(currentDate);
 
-        int todayInquiryCount = inquiryRepository.countByCreateInquiryDate(transformCurrentDate);
+        int todayInquiryCount = inquiryDetailRepository.countByCreateInquiryDate(transformCurrentDate);
         int waitingAnswerInquiryCount = inquiryRepository.countWaitingAnswer();
         long totalInquiryCount = inquiryRepository.count();
 
@@ -69,7 +69,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
         if(requestForm.getCategoryType().equals("TOTAL")){
           switch (requestForm.getStatusType()){
               case "total" -> inquiryDetailList = inquiryDetailRepository.findAllDetailWithAnswer();
-              case "today" -> inquiryDetailList = inquiryDetailRepository.findByInquiry_CreateInquiryDate(LocalDate.now());
+              case "today" -> inquiryDetailList = inquiryDetailRepository.findByCreateInquiryDate(LocalDate.now());
               case "waiting" -> inquiryDetailList = inquiryDetailRepository.findWaitingAnswer();
           }
         }else {
@@ -78,12 +78,12 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
 
             switch (requestForm.getStatusType()){
                 case "total" -> inquiryDetailList = inquiryDetailRepository.findAllDetailWithAnswerByInquiryCategoryType(inquiryCategoryType);
-                case "today" -> inquiryDetailList = inquiryDetailRepository.findByInquiry_CreateInquiryDateAndInquiry_InquiryCategoryType(LocalDate.now(), inquiryCategoryType);
+                case "today" -> inquiryDetailList = inquiryDetailRepository.findByCreateInquiryDateAndInquiry_InquiryCategoryType(LocalDate.now(), inquiryCategoryType);
                 case "waiting" -> inquiryDetailList = inquiryDetailRepository.findWaitingAnswerByInquiryCategoryType(inquiryCategoryType);
             }
         }
 
-        inquiryDetailList.sort(Comparator.comparing(id -> id.getInquiry().getCreateInquiryDate(), Comparator.nullsLast(Comparator.reverseOrder())));
+        inquiryDetailList.sort(Comparator.comparing(id -> id.getCreateInquiryDate(), Comparator.nullsLast(Comparator.reverseOrder())));
 
         List<AdminInquiryListResponseForm> responseFormList = new ArrayList<>();
 
@@ -94,7 +94,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
                     inquiry.getInquiryId(),
                     inquiryDetail.getInquiryTitle(),
                     inquiryDetail.getProfile().getNickname(),
-                    inquiry.getCreateInquiryDate(),
+                    inquiryDetail.getCreateInquiryDate(),
                     inquiry.getInquiryCategoryType().getInquiryCategory().toString(),
                     isExistAnswer(inquiry));
 
@@ -130,7 +130,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
                     inquiry.getInquiryId(),
                     inquiryDetail.getInquiryTitle(),
                     inquiryDetail.getProfile().getNickname(),
-                    inquiry.getCreateInquiryDate(),
+                    inquiryDetail.getCreateInquiryDate(),
                     inquiry.getInquiryCategoryType().getInquiryCategory().toString(),
                     isExistAnswer(inquiry));
 
@@ -157,7 +157,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
                 inquiryDetail.getInquiryContent(),
                 inquiryDetail.getProfile().getNickname(),
                 inquiryDetail.getInquiry().getInquiryCategoryType().getInquiryCategory().toString(),
-                inquiryDetail.getInquiry().getCreateInquiryDate(),
+                inquiryDetail.getCreateInquiryDate(),
                 inquiryDetail.getInquiry().getInquiryAnswer(),
                 inquiryDetail.getInquiryImageNames()
         );
