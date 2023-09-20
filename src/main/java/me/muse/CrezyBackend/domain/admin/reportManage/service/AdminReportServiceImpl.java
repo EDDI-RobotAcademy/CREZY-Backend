@@ -32,11 +32,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
-import static me.muse.CrezyBackend.domain.report.entity.ReportStatus.APPROVE;
 import static me.muse.CrezyBackend.domain.report.entity.ReportedCategory.*;
 
 @Service
@@ -68,10 +65,19 @@ public class AdminReportServiceImpl implements AdminReportService {
         List<ReportResponseForm> reportResponseForms = new ArrayList<>();
 
         for (ReportDetail reportDetail : reportDetailList) {
+        String reporterNickname = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId()).get().getNickname();
+
             ReportResponseForm responseForm = new ReportResponseForm(
-                    reportDetail.getReport().getReportId(), reportDetail.getReportedId(), reportDetail.getReportContent(),
-                    reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(), reportDetail.getReport().getReportStatusType().getReportStatus().toString(),
-                    reportDetail.getCreateReportDate(), SongReportCount, PlaylistReportCount, AccountReportCount);
+                    reportDetail.getReport().getReportId(),
+                    reporterNickname,
+                    reportDetail.getReportedId(),
+                    reportDetail.getReportContent(),
+                    reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                    reportDetail.getReport().getReportStatusType().getReportStatus().toString(),
+                    reportDetail.getCreateReportDate(),
+                    SongReportCount,
+                    PlaylistReportCount,
+                    AccountReportCount);
 
             reportResponseForms.add(responseForm);
         }
