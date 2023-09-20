@@ -3,7 +3,6 @@ package me.muse.CrezyBackend.domain.admin.reportManage.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
@@ -24,6 +23,7 @@ import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
+import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
 import static me.muse.CrezyBackend.domain.report.entity.ReportStatus.APPROVE;
 import static me.muse.CrezyBackend.domain.report.entity.ReportedCategory.*;
@@ -47,17 +46,17 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private ReportRepository reportRepository;
     final private ReportDetailRepository reportDetailRepository;
     final private AccountRepository accountRepository;
-    final private RedisService redisService;
     final private ReportStatusTypeRepository reportStatusTypeRepository;
     final private WarningRepository warningRepository;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private ProfileRepository profileRepository;
     final private PlaylistRepository playlistRepository;
     final private SongRepository songRepository;
+    final private CheckAdmin checkAdmin;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("reportDetailId").descending());
         List<ReportDetail> reportDetailList = reportDetailRepository.findAllWithPage(pageable);
@@ -92,8 +91,7 @@ public class AdminReportServiceImpl implements AdminReportService {
 
     @Override
     public boolean processingReport(ReportProcessingForm processingForm, HttpHeaders headers) {
-//        if (!checkAdmin(headers))
-//            return false;
+        if (!checkAdmin.checkAdmin(headers)) return false;
 
         ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.valueOf(processingForm.getReportStatus())).get();
 
@@ -122,7 +120,7 @@ public class AdminReportServiceImpl implements AdminReportService {
 
     @Override
     public ReportReadResponseForm readReport(Long reportId, HttpHeaders headers) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
@@ -142,26 +140,10 @@ public class AdminReportServiceImpl implements AdminReportService {
         return responseForm;
     }
 
-    private boolean checkAdmin(HttpHeaders headers) {
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-        if (authValues.isEmpty()) {
-            return false;
-        }
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
-        if (account.getRoleType().getRoleType() != ADMIN) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     @Transactional
     public ReportReadAccountResponseForm readAccountReport(Long reportId, HttpHeaders headers) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
@@ -181,7 +163,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     @Override
     @Transactional
     public ReportReadPlaylistResponseForm readPlaylistReport(Long reportId, HttpHeaders headers) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
@@ -204,7 +186,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     @Override
     @Transactional
     public ReportReadSongResponseForm readSongReport(Long reportId, HttpHeaders headers) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));

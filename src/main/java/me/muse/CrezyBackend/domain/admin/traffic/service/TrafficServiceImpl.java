@@ -2,7 +2,6 @@ package me.muse.CrezyBackend.domain.admin.traffic.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.admin.traffic.controller.form.TodayTrafficCountResponseForm;
@@ -14,6 +13,7 @@ import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
+import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -21,42 +21,23 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-
-import static me.muse.CrezyBackend.domain.account.entity.RoleType.ADMIN;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TrafficServiceImpl implements TrafficService{
-    final private RedisService redisService;
     final private AccountRepository accountRepository;
     final private TrafficRepository trafficRepository;
     final private PlaylistRepository playlistRepository;
     final private SongRepository songRepository;
-
-
-    private boolean checkAdmin(HttpHeaders headers) {
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-        if (authValues.isEmpty()) {
-            return false;
-        }
-        Long accountId = redisService.getValueByKey(authValues.get(0));
-
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-
-        if (account.getRoleType().getRoleType() != ADMIN) {
-            return false;
-        }
-        return true;
-    }
+    final private CheckAdmin checkAdmin;
 
     @Override
     public void analysisCounting(){
         Optional<Traffic> maybeTraffic = trafficRepository.findByDate(LocalDate.now());
         Traffic traffic;
+
         if(maybeTraffic.isEmpty()) {
             traffic = new Traffic(LocalDate.now());
             traffic.setAnalysisCount(1);
@@ -64,6 +45,7 @@ public class TrafficServiceImpl implements TrafficService{
             traffic = maybeTraffic.get();
             traffic.setAnalysisCount(traffic.getAnalysisCount()+1);
         }
+
         trafficRepository.save(traffic);
     }
 
@@ -84,7 +66,7 @@ public class TrafficServiceImpl implements TrafficService{
 
     @Override
     public TodayTrafficCountResponseForm todayCount(HttpHeaders headers) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         Traffic traffic = trafficRepository.findByDate(LocalDate.now())
                 .orElseThrow(() -> new IllegalArgumentException("Traffic not found"));
@@ -94,7 +76,7 @@ public class TrafficServiceImpl implements TrafficService{
 
     @Override
     public WeekTrafficCountResponseForm weekCount(int weekValue, HttpHeaders headers) {
-        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         LocalDate now = LocalDate.now().minusDays(7L * weekValue);
         LocalDate monday = now.with(DayOfWeek.MONDAY);
@@ -125,7 +107,7 @@ public class TrafficServiceImpl implements TrafficService{
 
     @Override
     public WeeklyRegistResponseForm weeklyRegist(int weekValue, HttpHeaders headers) {
-//        if (!checkAdmin(headers)) return null;
+        if (!checkAdmin.checkAdmin(headers)) return null;
 
         LocalDate now = LocalDate.now().minusDays(7L * weekValue);
         LocalDate monday = now.with(DayOfWeek.MONDAY);
