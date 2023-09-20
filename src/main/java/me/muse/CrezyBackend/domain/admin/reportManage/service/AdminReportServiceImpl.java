@@ -92,8 +92,8 @@ public class AdminReportServiceImpl implements AdminReportService {
 
     @Override
     public boolean processingReport(ReportProcessingForm processingForm, HttpHeaders headers) {
-        if (!checkAdmin(headers))
-            return false;
+//        if (!checkAdmin(headers))
+//            return false;
 
         ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.valueOf(processingForm.getReportStatus())).get();
 
@@ -225,5 +225,18 @@ public class AdminReportServiceImpl implements AdminReportService {
                 song.getLyrics(),
                 reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
         return responseForm;
+    }
+
+    @Override
+    public void deleteWarning(Long warningId, HttpHeaders headers) {
+//        if (!checkAdmin(headers)) return;
+        Warning warning = warningRepository.findById(warningId)
+                .orElseThrow(()->new IllegalArgumentException("report 없음"));
+
+        Report report = warning.getReport();
+        ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.RETURN).get();
+        report.setReportStatusType(statusType);
+
+        warningRepository.deleteById(warningId);
     }
 }
