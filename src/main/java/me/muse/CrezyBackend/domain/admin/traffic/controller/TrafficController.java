@@ -31,7 +31,7 @@ public class TrafficController {
     }
 
     @GetMapping("weekly-regist")
-    public WeeklyRegistResponseForm weeklyRegist(@RequestParam("weekValue") int weekValue, @RequestHeader HttpHeaders headers){
+    public List<WeeklyRegistResponseForm> weeklyRegist(@RequestParam("weekValue") int weekValue, @RequestHeader HttpHeaders headers){
         log.info("weeklyRegist()");
         return trafficService.weeklyRegist(weekValue, headers);
     }

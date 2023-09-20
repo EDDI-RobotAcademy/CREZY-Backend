@@ -106,7 +106,7 @@ public class TrafficServiceImpl implements TrafficService{
     }
 
     @Override
-    public WeeklyRegistResponseForm weeklyRegist(int weekValue, HttpHeaders headers) {
+    public List<WeeklyRegistResponseForm> weeklyRegist(int weekValue, HttpHeaders headers) {
         if (!checkAdmin.checkAdmin(headers)) return null;
 
         LocalDate now = LocalDate.now().minusDays(7L * weekValue);
@@ -114,25 +114,21 @@ public class TrafficServiceImpl implements TrafficService{
         LocalDate sunday = now.with(DayOfWeek.SUNDAY);
 
         List<LocalDate> dateList = new ArrayList<>();
+        List<WeeklyRegistResponseForm> responseFormList = new ArrayList<>();
 
         for (LocalDate date = monday; !date.isAfter(sunday); date = date.plusDays(1)) {
             dateList.add(date);
         }
-
-        List<Integer> accountCountList = new ArrayList<>();
-        List<Integer> playlistCountList = new ArrayList<>();
-        List<Integer> songCountList = new ArrayList<>();
 
         for (LocalDate date : dateList){
             List<Account> accountList = accountRepository.findByCreateDate(date);
             List<Playlist> playlists = playlistRepository.findByCreateDate(date);
             List<Song> songList = songRepository.findByCreateDate(date);
 
-            accountCountList.add(accountList.size());
-            playlistCountList.add(playlists.size());
-            songCountList.add(songList.size());
+            WeeklyRegistResponseForm responseForm = new WeeklyRegistResponseForm(accountList.size(), playlists.size(), songList.size());
+            responseFormList.add(responseForm);
         }
 
-        return new WeeklyRegistResponseForm(accountCountList, playlistCountList, songCountList);
+        return responseFormList;
     }
 }
