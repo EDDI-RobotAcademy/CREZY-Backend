@@ -20,7 +20,11 @@ public class Song {
     @Column(name = "songId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long songId;
+
+    @Setter
     private String title;
+
+    @Setter
     private String singer;
 
     @Setter

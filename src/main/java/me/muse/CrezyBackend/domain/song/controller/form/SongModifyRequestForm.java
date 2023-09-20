@@ -7,5 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class SongModifyRequestForm {
     final private Long songId;
+    final private String title;
+    final private String singer;
     final private String link;
 }
