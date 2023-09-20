@@ -8,5 +8,5 @@ import me.muse.CrezyBackend.domain.report.entity.ReportStatus;
 @Getter
 public class ReportProcessingForm {
     final private Long reportId;
-    final private ReportStatus reportStatus;
+    final private String reportStatus;
 }

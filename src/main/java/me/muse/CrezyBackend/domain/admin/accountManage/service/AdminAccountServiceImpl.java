@@ -28,6 +28,7 @@ import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
+import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import me.muse.CrezyBackend.utility.RandomValue;
 import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
@@ -270,6 +271,12 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             songCounts += songRepository.countByPlaylist(playlist);
         }
         Integer warningCounts = warningRepository.countByAccount(account);
+        List<Warning> warnings = warningRepository.findByAccount_AccountId(accountId);
+        List<AdminWarningDetailForm> warninglist = new ArrayList<>();
+        for(Warning warning : warnings){
+            AdminWarningDetailForm form = new AdminWarningDetailForm(warning.getWarningId(), warning.getCreateWarningDate().toString());
+            warninglist.add(form);
+        }
         Integer likePlaylistCounts = likePlaylistRepository.countByAccount(account);
 
         LocalDate currentDate = LocalDate.now();
@@ -292,7 +299,8 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 playlistCountsList,
                 songCountsList,
                 accountDateList,
-                account.getRoleType().getRoleType().toString());
+                account.getRoleType().getRoleType().toString(),
+                warninglist);
         return adminAccountDetailForm;
         }
     @Override

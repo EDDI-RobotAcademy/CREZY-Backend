@@ -70,7 +70,7 @@ public class SongServiceImpl implements SongService{
             String videoId = youtube.searchByKeyword(requestForm.getSinger() + " " + requestForm.getTitle());
             song.setLink("https://www.youtube.com/watch?v=" + videoId);
         }
-        if(requestForm.getLyrics().equals("")){
+        if(requestForm.getLyrics() == null){
             String lyrics = getLyrics(requestForm.getSinger() + " " + requestForm.getTitle());
             log.info(lyrics);
             song.setLyrics(lyrics);
