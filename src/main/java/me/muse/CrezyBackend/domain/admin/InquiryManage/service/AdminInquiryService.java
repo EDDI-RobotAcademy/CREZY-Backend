@@ -1,9 +1,6 @@
 package me.muse.CrezyBackend.domain.admin.InquiryManage.service;
 
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListRequestForm;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryListResponseForm;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.AdminInquiryReadResponseForm;
-import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.InquiryCountResponseForm;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.*;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 
@@ -15,4 +12,6 @@ public interface AdminInquiryService {
     public List<AdminInquiryListResponseForm> waitingInquiryList(HttpHeaders headers);
 
     AdminInquiryReadResponseForm adminReadInquiry(HttpHeaders headers, Long inquiryDetailId);
+
+    Long registAnswer(HttpHeaders headers, AdminInquiryAnswerRegisterForm registerForm);
 }
