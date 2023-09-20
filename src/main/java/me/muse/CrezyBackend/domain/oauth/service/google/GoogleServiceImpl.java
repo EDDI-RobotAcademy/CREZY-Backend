@@ -58,7 +58,7 @@ public class GoogleServiceImpl implements GoogleService {
     private String refreshToken;
     public String googleLoginAddress(){
         String reqUrl = googleLoginUrl + "/o/oauth2/v2/auth?client_id=" + googleClientId + "&redirect_uri=" + googleRedirect_uri
-                + "&response_type=code&scope=email%20profile%20openid&access_type=offline";
+                + "&response_type=code&scope=email%20profile%20openid&access_type=offline&prompt=consent";
         System.out.println(reqUrl);
         return reqUrl;
     }
@@ -174,6 +174,9 @@ public class GoogleServiceImpl implements GoogleService {
                 .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
 
         trafficService.loginCounting();
+
+        account.setLastLoginDate(null);
+        accountRepository.save(account);
 
         return new LoginResponseForm(profile.getNickname(), userToken, profile.getProfileImageName());
     }
