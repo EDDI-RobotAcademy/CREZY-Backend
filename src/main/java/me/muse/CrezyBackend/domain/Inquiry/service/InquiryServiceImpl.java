@@ -130,7 +130,7 @@ public class InquiryServiceImpl implements InquiryService {
         final List<InquiryImages> inquiryImagesList = inquiryImagesRepository.findByInquiryDetailId(inquiryDetail.getInquiryDetailId());
 
         InquiryReadResponseForm responseForm = new InquiryReadResponseForm(inquiryDetail.getInquiry().getInquiryId(),
-                inquiryDetail.getInquiryTitle(), inquiryDetail.getInquiryContent(), inquiryImagesList);
+                inquiryDetail.getInquiryTitle(), inquiryDetail.getInquiryContent(), inquiryDetail.getInquiry().getInquiryAnswer(), inquiryImagesList);
 
         return responseForm;
     }
