@@ -98,7 +98,7 @@ public class InquiryServiceImpl implements InquiryService {
             Inquiry inquiry = inquiryDetail.getInquiry();
             InquiryListResponseForm responseForm = new InquiryListResponseForm(
                     inquiry.getInquiryId(), inquiry.getInquiryCategoryType(),
-                    inquiryDetail.getInquiryTitle(), inquiry.getCreateInquiryDate());
+                    inquiryDetail.getInquiryTitle(), inquiryDetail.getCreateInquiryDate());
 
             inquiryListResponseForms.add(responseForm);
         }

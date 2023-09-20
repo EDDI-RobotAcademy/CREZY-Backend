@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
-    int countByCreateInquiryDate(LocalDate date);
     @Query("SELECT COUNT(i) FROM Inquiry i LEFT JOIN i.inquiryAnswer ia WHERE ia.inquiryAnswerId IS NULL")
     int countWaitingAnswer();
 }
