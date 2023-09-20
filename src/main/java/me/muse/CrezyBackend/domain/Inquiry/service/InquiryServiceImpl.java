@@ -98,12 +98,16 @@ public class InquiryServiceImpl implements InquiryService {
             Inquiry inquiry = inquiryDetail.getInquiry();
             InquiryListResponseForm responseForm = new InquiryListResponseForm(
                     inquiry.getInquiryId(), inquiry.getInquiryCategoryType(),
-                    inquiryDetail.getInquiryTitle(), inquiryDetail.getCreateInquiryDate());
+                    inquiryDetail.getInquiryTitle(), inquiryDetail.getCreateInquiryDate(), isExistAnswer(inquiry));
 
             inquiryListResponseForms.add(responseForm);
         }
 
         return inquiryListResponseForms;
+    }
+
+    private boolean isExistAnswer(Inquiry inquiry){
+        return inquiry.getInquiryAnswer() != null;
     }
 
     @Override
