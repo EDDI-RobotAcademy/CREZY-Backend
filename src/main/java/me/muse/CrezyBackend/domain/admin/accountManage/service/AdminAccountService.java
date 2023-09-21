@@ -11,9 +11,7 @@ import java.util.List;
 public interface AdminAccountService {
     todayStatusAccountResponseForm todayStatusAccount(HttpHeaders headers, String date);
 
-    List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page);
-
-    Integer getTotalPage();
+    Page<AdminAccountListForm> accountList(HttpHeaders headers, Integer page);
 
     List<AdminAccountListForm> accountBlacklist(HttpHeaders headers, Integer page);
 

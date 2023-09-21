@@ -3,7 +3,6 @@ package me.muse.CrezyBackend.domain.admin.accountManage.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.Inquiry.entity.Inquiry;
 import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryDetail;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
@@ -50,7 +49,6 @@ import static me.muse.CrezyBackend.domain.account.entity.RoleType.*;
 @RequiredArgsConstructor
 public class AdminAccountServiceImpl implements AdminAccountService {
     final private AccountRepository accountRepository;
-    final private RedisService redisService;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private ProfileRepository profileRepository;
     final private WarningRepository warningRepository;
@@ -160,12 +158,11 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     }
 
     @Override
-    public List<AdminAccountListForm> accountList(HttpHeaders headers, Integer page) {
+    public Page<AdminAccountListForm> accountList(HttpHeaders headers, Integer page) {
         if (!checkAdmin.checkAdmin(headers)) return null;
-
         Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
-        List<Profile> profileList = profileRepository.findByAccount_RoleTypeNotWithPage(pageable, roleType);
+        List<Profile> profileList = profileRepository.findByAccount_RoleTypeNotWithPage(roleType);
 
         final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
 
@@ -193,20 +190,16 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                     isAccount.getRoleType().getRoleType().toString());
             adminAccountListForms.add(adminAccountListForm);
         }
-        log.info(adminAccountListForms.toString());
-        return adminAccountListForms;
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), adminAccountListForms.size());
+
+        return new PageImpl<>(
+                adminAccountListForms.subList(start, end),
+                pageable,
+                adminAccountListForms.size()
+        );
     }
 
-    @Override
-    public Integer getTotalPage() {
-        Integer totalReport = (int) accountRepository.count();
-        Integer size = 10;
-        if (totalReport % size == 0) {
-            return totalReport / size;
-        } else {
-            return totalReport / size + 1;
-        }
-    }
     @Override
     public List<AdminAccountListForm> accountBlacklist(HttpHeaders headers, Integer page) {
         if (!checkAdmin.checkAdmin(headers)) return null;
@@ -568,7 +561,6 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Override
     public Page<AdminAccountListForm> searchAccount(HttpHeaders headers, AdminAccountSearchRequestForm requestForm) {
         if (!checkAdmin.checkAdmin(headers)) return null;
-
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("account.createDate").descending());
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
         List<Profile> profileList = profileRepository.findBySearchAccount_RoleTypeNotWithPage(pageable, roleType, requestForm.getKeyword());
