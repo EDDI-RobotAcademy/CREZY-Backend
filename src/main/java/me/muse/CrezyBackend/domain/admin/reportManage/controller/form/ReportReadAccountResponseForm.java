@@ -13,4 +13,5 @@ public class ReportReadAccountResponseForm {
     final private int reportedCounts;
     final private int warningCounts;
     final private int inquiryCounts;
+    final private Long reportedAccountId;
 }
