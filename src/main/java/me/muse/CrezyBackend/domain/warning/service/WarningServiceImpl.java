@@ -41,7 +41,7 @@ public class WarningServiceImpl implements WarningService{
     @Override
     @Transactional
     public Warning registWarning(HttpHeaders headers, ReportRegisterForm requestForm) {
-        if(checkAdmin.checkAdmin(headers)) return null;
+        if(!checkAdmin.checkAdmin(headers)) return null;
 
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
         if (authValues.isEmpty()) {
