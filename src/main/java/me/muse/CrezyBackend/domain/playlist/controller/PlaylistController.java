@@ -2,12 +2,12 @@ package me.muse.CrezyBackend.domain.playlist.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
 import me.muse.CrezyBackend.domain.likePlaylist.Service.LikePlaylistService;
 import me.muse.CrezyBackend.domain.playlist.controller.form.*;
-import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.service.PlaylistService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -42,13 +42,13 @@ public class PlaylistController {
     }
 
     @PostMapping("/register") // 플레이 리스트 등록
-    public long playlistRegister (@RequestBody PlaylistRegisterRequestForm requestForm, @RequestHeader HttpHeaders headers) {
+    public long playlistRegister(@RequestBody PlaylistRegisterRequestForm requestForm, @RequestHeader HttpHeaders headers) {
         log.info("playlistRegister()");
         return playlistService.register(requestForm, headers);
     }
 
     @PostMapping("/modify") // 플레이 리스트 수정
-    public PlaylistModifyResponseForm modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
+    public PlaylistModifyResponseForm modifyPlaylist(@RequestBody PlaylistModifyRequestForm requestForm, @RequestHeader HttpHeaders headers) {
         return playlistService.modify(requestForm, headers);
     }
 
@@ -59,9 +59,15 @@ public class PlaylistController {
     }
 
     @GetMapping("/my-playlist") // 내가 등록한 플레이 리스트
-    public List<MyPlaylistResponseForm> myPlaylist(@RequestHeader HttpHeaders headers){
+    public List<MyPlaylistResponseForm> myPlaylist(@RequestHeader HttpHeaders headers) {
         log.info("myPlaylist()");
         return playlistService.myPlaylist(headers);
+    }
+
+    @PostMapping("/search-playlist")
+    public Page<PlaylistResponseForm> searchPlaylist (@RequestBody PlaylistSearchRequestForm requestForm) {
+        log.info("searchPlaylist()");
+        return playlistService.searchPlaylist(requestForm);
     }
 
 }

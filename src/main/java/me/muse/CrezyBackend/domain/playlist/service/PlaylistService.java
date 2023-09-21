@@ -20,4 +20,6 @@ public interface PlaylistService {
     PlaylistReadResponseForm readPlayList(Long playlistId);
 
     PlaylistReadResponseForm readMyPagePlaylist(Long playlistId);
+
+    Page<PlaylistResponseForm> searchPlaylist(PlaylistSearchRequestForm requestForm);
 }

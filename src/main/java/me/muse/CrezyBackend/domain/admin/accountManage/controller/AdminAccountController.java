@@ -18,6 +18,7 @@ import java.util.List;
 @RequestMapping("/admin-account")
 public class AdminAccountController {
     final private AdminAccountService adminService;
+
     @GetMapping("/check-account")
     public todayStatusAccountResponseForm todayStatusAccount(@RequestHeader HttpHeaders headers, @RequestParam("date") String date) {
         log.info("statusTodayAccount()");
@@ -29,6 +30,7 @@ public class AdminAccountController {
         log.info("accountList()");
         return adminService.accountList(headers, page);
     }
+
     @GetMapping("/list/total-page")
     public Integer getTotalPage() {
         return adminService.getTotalPage();
@@ -39,6 +41,7 @@ public class AdminAccountController {
         log.info("accountBlacklist()");
         return adminService.accountBlacklist(headers, page);
     }
+
     @GetMapping("/list/blacklist-total-page")
     public Integer getBlacklistTotalPage() {
         return adminService.getBlacklistTotalPage();
@@ -57,27 +60,37 @@ public class AdminAccountController {
     }
 
     @GetMapping("/change-nickname")
-    public void changeNickname(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId){
+    public void changeNickname(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId) {
         adminService.changeBadNickname(headers, accountId);
     }
+
     @GetMapping("/account-change-RoleType-blacklist")
     public void accountChangeRoleTypeToBlacklist(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId) {
         log.info("accountChangeRoleTypeToBlacklist()");
         adminService.accountChangeRoleTypeToBlacklist(headers, accountId);
     }
+
     @GetMapping("/account-change-RoleType-normal")
     public void accountChangeRoleTypeToNormal(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId) {
         log.info("accountChangeRoleTypeToNormal()");
         adminService.accountChangeRoleTypeToNormal(headers, accountId);
     }
+
     @PostMapping("/account-playlist")
     public Page<AdminPlaylistSelectListForm> playlistFindByAccount(@RequestHeader HttpHeaders headers, @RequestBody AdminPlaylistFindByAccountRequestForm requestForm) {
         log.info("playlistFindByAccount()");
         return adminService.playlistFindByAccount(headers, requestForm);
     }
+
     @PostMapping("/account-inquiry")
     public Page<AdminInquiryListResponseForm> inquiryFindByAccount(@RequestHeader HttpHeaders headers, @RequestBody AdminPlaylistFindByAccountRequestForm requestForm) {
         log.info("inquiryFindByAccount()");
         return adminService.inquiryFindByAccount(headers, requestForm);
+    }
+
+    @PostMapping("/search-account")
+    public Page<AdminAccountListForm> searchAccount(@RequestHeader HttpHeaders headers, @RequestBody AdminAccountSearchRequestForm requestForm) {
+        log.info("searchAccount()");
+        return adminService.searchAccount(headers, requestForm);
     }
 }
