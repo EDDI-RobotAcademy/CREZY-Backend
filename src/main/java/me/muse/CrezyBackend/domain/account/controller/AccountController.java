@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountInfoResponseForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginRequestForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginResponseForm;
+import me.muse.CrezyBackend.domain.account.controller.form.AccountWarningCountsResponseForm;
 import me.muse.CrezyBackend.domain.account.service.AccountService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -53,5 +54,11 @@ public class AccountController {
     @PostMapping("/login-admin")
     public AccountLoginResponseForm memberLogin(@RequestBody AccountLoginRequestForm accountLoginRequestForm) {
         return accountService.login(accountLoginRequestForm);
+    }
+
+    @GetMapping("/warning-count")
+    public AccountWarningCountsResponseForm warningCounts(@RequestHeader HttpHeaders headers) {
+        log.info("warningCount");
+        return accountService.warningCounts(headers);
     }
 }

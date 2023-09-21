@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.account.service;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountInfoResponseForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginRequestForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginResponseForm;
+import me.muse.CrezyBackend.domain.account.controller.form.AccountWarningCountsResponseForm;
 import org.springframework.http.HttpHeaders;
 
 public interface AccountService {
@@ -13,4 +14,6 @@ public interface AccountService {
     AccountInfoResponseForm returnAccountInfo(HttpHeaders headers);
     String changeProfileImage(HttpHeaders headers, String profileImageName);
     AccountLoginResponseForm login(AccountLoginRequestForm accountLoginRequestForm);
+
+    AccountWarningCountsResponseForm warningCounts(HttpHeaders headers);
 }
