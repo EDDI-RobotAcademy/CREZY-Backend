@@ -15,5 +15,5 @@ public class InquiryListResponseForm {
      final private InquiryCategoryType inquiryCategoryType;
      final private String inquiryTitle;
      final private LocalDate createInquiryDate;
-    //    final private String inquiryAnswer;
+     final private boolean existAnswer;
 }

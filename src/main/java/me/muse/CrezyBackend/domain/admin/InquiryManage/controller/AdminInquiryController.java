@@ -2,6 +2,7 @@ package me.muse.CrezyBackend.domain.admin.InquiryManage.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.admin.InquiryManage.Entity.InquiryAnswer;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.controller.form.*;
 import me.muse.CrezyBackend.domain.admin.InquiryManage.service.AdminInquiryService;
 import org.springframework.data.domain.Page;
@@ -39,5 +40,15 @@ public class AdminInquiryController {
     @PostMapping("/inquiry-answer")
     public Long inquiryAnswerRegist(@RequestHeader HttpHeaders headers, @RequestBody AdminInquiryAnswerRegisterForm registerForm){
         return adminInquiryService.registAnswer(headers, registerForm);
+    }
+
+    @PostMapping("/modify-inquiry-answer")
+    public InquiryAnswer inquiryAnswerModify(@RequestHeader HttpHeaders headers, @RequestBody AdminInquiryAnswerModifyForm modifyForm){
+        return adminInquiryService.modifyAnswer(headers, modifyForm);
+    }
+
+    @DeleteMapping("/{inquiryAnswerId}")
+    public void inquiryAnswerDelete(@RequestHeader HttpHeaders headers, @PathVariable("inquiryAnswerId") Long inquiryAnswerId){
+        adminInquiryService.deleteAnswer(headers, inquiryAnswerId);
     }
 }

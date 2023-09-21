@@ -2,6 +2,11 @@ package me.muse.CrezyBackend.domain.playlist.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
+import me.muse.CrezyBackend.domain.likePlaylist.Service.LikePlaylistService;
 import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.service.PlaylistService;
 import org.springframework.data.domain.Page;
@@ -17,12 +22,11 @@ import java.util.List;
 public class PlaylistController {
 
     final private PlaylistService playlistService;
-
-
-    @GetMapping("/list")
-    public Page<PlaylistResponseForm> playList(@RequestParam("page") Integer page) {
+    
+    @PostMapping("/list")
+    public Page<PlaylistResponseForm> playList(@RequestBody AdminPlaylistsRequestForm requestForm){
         log.info("playList()");
-        return playlistService.list(page);
+        return playlistService.list(requestForm);
     }
 
     @GetMapping("playlists/{playlistId}")

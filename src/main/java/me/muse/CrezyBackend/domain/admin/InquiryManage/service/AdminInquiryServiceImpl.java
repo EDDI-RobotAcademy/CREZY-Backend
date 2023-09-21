@@ -175,4 +175,25 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
 
         return inquiry.getInquiryId();
     }
+
+    @Override
+    @Transactional
+    public InquiryAnswer modifyAnswer(HttpHeaders headers, AdminInquiryAnswerModifyForm modifyForm) {
+        if (!checkAdmin.checkAdmin(headers)) return null;
+
+        InquiryAnswer inquiryAnswer = inquiryAnswerRepository.findById(modifyForm.getInquiryAnswerId())
+                .orElseThrow(() -> new IllegalArgumentException("InquiryAnswer not found"));
+
+        inquiryAnswer.setInquiryAnswer(modifyForm.getAnswer());
+
+        return inquiryAnswerRepository.save(inquiryAnswer);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAnswer(HttpHeaders headers, Long inquiryAnswerId) {
+        if (!checkAdmin.checkAdmin(headers)) return;
+
+        inquiryAnswerRepository.deleteById(inquiryAnswerId);
+    }
 }
