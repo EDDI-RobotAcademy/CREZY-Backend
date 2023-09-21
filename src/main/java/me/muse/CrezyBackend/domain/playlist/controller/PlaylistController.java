@@ -22,12 +22,8 @@ import java.util.List;
 public class PlaylistController {
 
     final private PlaylistService playlistService;
-    final private PlaylistRepository playlistRepository;
-    final private RedisService redisService;
-
-
-
-    @GetMapping("/list")
+    
+    @PostMapping("/list")
     public Page<PlaylistResponseForm> playList(@RequestBody AdminPlaylistsRequestForm requestForm){
         log.info("playList()");
         return playlistService.list(requestForm);
