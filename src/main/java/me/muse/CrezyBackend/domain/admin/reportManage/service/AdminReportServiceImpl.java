@@ -11,7 +11,6 @@ import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
-import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
@@ -231,18 +230,5 @@ public class AdminReportServiceImpl implements AdminReportService {
                 song.getLyrics(),
                 reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
         return responseForm;
-    }
-
-    @Override
-    public void deleteWarning(Long warningId, HttpHeaders headers) {
-//        if (!checkAdmin(headers)) return;
-        Warning warning = warningRepository.findById(warningId)
-                .orElseThrow(()->new IllegalArgumentException("report 없음"));
-
-        Report report = warning.getReport();
-        ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.RETURN).get();
-        report.setReportStatusType(statusType);
-
-        warningRepository.deleteById(warningId);
     }
 }
