@@ -4,9 +4,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
+import me.muse.CrezyBackend.domain.Inquiry.entity.InquiryDetail;
+import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountInfoResponseForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginRequestForm;
 import me.muse.CrezyBackend.domain.account.controller.form.AccountLoginResponseForm;
+import me.muse.CrezyBackend.domain.account.controller.form.AccountWarningCountsResponseForm;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
@@ -16,6 +19,7 @@ import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,6 +41,8 @@ public class AccountServiceImpl implements AccountService{
     final private LikePlaylistRepository likePlaylistRepository;
     final private BCryptPasswordEncoder passwordEncoder;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
+    final private WarningRepository warningRepository;
+    final private InquiryDetailRepository inquiryDetailRepository;
 
     @Override
     public void logout(String userToken) {
@@ -81,12 +87,18 @@ public class AccountServiceImpl implements AccountService{
 
         for(Playlist playlist : account.getPlaylist()){
             for(LikePlaylist likePlaylist : playlist.getLikePlaylist()){
-                likePlaylistRepository.deleteById(likePlaylist.getLikePlaylistId());
+                likePlaylistRepository.findById(likePlaylist.getLikePlaylistId()).ifPresent(
+                        findLikePlaylist -> likePlaylistRepository.deleteById(likePlaylist.getLikePlaylistId()));
+
             }
         }
 
         Profile profile = profileRepository.findByAccount(account)
                 .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+        List<InquiryDetail> inquiryDetailList = inquiryDetailRepository.findByProfile(profile);
+        for(InquiryDetail inquiryDetail : inquiryDetailList){
+            inquiryDetailRepository.deleteById(inquiryDetail.getInquiryDetailId());
+        }
 
         profileRepository.deleteById(profile.getProfileId());
         redisService.deleteByKey(authValues.get(0));
@@ -153,5 +165,26 @@ public class AccountServiceImpl implements AccountService{
             return new AccountLoginResponseForm(profile.getNickname(),roleType.getRoleType().toString(),userToken);
         }
         return null;
+    }
+
+    @Override
+    public AccountWarningCountsResponseForm warningCounts(HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return null;
+        }
+
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+        Integer warningCounts = warningRepository.countByAccount(account);
+
+        AccountWarningCountsResponseForm responseForm = new AccountWarningCountsResponseForm(
+                warningCounts
+        );
+
+        return responseForm;
     }
 }
