@@ -36,4 +36,14 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @Query("SELECT p FROM Playlist p WHERE p.songlist IS EMPTY")
     List<Playlist> findAllBySongEmpty();
     List<Playlist> findPlaylistByAccount_AccountId(Long accountId);
+
+    @Query("SELECT p " +
+            "FROM Playlist p " +
+            "JOIN FETCH p.songlist " +
+            "WHERE (p.account.accountId IN " +
+            "(SELECT pf.account.accountId FROM Profile pf WHERE pf.nickname LIKE %:keyword%) " +
+            "OR p.playlistName LIKE %:keyword%)")
+    List<Playlist> findByPlaylistNameAndNickname(String keyword);
+
+
 }
