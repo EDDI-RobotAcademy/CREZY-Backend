@@ -23,6 +23,7 @@ public class InquiryAnswer {
     private LocalDate createInquiryAnswerDate;
     @OneToOne
     @JsonIgnore
+    @JoinColumn(name = "inquiryId")
     private Inquiry inquiry;
 
     public InquiryAnswer(String inquiryAnswer, Inquiry inquiry) {
