@@ -565,5 +565,48 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         return inquiry.getInquiryAnswer() != null;
     }
 
+    @Override
+    public Page<AdminAccountListForm> searchAccount(HttpHeaders headers, AdminAccountSearchRequestForm requestForm) {
+        if (!checkAdmin.checkAdmin(headers)) return null;
+
+        Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("account.createDate").descending());
+        AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
+        List<Profile> profileList = profileRepository.findBySearchAccount_RoleTypeNotWithPage(pageable, roleType, requestForm.getKeyword());
+
+        final List<AdminAccountListForm> adminAccountListForms = new ArrayList<>();
+
+        for(Profile isProfile : profileList){
+            Account isAccount = accountRepository.findById(isProfile.getAccount().getAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("account 없음"));
+
+            Integer playlistCounts = playlistRepository.countByAccount(isAccount);
+            List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(isAccount);
+
+            Integer songCounts = 0;
+
+            for(Playlist playlist : playlists){
+                songCounts += songRepository.countByPlaylist(playlist);
+            }
+            Integer warningCounts = warningRepository.countByAccount(isAccount);
+
+            AdminAccountListForm adminAccountListForm = new AdminAccountListForm(
+                    isProfile.getAccount().getAccountId(),
+                    isProfile.getNickname(),
+                    playlistCounts,
+                    songCounts,
+                    isProfile.getAccount().getCreateDate(),
+                    warningCounts,
+                    isAccount.getRoleType().getRoleType().toString());
+            adminAccountListForms.add(adminAccountListForm);
+        }
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), adminAccountListForms.size());
+
+        return new PageImpl<>(
+                adminAccountListForms.subList(start, end),
+                pageable,
+                adminAccountListForms.size()
+        );
+    }
 }
 

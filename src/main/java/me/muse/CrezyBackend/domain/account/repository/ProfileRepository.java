@@ -26,5 +26,6 @@ public interface ProfileRepository extends JpaRepository<Profile,Long> {
     Optional<Profile> findByAccount_AccountId(Long reportedAccountId);
     @Query("SELECT p FROM Profile p JOIN FETCH p.account WHERE p.account.accountId = :reportedAccountId AND p.account.roleType = :roleType")
     Optional<Profile> findByAccount_AccountIdAndRoleType(Long reportedAccountId, AccountRoleType roleType);
-
+    @Query("SELECT p FROM Profile p JOIN FETCH p.account a WHERE p.nickname LIKE %:keyword% AND a.roleType <> :roleType")
+    List<Profile> findBySearchAccount_RoleTypeNotWithPage(Pageable pageable, AccountRoleType roleType, String keyword);
 }
