@@ -31,4 +31,11 @@ public class ReportDetail {
         this.reportContent = reportContent;
         this.report = report;
     }
+
+    public ReportDetail(Long reporterAccountId, Long reportedAccountId, String reportContent, Report report) {
+        this.reporterAccountId = reporterAccountId;
+        this.reportedAccountId = reportedAccountId;
+        this.reportContent = reportContent;
+        this.report = report;
+    }
 }
