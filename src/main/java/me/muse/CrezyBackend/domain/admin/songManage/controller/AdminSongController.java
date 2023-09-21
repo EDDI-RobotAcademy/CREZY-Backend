@@ -50,4 +50,10 @@ public class AdminSongController {
         log.info("statusTodaySong()");
         return adminService.todayStatusSong(headers, date);
     }
+
+    @PostMapping("/search-song")
+    public Page<AdminSongListResponseForm> searchSong(@RequestHeader HttpHeaders headers, @RequestBody AdminSongSearchRequestForm requestForm) {
+        log.info("searchSong()");
+        return adminService.searchSong(headers, requestForm);
+    }
 }
