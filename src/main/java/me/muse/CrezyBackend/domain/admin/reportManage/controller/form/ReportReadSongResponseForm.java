@@ -14,4 +14,5 @@ public class ReportReadSongResponseForm {
     final private String link;
     final private String lyrics;
     final private String ReportedCategoryType;
+    final private Long reportedSongId;
 }
