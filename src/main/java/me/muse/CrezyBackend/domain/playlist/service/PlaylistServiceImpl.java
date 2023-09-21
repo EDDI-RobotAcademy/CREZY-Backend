@@ -8,6 +8,7 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.controller.form.*;
@@ -15,10 +16,7 @@ import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.entity.StatusType;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -40,9 +38,19 @@ public class PlaylistServiceImpl implements PlaylistService{
     final private LikePlaylistRepository likePlaylistRepository;
     @Override
     @Transactional
-    public Page<PlaylistResponseForm> list(Integer page) {
-        List<Playlist> playlists = playlistRepository.findAll();
-        Pageable pageable = PageRequest.of(page - 1, 10);
+    public Page<PlaylistResponseForm> list(AdminPlaylistsRequestForm requestForm) {
+
+        List<Playlist> playlists = new ArrayList<>();
+        Pageable pageable = null;
+
+        if(requestForm.getSortType().equals("recent")){
+            pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
+            playlists = playlistRepository.findAllWithPage();
+        } else if (requestForm.getSortType().equals("trending")) {
+            pageable = PageRequest.of(requestForm.getPage() - 1, 10);
+            playlists = playlistRepository.findAllSortByLikePlaylist();
+        }
+
         List<PlaylistResponseForm> responseForms = new ArrayList<>();
         for (Playlist playlist : playlists) {
             String thumbnailName = playlist.getThumbnailName();
