@@ -13,4 +13,6 @@ public class ReportReadPlaylistResponseForm {
     final private String ReportedCategoryType;
     final private int likeCounts;
     final private int songCounts;
+    final private Long reportedPlaylistId;
+
 }

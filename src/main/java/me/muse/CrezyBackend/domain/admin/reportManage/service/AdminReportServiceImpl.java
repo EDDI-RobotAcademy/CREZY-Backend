@@ -175,7 +175,8 @@ public class AdminReportServiceImpl implements AdminReportService {
                 reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
                 reportedCounts,
                 warningCounts,
-                inquiryCounts);
+                inquiryCounts,
+                reportedProfile.getAccount().getAccountId());
         return responseForm;
     }
 
@@ -203,7 +204,8 @@ public class AdminReportServiceImpl implements AdminReportService {
                 playlist.getThumbnailName(),
                 reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
                 songlist.size(),
-                likePlaylists.size());
+                likePlaylists.size(),
+                reportDetail.getReportedId());
         return responseForm;
     }
 
@@ -229,7 +231,8 @@ public class AdminReportServiceImpl implements AdminReportService {
                 song.getSinger(),
                 song.getLink(),
                 song.getLyrics(),
-                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString());
+                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                song.getSongId());
         return responseForm;
     }
 
