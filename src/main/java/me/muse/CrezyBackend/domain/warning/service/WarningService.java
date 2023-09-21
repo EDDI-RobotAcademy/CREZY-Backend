@@ -8,7 +8,7 @@ import org.springframework.http.HttpHeaders;
 import java.util.List;
 
 public interface WarningService {
-    Warning registWarning(HttpHeaders headers, ReportRegisterForm requestForm);
+    void registWarning(HttpHeaders headers, ReportRegisterForm requestForm);
     void deleteWarning(Long warningId, HttpHeaders headers);
 
     List<WarningResponseForm> searchByAccount(HttpHeaders headers, Long accountId);

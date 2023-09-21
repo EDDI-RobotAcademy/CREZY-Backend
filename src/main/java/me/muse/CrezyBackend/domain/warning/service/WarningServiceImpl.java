@@ -3,7 +3,9 @@ package me.muse.CrezyBackend.domain.warning.service;
 import lombok.RequiredArgsConstructor;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
+import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportRegisterForm;
 import me.muse.CrezyBackend.domain.report.entity.*;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
 import static me.muse.CrezyBackend.domain.report.entity.ReportedCategory.SONG;
 
 @Service
@@ -36,16 +39,17 @@ public class WarningServiceImpl implements WarningService{
     final private ReportedCategoryTypeRepository reportedCategoryTypeRepository;
     final private SongRepository songRepository;
     final private WarningRepository warningRepository;
+    final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private CheckAdmin checkAdmin;
 
     @Override
     @Transactional
-    public Warning registWarning(HttpHeaders headers, ReportRegisterForm requestForm) {
-        if(checkAdmin.checkAdmin(headers)) return null;
+    public void registWarning(HttpHeaders headers, ReportRegisterForm requestForm) {
+        if(checkAdmin.checkAdmin(headers)) return;
 
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
         if (authValues.isEmpty()) {
-            return null;
+            return;
         }
         Long accountId = redisService.getValueByKey(authValues.get(0));
 
@@ -73,7 +77,11 @@ public class WarningServiceImpl implements WarningService{
         reportDetailRepository.save(reportDetail);
         warningRepository.save(warning);
 
-        return null;
+        if (warningRepository.countByAccount(reportedAccount) >= 3) {
+            AccountRoleType accountRoleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
+            reportedAccount.setRoleType(accountRoleType);
+            accountRepository.save(reportedAccount);
+        }
     }
 
     @Override
