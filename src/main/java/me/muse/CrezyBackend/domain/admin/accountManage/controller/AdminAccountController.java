@@ -26,14 +26,9 @@ public class AdminAccountController {
     }
 
     @GetMapping("/account-list")
-    public List<AdminAccountListForm> accountList(@RequestHeader HttpHeaders headers, @RequestParam("page") Integer page) {
+    public Page<AdminAccountListForm> accountList(@RequestHeader HttpHeaders headers, @RequestParam("page") Integer page) {
         log.info("accountList()");
         return adminService.accountList(headers, page);
-    }
-
-    @GetMapping("/list/total-page")
-    public Integer getTotalPage() {
-        return adminService.getTotalPage();
     }
 
     @GetMapping("/account-blacklist")
