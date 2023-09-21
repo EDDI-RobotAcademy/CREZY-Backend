@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
-import static me.muse.CrezyBackend.domain.report.entity.ReportedCategory.SONG;
 
 @Service
 @RequiredArgsConstructor
@@ -55,22 +54,14 @@ public class WarningServiceImpl implements WarningService{
 
         Account reporterAccount = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        Account reportedAccount;
+        Account reportedAccount = accountRepository.findById(requestForm.getReportedId())
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
         ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.APPROVE).get();
         ReportedCategoryType categoryType = reportedCategoryTypeRepository.findByReportedCategory(ReportedCategory.valueOf(requestForm.getReportedCategoryType())).get();
 
-        if(categoryType.getReportedCategory() == SONG){
-            Long playlistId = songRepository.findById(requestForm.getReportedId()).get().getPlaylist().getPlaylistId();
-            reportedAccount = accountRepository.findByPlaylist_playlistId(playlistId)
-                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        }else{
-            reportedAccount = accountRepository.findByPlaylist_playlistId(requestForm.getReportedId())
-                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        }
-
         final Report report = new Report(categoryType, statusType);
-        final ReportDetail reportDetail = new ReportDetail(reporterAccount.getAccountId(), reportedAccount.getAccountId(), requestForm.getReportedId(), requestForm.getReportContent(), report);
+        final ReportDetail reportDetail = new ReportDetail(reporterAccount.getAccountId(), reportedAccount.getAccountId(), requestForm.getReportContent(), report);
         final Warning warning = new Warning(reportedAccount, report);
 
         reportRepository.save(report);
