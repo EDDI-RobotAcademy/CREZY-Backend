@@ -19,8 +19,8 @@ public class WarningController {
     final private WarningService warningService;
 
     @PostMapping("regist-warning")
-    public Warning registWarning(@RequestHeader HttpHeaders headers, @RequestBody ReportRegisterForm requestForm){
-        return warningService.registWarning(headers, requestForm);
+    public void registWarning(@RequestHeader HttpHeaders headers, @RequestBody ReportRegisterForm requestForm){
+        warningService.registWarning(headers, requestForm);
     }
 
     @DeleteMapping("/delete-warning")
