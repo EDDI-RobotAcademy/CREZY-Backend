@@ -12,6 +12,8 @@ import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.TodaySta
 import me.muse.CrezyBackend.domain.admin.songManage.controller.form.AdminSongDetailReadResponseForm;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistResponseForm;
+import me.muse.CrezyBackend.domain.playlist.controller.form.PlaylistSearchRequestForm;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
@@ -50,14 +52,14 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
 
         double increaseRate = 0;
 
-        if(0 < todayPlaylist && previousPlaylist == 0){
+        if (0 < todayPlaylist && previousPlaylist == 0) {
             increaseRate = 100;
-        }else {
+        } else {
             increaseRate = (double) (todayPlaylist - previousPlaylist) / previousPlaylist * 100;
         }
 
         Integer afterDay = compareDate(TransformToDate.transformToDate(date));
-        Integer previousDay = weeks-afterDay;
+        Integer previousDay = weeks - afterDay;
 
         LocalDate previousDate = (TransformToDate.transformToDate(date)).minusDays(previousDay);
         LocalDate afterDate = (TransformToDate.transformToDate(date)).plusDays(afterDay);
@@ -65,7 +67,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         List<Integer> playlistCounts = playlistBetweenPeriod(previousDate, afterDate);
         List<String> playlistDateList = playlistDateListBetweenPeriod(previousDate, afterDate);
 
-        return new TodayStatusPlaylistResponseForm(todayPlaylist, totalPlaylist, (int)increaseRate, playlistCounts, playlistDateList);
+        return new TodayStatusPlaylistResponseForm(todayPlaylist, totalPlaylist, (int) increaseRate, playlistCounts, playlistDateList);
     }
 
     public Integer compareDate(LocalDate compareDate) {
@@ -82,13 +84,13 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
 
         Period period = date2.until(date1);
         int days = period.getDays();
-        if(days < 3) {
+        if (days < 3) {
             return days;
         }
         return 3;
     }
 
-    public List<Integer> playlistBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
+    public List<Integer> playlistBetweenPeriod(LocalDate previousDate, LocalDate afterDate) {
         List<Integer> playlistCounts = new ArrayList<>();
 
         while (!previousDate.isAfter(afterDate)) {
@@ -98,7 +100,8 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         }
         return playlistCounts;
     }
-    public List<String> playlistDateListBetweenPeriod(LocalDate previousDate, LocalDate afterDate){
+
+    public List<String> playlistDateListBetweenPeriod(LocalDate previousDate, LocalDate afterDate) {
         List<String> playlistDateList = new ArrayList<>();
 
         while (!previousDate.isAfter(afterDate)) {
@@ -115,7 +118,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         List<Playlist> playlists = new ArrayList<>();
         Pageable pageable = null;
 
-        if(requestForm.getSortType().equals("recent")){
+        if (requestForm.getSortType().equals("recent")) {
             pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
             playlists = playlistRepository.findAllWithPage();
         } else if (requestForm.getSortType().equals("trending")) {
@@ -128,7 +131,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
 
         final List<AdminPlaylistSelectListForm> adminPlaylistSelectListForms = new ArrayList<>();
 
-        for(Playlist isPlaylist : playlists){
+        for (Playlist isPlaylist : playlists) {
             Profile isProfile = profileRepository.findByAccount_AccountId(isPlaylist.getAccount().getAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
@@ -163,15 +166,15 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         List<AdminSongDetailReadResponseForm> songDetail = new ArrayList<>();
         List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlistId);
 
-        for(Song song : songlist){
+        for (Song song : songlist) {
             AdminSongDetailReadResponseForm songs =
                     new AdminSongDetailReadResponseForm(
-                        song.getSongId(),
-                        song.getTitle(),
-                        song.getSinger(),
-                        song.getCreateDate(),
-                        song.getStatusType().getStatusType().toString()
-            );
+                            song.getSongId(),
+                            song.getTitle(),
+                            song.getSinger(),
+                            song.getCreateDate(),
+                            song.getStatusType().getStatusType().toString()
+                    );
             songDetail.add(songs);
         }
 
@@ -200,7 +203,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         playlistRepository.save(playlist);
     }
 
-    private String makeNewPlaylistName(){
+    private String makeNewPlaylistName() {
         String[] genreList = {"신나는", "감성적인", "힙한", "슬픈", "화난", "놀란", "행복한", "무서운"};
 
         RandomValue randomValue = new RandomValue();
@@ -209,7 +212,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         String randomAlphabet = "";
         String randomNumber = "";
 
-        for(int i=0; i<2; i++){
+        for (int i = 0; i < 2; i++) {
             randomAlphabet += (String.valueOf((char) ((Math.random() * 26) + 65)));
             randomNumber += String.valueOf(randomValue.randomValue(9));
         }
@@ -235,12 +238,39 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
         if (!checkAdmin.checkAdmin(headers)) return;
 
         Playlist maybePlaylist = playlistRepository.findById(playlistId)
-                .orElseThrow(()->new IllegalArgumentException("playlist 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("playlist 없음"));
 
-        for(LikePlaylist likePlaylist : maybePlaylist.getLikePlaylist()){
+        for (LikePlaylist likePlaylist : maybePlaylist.getLikePlaylist()) {
             likePlaylistRepository.deleteById(likePlaylist.getLikePlaylistId());
-            }
+        }
         playlistRepository.deleteById(playlistId);
+    }
+
+    @Override
+    @Transactional
+    public Page<PlaylistResponseForm> searchPlaylist(HttpHeaders headers, PlaylistSearchRequestForm requestForm) {
+        if (!checkAdmin.checkAdmin(headers)) return null;
+        List<Playlist> playlists = playlistRepository.findAllByPlaylistNameAndNickname(requestForm.getKeyword());
+
+        Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
+        List<PlaylistResponseForm> responseForms = new ArrayList<>();
+        for (Playlist playlist : playlists) {
+            String thumbnailName = playlist.getThumbnailName();
+            int likeCount = playlist.getLikePlaylist() != null ? playlist.getLikePlaylist().size() : 0;
+            int songCount = playlist.getSonglist() != null ? playlist.getSonglist().size() : 0;
+
+            if (thumbnailName == null && !playlist.getSonglist().isEmpty()) {
+                thumbnailName = playlist.getSonglist().get(0).getLink();
+            }
+            Profile profile = profileRepository.findByAccount(playlist.getAccount()).orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
+            PlaylistResponseForm responseForm = new PlaylistResponseForm(playlist.getPlaylistId(), playlist.getPlaylistName(), profile.getNickname(), likeCount, songCount, thumbnailName);
+
+            responseForms.add(responseForm);
+        }
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), responseForms.size());
+
+        return new PageImpl<>(responseForms.subList(start, end), pageable, responseForms.size());
     }
 
 }
