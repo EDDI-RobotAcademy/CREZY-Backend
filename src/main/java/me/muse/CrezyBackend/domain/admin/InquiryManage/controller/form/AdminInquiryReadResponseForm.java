@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 public class AdminInquiryReadResponseForm {
-    private Long inquiryDetailId;
+    private Long inquiryId;
     private String inquiryTitle;
     private String inquiryContent;
     private String nickname;
@@ -21,10 +21,10 @@ public class AdminInquiryReadResponseForm {
     private InquiryAnswer inquiryAnswer;
     private List<String> inquiryImageNames = new ArrayList<>();
 
-    public AdminInquiryReadResponseForm(Long inquiryDetailId, String inquiryTitle, String inquiryContent,
+    public AdminInquiryReadResponseForm(Long inquiryId, String inquiryTitle, String inquiryContent,
                                         String nickname, String inquiryCategoryType, LocalDate createInquiryDate,
                                         InquiryAnswer inquiryAnswer, List<InquiryImages> inquiryImageList) {
-        this.inquiryDetailId = inquiryDetailId;
+        this.inquiryId = inquiryId;
         this.inquiryTitle = inquiryTitle;
         this.inquiryContent = inquiryContent;
         this.nickname = nickname;

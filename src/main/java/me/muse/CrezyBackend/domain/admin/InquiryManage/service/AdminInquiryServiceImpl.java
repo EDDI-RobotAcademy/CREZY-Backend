@@ -152,7 +152,7 @@ public class AdminInquiryServiceImpl implements AdminInquiryService {
                 .orElseThrow(() -> new IllegalArgumentException("InquiryDetail not found"));
 
         return new AdminInquiryReadResponseForm(
-                inquiryDetail.getInquiryDetailId(),
+                inquiryDetail.getInquiry().getInquiryId(),
                 inquiryDetail.getInquiryTitle(),
                 inquiryDetail.getInquiryContent(),
                 inquiryDetail.getProfile().getNickname(),
