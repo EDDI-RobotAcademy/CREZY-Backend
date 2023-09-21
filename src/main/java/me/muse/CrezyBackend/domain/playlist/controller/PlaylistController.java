@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.admin.playlistManage.controller.form.AdminPlaylistsRequestForm;
 import me.muse.CrezyBackend.domain.likePlaylist.Service.LikePlaylistService;
 import me.muse.CrezyBackend.domain.playlist.controller.form.*;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
@@ -27,9 +28,9 @@ public class PlaylistController {
 
 
     @GetMapping("/list")
-    public Page<PlaylistResponseForm> playList(@RequestParam("page") Integer page){
+    public Page<PlaylistResponseForm> playList(@RequestBody AdminPlaylistsRequestForm requestForm){
         log.info("playList()");
-        return playlistService.list(page);
+        return playlistService.list(requestForm);
     }
 
     @GetMapping("playlists/{playlistId}")
