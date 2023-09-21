@@ -11,6 +11,7 @@ import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
+import me.muse.CrezyBackend.domain.warning.controller.form.WarningResponseForm;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -85,5 +87,28 @@ public class WarningServiceImpl implements WarningService{
         report.setReportStatusType(statusType);
 
         warningRepository.deleteById(warningId);
+    }
+
+    @Override
+    public List<WarningResponseForm> searchByAccount(HttpHeaders headers, Long accountId) {
+        if (!checkAdmin.checkAdmin(headers)) return null;
+        List<WarningResponseForm> responseFormList = new ArrayList<>();
+
+        List<Warning> warningList = warningRepository.findByAccount_AccountId(accountId);
+
+        for(Warning warning : warningList){
+            ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(warning.getReport().getReportId())
+                    .orElseThrow(()->new IllegalArgumentException("reportDetail 없음"));
+
+            responseFormList.add(
+                    new WarningResponseForm(
+                            warning.getWarningId(),
+                            warning.getCreateWarningDate(),
+                            warning.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                            reportDetail.getReportContent(),
+                            reportDetail.getCreateReportDate()));
+        }
+
+        return responseFormList;
     }
 }
