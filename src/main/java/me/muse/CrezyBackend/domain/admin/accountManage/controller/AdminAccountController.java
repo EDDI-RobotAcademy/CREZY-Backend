@@ -93,4 +93,10 @@ public class AdminAccountController {
         log.info("searchAccount()");
         return adminService.searchAccount(headers, requestForm);
     }
+
+    @GetMapping("/change-profileImageName")
+    public void changeProfileImageName(@RequestHeader HttpHeaders headers, @RequestParam("accountId") Long accountId) {
+        log.info("changeProfileImageName()");
+        adminService.changeProfileImageName(headers, accountId);
+    }
 }

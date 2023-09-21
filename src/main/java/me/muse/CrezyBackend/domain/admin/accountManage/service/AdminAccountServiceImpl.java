@@ -608,5 +608,15 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 adminAccountListForms.size()
         );
     }
+
+    @Override
+    public void changeProfileImageName(HttpHeaders headers, Long accountId) {
+        if (!checkAdmin.checkAdmin(headers)) return;
+        Profile profile = profileRepository.findByAccount_AccountId(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("profile 없음"));
+
+        profile.setProfileImageName(null);
+        profileRepository.save(profile);
+    }
 }
 
