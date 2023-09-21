@@ -34,4 +34,6 @@ public interface AdminAccountService {
     Page<AdminInquiryListResponseForm> inquiryFindByAccount(HttpHeaders headers, AdminPlaylistFindByAccountRequestForm requestForm);
 
     Page<AdminAccountListForm> searchAccount(HttpHeaders headers, AdminAccountSearchRequestForm requestForm);
+
+    void changeProfileImageName(HttpHeaders headers, Long accountId);
 }
