@@ -221,4 +221,40 @@ public class AdminSongServiceImpl implements AdminSongService{
         }
         return songDateList;
     }
+
+    @Override
+    @Transactional
+    public Page<AdminSongListResponseForm> searchSong(HttpHeaders headers, AdminSongSearchRequestForm requestForm) {
+        if (!checkAdmin.checkAdmin(headers)) return null;
+
+        Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
+        List<Song> songList = songRepository.findAllByTitleAndSinger(pageable, requestForm.getKeyword());
+
+        List<AdminSongListResponseForm> responseFormList = new ArrayList<>();
+
+        for (Song song : songList) {
+            Profile profile = profileRepository.findByAccount(song.getPlaylist().getAccount())
+                    .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+            AdminSongListResponseForm responseForm = new AdminSongListResponseForm(
+                    song.getSongId(),
+                    song.getTitle(),
+                    song.getSinger(),
+                    profile.getNickname(),
+                    song.getCreateDate(),
+                    song.getStatusType()
+            );
+
+            responseFormList.add(responseForm);
+        }
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), responseFormList.size());
+
+        return new PageImpl<>(
+                responseFormList.subList(start, end),
+                pageable,
+                responseFormList.size()
+        );
+    }
 }

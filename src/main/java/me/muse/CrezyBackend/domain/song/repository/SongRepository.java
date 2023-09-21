@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.song.repository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +22,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     List<Song> findByCreateDate(LocalDate localDate);
     List<Song> findByStatusTypeOrderByTitleAsc(SongStatusType songStatusType);
     List<Song> findByStatusTypeOrderByTitleDesc(SongStatusType songStatusType);
+    @Query("SELECT s FROM Song s WHERE s.title LIKE %:keyword% OR s.singer LIKE %:keyword%")
+    List<Song> findAllByTitleAndSinger(Pageable pageable, String keyword);
 }
