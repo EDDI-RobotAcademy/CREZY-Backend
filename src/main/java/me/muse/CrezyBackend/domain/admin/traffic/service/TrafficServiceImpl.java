@@ -72,8 +72,14 @@ public class TrafficServiceImpl implements TrafficService{
     public TodayTrafficCountResponseForm todayCount(HttpHeaders headers) {
         if (!checkAdmin.checkAdmin(headers)) return null;
 
-        Traffic traffic = trafficRepository.findByDate(LocalDate.now())
-                .orElseThrow(() -> new IllegalArgumentException("Traffic not found"));
+        Optional<Traffic> maybeTraffic = trafficRepository.findByDate(LocalDate.now());
+        Traffic traffic;
+        if(maybeTraffic.isEmpty()){
+            traffic = new Traffic(LocalDate.now());
+            trafficRepository.save(traffic);
+        }else {
+            traffic = maybeTraffic.get();
+        }
 
         Optional<Traffic> maybePreviousTraffic = trafficRepository.findByDate(LocalDate.now().minusDays(1));
         Traffic previousTraffic;
