@@ -1,21 +1,27 @@
 package me.muse.CrezyBackend.domain.admin.reportManage.controller.form;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReportResponseForm {
-    final private Long reportId;
-    final private String reporterNickname;
-    final private Long reportedId;
-    final private String reportContent;
-    final private String reportedCategoryType;
-    final private String reportStatusType;
-    final private LocalDate createReportDate;
-    final private Integer SongReportCount;
-    final private Integer PlaylistReportCount;
-    final private Integer AccountReportCount;
+    private Long reportId;
+    private String reporterNickname;
+    private Long reportedId;
+    private String reportContent;
+    private String reportedCategoryType;
+    private String reportStatusType;
+    private LocalDate createReportDate;
+    private Integer SongReportCount;
+    private Integer PlaylistReportCount;
+    private Integer AccountReportCount;
 
+    public ReportResponseForm(String reportContent) {
+        this.reportContent = reportContent;
+    }
 }

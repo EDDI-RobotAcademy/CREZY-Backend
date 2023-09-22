@@ -10,7 +10,10 @@ import me.muse.CrezyBackend.domain.account.entity.Profile;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
+import me.muse.CrezyBackend.domain.admin.accountManage.service.AdminAccountService;
+import me.muse.CrezyBackend.domain.admin.playlistManage.service.AdminPlaylistService;
 import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
+import me.muse.CrezyBackend.domain.admin.songManage.service.AdminSongService;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
@@ -55,6 +58,9 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private CheckAdmin checkAdmin;
     final private InquiryDetailRepository inquiryDetailRepository;
     final private LikePlaylistRepository likePlaylistRepository;
+    final private AdminSongService adminSongService;
+    final private AdminPlaylistService adminPlaylistService;
+    final private AdminAccountService adminAccountService;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -109,15 +115,68 @@ public class AdminReportServiceImpl implements AdminReportService {
         Report report = reportRepository.findById(processingForm.getReportId())
                 .orElseThrow(() -> new IllegalArgumentException("Report not found"));
 
+        ReportDetail reportDetail = reportDetailRepository.findById(report.getReportId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+        Account reportedAccount = accountRepository.findById(reportDetail.getReportedAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("ReportedAccount not found"));
+
         report.setReportStatusType(statusType);
 
         if (processingForm.getReportStatus().equals("APPROVE")) {
-            ReportDetail reportDetail = reportDetailRepository.findById(report.getReportId())
-                    .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
-            Account reportedAccount = accountRepository.findById(reportDetail.getReportedAccountId())
-                    .orElseThrow(() -> new IllegalArgumentException("ReportedAccount not found"));
-            warningRepository.save(new Warning(reportedAccount, report));
+            if(report.getReportedCategoryType().getReportedCategory() == SONG){
 
+                Song song = songRepository.findById(reportDetail.getReportedId())
+                        .orElseThrow(() -> new IllegalArgumentException("Song not found"));
+
+                switch (reportDetail.getReportContent()) {
+                    case "저작권 침해", "잘못된 링크", "허위" -> {
+                        song.setLink(" ");
+                        songRepository.save(song);
+                        adminSongService.registerSongStatusBlock(song.getSongId(), headers);
+                    }
+                    case "불쾌한 콘텐츠" -> {
+                        songRepository.deleteById(song.getSongId());
+                        warningRepository.save(new Warning(reportedAccount, report));
+                    }
+                    case "노래 가사 오류" -> {
+                        song.setLyrics("가사 수정이 필요하여 내용을 삭제했습니다.");
+                        songRepository.save(song);
+                    }
+                    default -> adminSongService.registerSongStatusBlock(song.getSongId(), headers);
+                }
+            } else if (report.getReportedCategoryType().getReportedCategory() == PLAYLIST) {
+                try{
+                    Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
+                            .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
+
+                    switch (reportDetail.getReportContent()) {
+                        case "부적절한 제목" -> adminPlaylistService.changePlaylistName(headers, playlist.getPlaylistId());
+                        case "유해한 플레이리스트 사진" -> {
+                            playlist.setThumbnailName(null);
+                            playlistRepository.save(playlist);
+                        }
+                    }
+                    warningRepository.save(new Warning(reportedAccount, report));
+                }catch (IllegalArgumentException e){
+                    return false;
+                }
+            } else if (report.getReportedCategoryType().getReportedCategory() == ACCOUNT) {
+                try {
+                    Profile profile = profileRepository.findByAccount(reportedAccount)
+                            .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+                    switch (reportDetail.getReportContent()) {
+                        case "부적절한 닉네임", "불법 광고 계정", "계정 도용" -> adminAccountService.changeBadNickname(headers, reportedAccount.getAccountId());
+                        case "유해한 프로필 사진" -> {
+                            profile.setProfileImageName(null);
+                            profileRepository.save(profile);
+                        }
+                    }
+                    warningRepository.save(new Warning(reportedAccount, report));
+                }catch (IllegalArgumentException e){
+                    return false;
+                }
+            }
             if (warningRepository.countByAccount(reportedAccount) >= 3) {
                 AccountRoleType accountRoleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
                 reportedAccount.setRoleType(accountRoleType);
@@ -156,56 +215,63 @@ public class AdminReportServiceImpl implements AdminReportService {
     public ReportReadAccountResponseForm readAccountReport(Long reportId, HttpHeaders headers) {
         if (!checkAdmin.checkAdmin(headers)) return null;
 
-        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
-                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
-        Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
-        Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+        try {
+            ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
+                    .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+            Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+            Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
 
-        int reportedCounts = reportDetailRepository.findAllByReportedAccountId(reportDetail.getReportedAccountId()).size();
-        int warningCounts = warningRepository.countByAccount(reportedProfile.getAccount());
-        int inquiryCounts = inquiryDetailRepository.findByProfile_Account_accountId(reportDetail.getReportedAccountId()).size();
+            int reportedCounts = reportDetailRepository.findAllByReportedAccountId(reportDetail.getReportedAccountId()).size();
+            int warningCounts = warningRepository.countByAccount(reportedProfile.getAccount());
+            int inquiryCounts = inquiryDetailRepository.findByProfile_Account_accountId(reportDetail.getReportedAccountId()).size();
 
-        ReportReadAccountResponseForm responseForm = new ReportReadAccountResponseForm(
-                reporterProfile.getNickname(),
-                reportedProfile.getNickname(),
-                reportedProfile.getProfileImageName(),
-                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
-                reportedCounts,
-                warningCounts,
-                inquiryCounts,
-                reportedProfile.getAccount().getAccountId());
-        return responseForm;
+            ReportReadAccountResponseForm responseForm = new ReportReadAccountResponseForm(
+                    reporterProfile.getNickname(),
+                    reportedProfile.getNickname(),
+                    reportedProfile.getProfileImageName(),
+                    reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                    reportedCounts,
+                    warningCounts,
+                    inquiryCounts,
+                    reportedProfile.getAccount().getAccountId());
+            return responseForm;
+        } catch (IllegalArgumentException e){
+            return new ReportReadAccountResponseForm("삭제된 계정입니다.");
+        }
     }
 
     @Override
     @Transactional
     public ReportReadPlaylistResponseForm readPlaylistReport(Long reportId, HttpHeaders headers) {
         if (!checkAdmin.checkAdmin(headers)) return null;
+        try {
+            ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
+                    .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+            Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+            Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+            Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
+                    .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
 
-        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
-                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
-        Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
-        Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
-        Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
-                .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
+            List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlist.getPlaylistId());
+            List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
 
-        List<Song> songlist = songRepository.findByPlaylist_PlaylistId(playlist.getPlaylistId());
-        List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
-
-        ReportReadPlaylistResponseForm responseForm = new ReportReadPlaylistResponseForm(
-                reporterProfile.getNickname(),
-                reportedProfile.getNickname(),
-                playlist.getPlaylistName(),
-                playlist.getThumbnailName(),
-                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
-                songlist.size(),
-                likePlaylists.size(),
-                reportDetail.getReportedId());
-        return responseForm;
+            ReportReadPlaylistResponseForm responseForm = new ReportReadPlaylistResponseForm(
+                    reporterProfile.getNickname(),
+                    reportedProfile.getNickname(),
+                    playlist.getPlaylistName(),
+                    playlist.getThumbnailName(),
+                    reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                    songlist.size(),
+                    likePlaylists.size(),
+                    reportDetail.getReportedId());
+            return responseForm;
+        } catch (IllegalArgumentException e){
+            return new ReportReadPlaylistResponseForm("삭제된 플레이리스트입니다.");
+        }
     }
 
     @Override
@@ -213,25 +279,30 @@ public class AdminReportServiceImpl implements AdminReportService {
     public ReportReadSongResponseForm readSongReport(Long reportId, HttpHeaders headers) {
         if (!checkAdmin.checkAdmin(headers)) return null;
 
-        ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
-                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
-        Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
-        Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
-        Song song = songRepository.findById(reportDetail.getReportedId())
-                .orElseThrow(() -> new IllegalArgumentException("Song not found"));
+        try{
+            ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
+                    .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
+            Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
+            Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
+                    .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
 
-        ReportReadSongResponseForm responseForm = new ReportReadSongResponseForm(
-                reporterProfile.getNickname(),
-                reportedProfile.getNickname(),
-                song.getPlaylist().getPlaylistName(),
-                song.getTitle(),
-                song.getSinger(),
-                song.getLink(),
-                song.getLyrics(),
-                reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
-                song.getSongId());
-        return responseForm;
+            Song song = songRepository.findById(reportDetail.getReportedId())
+                    .orElseThrow(() -> new IllegalArgumentException("Song not found"));
+
+            ReportReadSongResponseForm responseForm = new ReportReadSongResponseForm(
+                    reporterProfile.getNickname(),
+                    reportedProfile.getNickname(),
+                    song.getPlaylist().getPlaylistName(),
+                    song.getTitle(),
+                    song.getSinger(),
+                    song.getLink(),
+                    song.getLyrics(),
+                    reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
+                    song.getSongId());
+            return responseForm;
+        }catch (IllegalArgumentException e){
+            return new ReportReadSongResponseForm("삭제된 노래입니다.");
+        }
     }
 }

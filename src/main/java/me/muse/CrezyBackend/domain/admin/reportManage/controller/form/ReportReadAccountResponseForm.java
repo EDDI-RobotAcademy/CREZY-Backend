@@ -1,17 +1,24 @@
 package me.muse.CrezyBackend.domain.admin.reportManage.controller.form;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReportReadAccountResponseForm {
-    final private String reporterProfileName;
-    final private String reportedProfileName;
-    final private String reportedProfileImageName;
-    final private String ReportedCategoryType;
-    final private int reportedCounts;
-    final private int warningCounts;
-    final private int inquiryCounts;
-    final private Long reportedAccountId;
+    private String reporterProfileName;
+    private String reportedProfileName;
+    private String reportedProfileImageName;
+    private String ReportedCategoryType;
+    private int reportedCounts;
+    private int warningCounts;
+    private int inquiryCounts;
+    private Long reportedAccountId;
+
+    public ReportReadAccountResponseForm(String reportedProfileName) {
+        this.reportedProfileName = reportedProfileName;
+    }
 }
