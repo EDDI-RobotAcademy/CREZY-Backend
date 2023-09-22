@@ -19,6 +19,7 @@ import me.muse.CrezyBackend.domain.account.repository.ProfileRepository;
 import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
+import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -98,6 +99,11 @@ public class AccountServiceImpl implements AccountService{
         List<InquiryDetail> inquiryDetailList = inquiryDetailRepository.findByProfile(profile);
         for(InquiryDetail inquiryDetail : inquiryDetailList){
             inquiryDetailRepository.deleteById(inquiryDetail.getInquiryDetailId());
+        }
+
+        List<Warning> warningList = warningRepository.findByAccount_AccountId(accountId);
+        for(Warning warning : warningList){
+            warningRepository.deleteById(warning.getWarningId());
         }
 
         profileRepository.deleteById(profile.getProfileId());
