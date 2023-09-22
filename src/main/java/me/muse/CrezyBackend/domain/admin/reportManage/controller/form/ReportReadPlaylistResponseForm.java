@@ -1,18 +1,24 @@
 package me.muse.CrezyBackend.domain.admin.reportManage.controller.form;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReportReadPlaylistResponseForm {
-    final private String reporterProfileName;
-    final private String reportedProfileName;
-    final private String playlistName;
-    final private String thumbnailName;
-    final private String ReportedCategoryType;
-    final private int likeCounts;
-    final private int songCounts;
-    final private Long reportedPlaylistId;
+    private String reporterProfileName;
+    private String reportedProfileName;
+    private String playlistName;
+    private String thumbnailName;
+    private String ReportedCategoryType;
+    private int likeCounts;
+    private int songCounts;
+    private Long reportedPlaylistId;
 
+    public ReportReadPlaylistResponseForm(String playlistName) {
+        this.playlistName = playlistName;
+    }
 }
