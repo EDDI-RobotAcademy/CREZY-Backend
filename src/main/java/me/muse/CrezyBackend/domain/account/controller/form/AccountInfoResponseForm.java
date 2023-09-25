@@ -10,6 +10,8 @@ public class AccountInfoResponseForm {
     private int myPlaylistCount;
     private int myLikedPlaylistCount;
     private String profileImageName;
+    private Integer warningCounts;
+
 
     public AccountInfoResponseForm(String nickname, int myPlaylistCount, int myLikedPlaylistCount) {
         this.nickname = nickname;
@@ -18,12 +20,13 @@ public class AccountInfoResponseForm {
     }
 
     public AccountInfoResponseForm(Long accountId, String email, String nickname, int myPlaylistCount,
-                                   int myLikedPlaylistCount, String profileImageName) {
+                                   int myLikedPlaylistCount, String profileImageName, Integer warningCounts) {
         this.accountId = accountId;
         this.email = email;
         this.nickname = nickname;
         this.myPlaylistCount = myPlaylistCount;
         this.myLikedPlaylistCount = myLikedPlaylistCount;
         this.profileImageName = profileImageName;
+        this.warningCounts = warningCounts;
     }
 }
