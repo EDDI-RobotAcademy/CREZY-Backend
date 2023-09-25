@@ -16,6 +16,7 @@ import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.entity.StatusType;
+import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     final private AccountRepository accountRepository;
     final private ProfileRepository profileRepository;
     final private LikePlaylistRepository likePlaylistRepository;
+    final private SongRepository songRepository;
 
     @Override
     @Transactional
@@ -80,7 +82,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         if (maybePlaylist.isPresent()) {
             Playlist playlist = maybePlaylist.get();
 
-            List<Song> resultList = playlist.getSonglist();
+            List<Song> resultList = songRepository.findByPlaylist_PlaylistIdOrderBySongIndexAsc(playlist.getPlaylistId());
 
             List<Song> openSongs = resultList.stream().filter(
                     song -> song.getStatusType() == null ||
@@ -104,7 +106,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         if (maybePlaylist.isPresent()) {
             Playlist playlist = maybePlaylist.get();
 
-            List<Song> resultList = playlist.getSonglist();
+            List<Song> resultList = songRepository.findByPlaylist_PlaylistIdOrderBySongIndexAsc(playlist.getPlaylistId());
 
             List<Song> distinctResult = resultList.stream().distinct().collect(Collectors.toList());
 

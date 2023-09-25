@@ -47,6 +47,9 @@ public class Song {
     @Setter
     private SongStatusType statusType;
 
+    @Setter
+    private Long songIndex;
+
     public Song(String title, String singer, String link, String lyrics, Playlist playlist) {
         this.title = title;
         this.singer = singer;

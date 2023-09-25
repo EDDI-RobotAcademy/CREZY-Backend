@@ -1,6 +1,7 @@
 package me.muse.CrezyBackend.domain.song.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.domain.song.controller.form.SongOrderRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongModifyRequestForm;
 import me.muse.CrezyBackend.domain.song.service.SongService;
@@ -37,6 +38,12 @@ public class SongController {
     public boolean modifySong(@RequestBody SongModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
         log.info("modifySong() ");
         return songService.modify(requestForm, headers);
+    }
+
+    @PostMapping("/order")
+    public void orderSong(@RequestBody SongOrderRequestForm requestForm, @RequestHeader HttpHeaders headers){
+        log.info("orderSong()");
+        songService.orderSong(requestForm, headers);
     }
 
 }

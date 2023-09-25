@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
+import me.muse.CrezyBackend.domain.song.controller.form.SongOrderRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
@@ -75,9 +76,18 @@ public class SongServiceImpl implements SongService{
             log.info(lyrics);
             song.setLyrics(lyrics);
         }
+
+        Long maxSongIndex = songRepository.findMaxSongIndex();
+        if (maxSongIndex == null) {
+            maxSongIndex = 0L;
+        }
+        Long newSongIndex = maxSongIndex + 1;
+
         SongStatusType statusType = songStatusRepository.findByStatusType(OPEN).get();
         song.setStatusType(statusType);
+        song.setSongIndex(newSongIndex);
         songRepository.save(song);
+
         return song.getSongId();
     }
 
@@ -170,6 +180,32 @@ public class SongServiceImpl implements SongService{
             return true;
         }
         return false;
+    }
+
+    @Override
+    @Transactional
+    public void orderSong(SongOrderRequestForm requestForm, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+
+        Playlist playlist = playlistRepository.findWithSongById(requestForm.getPlaylistId());
+
+        if(!accountId.equals(playlist.getAccount().getAccountId())){
+            return;
+        }
+
+        List<Song> songList = songRepository.findByPlaylist_PlaylistIdOrderBySongIndexAsc(playlist.getPlaylistId());
+        int count = 0;
+
+        for(Song song : songList){
+            song.setSongIndex(requestForm.getSongIndexList().get(count));
+            songRepository.save(song);
+
+            count++;
+        }
     }
 
 }
