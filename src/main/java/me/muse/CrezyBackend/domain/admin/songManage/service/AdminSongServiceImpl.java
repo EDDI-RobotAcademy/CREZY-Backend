@@ -79,6 +79,7 @@ public class AdminSongServiceImpl implements AdminSongService{
             song.setBlockedDate(null); 
         } else {
             song.setBlockedDate(LocalDate.now().toString());
+            song.setLink(null);
         }
 
         song.setStatusType(changeSongStatus);
