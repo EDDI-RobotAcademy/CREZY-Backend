@@ -82,9 +82,13 @@ public class PlaylistServiceImpl implements PlaylistService {
 
             List<Song> resultList = playlist.getSonglist();
 
-            List<Song> openSongs = resultList.stream().filter(song -> song.getStatusType() == null || song.getStatusType().getStatusType() != StatusType.BLOCK).distinct().collect(Collectors.toList());
+            List<Song> openSongs = resultList.stream().filter(
+                    song -> song.getStatusType() == null ||
+                            song.getStatusType().getStatusType() != StatusType.BLOCK)
+                    .distinct().collect(Collectors.toList());
 
-            Profile profile = profileRepository.findByAccount(playlist.getAccount()).orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
+            Profile profile = profileRepository.findByAccount(playlist.getAccount())
+                    .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
 
             List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
 
@@ -104,7 +108,8 @@ public class PlaylistServiceImpl implements PlaylistService {
 
             List<Song> distinctResult = resultList.stream().distinct().collect(Collectors.toList());
 
-            Profile profile = profileRepository.findByAccount(playlist.getAccount()).orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
+            Profile profile = profileRepository.findByAccount(playlist.getAccount())
+                    .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
 
             List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
 
@@ -125,7 +130,10 @@ public class PlaylistServiceImpl implements PlaylistService {
         if (maybeAccount.isEmpty()) {
             return -1;
         }
-        final Playlist playlist = new Playlist(requestForm.getPlaylistName(), requestForm.getThumbnailName(), maybeAccount.get());
+        final Playlist playlist = new Playlist(
+                requestForm.getPlaylistName(),
+                requestForm.getThumbnailName(),
+                maybeAccount.get());
 
         return playlistRepository.save(playlist).getPlaylistId();
     }
@@ -142,13 +150,18 @@ public class PlaylistServiceImpl implements PlaylistService {
         if (maybeAccount.isEmpty()) {
             return null;
         }
-        Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId()).orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
+        Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
+                .orElseThrow(() -> new IllegalArgumentException("플레이리스트 없음"));
 
         if (playlist.getAccount().getAccountId().equals(accountId)) {
             playlist.setPlaylistName(requestForm.getPlaylistName());
             playlist.setThumbnailName(requestForm.getThumbnailName());
             playlistRepository.save(playlist);
-            return new PlaylistModifyResponseForm(playlist.getPlaylistId(), playlist.getPlaylistName(), playlist.getThumbnailName());
+
+            return new PlaylistModifyResponseForm(
+                    playlist.getPlaylistId(),
+                    playlist.getPlaylistName(),
+                    playlist.getThumbnailName());
         }
         return null;
     }
@@ -171,13 +184,15 @@ public class PlaylistServiceImpl implements PlaylistService {
         }
 
         Long accountId = redisService.getValueByKey(authValues.get(0));
-        Account account = accountRepository.findById(accountId).orElseThrow(() -> new IllegalArgumentException("계정 없음"));
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("계정 없음"));
 
         if (playlist.getAccount().getAccountId().equals(account.getAccountId())) {
             for (LikePlaylist likePlaylist : playlist.getLikePlaylist()) {
                 likePlaylistRepository.deleteById(likePlaylist.getLikePlaylistId());
             }
             playlistRepository.deleteById(playlistId);
+
             return true;
         }
         return false;
@@ -211,7 +226,12 @@ public class PlaylistServiceImpl implements PlaylistService {
                 thumbnailName = playlist.getSonglist().get(0).getLink();
             }
 
-            MyPlaylistResponseForm responseForm = new MyPlaylistResponseForm(playlist.getPlaylistId(), playlist.getPlaylistName(), likeCount, songCount, thumbnailName);
+            MyPlaylistResponseForm responseForm = new MyPlaylistResponseForm(
+                    playlist.getPlaylistId(),
+                    playlist.getPlaylistName(),
+                    likeCount,
+                    songCount,
+                    thumbnailName);
 
             responseForms.add(responseForm);
         }
@@ -226,6 +246,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
         List<PlaylistResponseForm> responseForms = new ArrayList<>();
+
         for (Playlist playlist : playlists) {
             String thumbnailName = playlist.getThumbnailName();
             int likeCount = playlist.getLikePlaylist() != null ? playlist.getLikePlaylist().size() : 0;
@@ -234,15 +255,26 @@ public class PlaylistServiceImpl implements PlaylistService {
             if (thumbnailName == null && !playlist.getSonglist().isEmpty()) {
                 thumbnailName = playlist.getSonglist().get(0).getLink();
             }
-            Profile profile = profileRepository.findByAccount(playlist.getAccount()).orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
-            PlaylistResponseForm responseForm = new PlaylistResponseForm(playlist.getPlaylistId(), playlist.getPlaylistName(), profile.getNickname(), likeCount, songCount, thumbnailName);
+            Profile profile = profileRepository.findByAccount(playlist.getAccount())
+                    .orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
+
+            PlaylistResponseForm responseForm = new PlaylistResponseForm(
+                    playlist.getPlaylistId(),
+                    playlist.getPlaylistName(),
+                    profile.getNickname(),
+                    likeCount,
+                    songCount,
+                    thumbnailName);
 
             responseForms.add(responseForm);
         }
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), responseForms.size());
 
-        return new PageImpl<>(responseForms.subList(start, end), pageable, responseForms.size());
+        return new PageImpl<>(
+                responseForms.subList(start, end),
+                pageable,
+                responseForms.size());
     }
 
 
