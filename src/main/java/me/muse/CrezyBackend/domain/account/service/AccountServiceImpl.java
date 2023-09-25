@@ -123,12 +123,15 @@ public class AccountServiceImpl implements AccountService{
         final Long accountId = redisService.getValueByKey(authValues.get(0));
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+        Integer warningCounts = warningRepository.countByAccount(account);
+
         Profile profile = profileRepository.findByAccount(account)
                 .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
 
         final AccountInfoResponseForm responseForm = new AccountInfoResponseForm(
                account.getAccountId(), profile.getEmail(), profile.getNickname(), account.getPlaylist().size(),
-                account.getLikePlaylist().size(), profile.getProfileImageName()
+                account.getLikePlaylist().size(), profile.getProfileImageName(), warningCounts
         );
 
         return responseForm;
