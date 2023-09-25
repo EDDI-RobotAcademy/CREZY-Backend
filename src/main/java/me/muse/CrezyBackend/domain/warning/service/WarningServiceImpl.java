@@ -1,19 +1,16 @@
 package me.muse.CrezyBackend.domain.warning.service;
 
 import lombok.RequiredArgsConstructor;
-import me.muse.CrezyBackend.config.redis.service.RedisService;
-import me.muse.CrezyBackend.domain.account.entity.Account;
-import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
-import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
-import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
 import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportProcessingForm;
 import me.muse.CrezyBackend.domain.admin.reportManage.service.AdminReportService;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportRegisterForm;
-import me.muse.CrezyBackend.domain.report.entity.*;
+import me.muse.CrezyBackend.domain.report.entity.Report;
+import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
+import me.muse.CrezyBackend.domain.report.entity.ReportStatus;
+import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
-import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
-import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
+import me.muse.CrezyBackend.domain.report.service.ReportService;
 import me.muse.CrezyBackend.domain.warning.controller.form.WarningResponseForm;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
@@ -24,58 +21,30 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
 
 @Service
 @RequiredArgsConstructor
 public class WarningServiceImpl implements WarningService{
     final private ReportDetailRepository reportDetailRepository;
-    final private ReportRepository reportRepository;
-    final private AccountRepository accountRepository;
-    final private RedisService redisService;
     final private ReportStatusTypeRepository reportStatusTypeRepository;
-    final private ReportedCategoryTypeRepository reportedCategoryTypeRepository;
     final private WarningRepository warningRepository;
-    final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private CheckAdmin checkAdmin;
     final private AdminReportService adminReportService;
+    final private ReportService reportService;
 
     @Override
     @Transactional
     public void registWarning(HttpHeaders headers, ReportRegisterForm requestForm) {
         if(!checkAdmin.checkAdmin(headers)) return;
 
-        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
-        if (authValues.isEmpty()) {
-            return;
-        }
-        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Long reportDetailId = reportService.registerReport(requestForm, headers);
 
-        Account reporterAccount = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        Account reportedAccount = accountRepository.findById(requestForm.getReportedId())
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        final ReportDetail reportDetail = reportDetailRepository.findById(reportDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
 
-        ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.APPROVE).get();
-        ReportedCategoryType categoryType = reportedCategoryTypeRepository.findByReportedCategory(ReportedCategory.valueOf(requestForm.getReportedCategoryType())).get();
-
-        final Report report = new Report(categoryType, statusType);
-        final ReportDetail reportDetail = new ReportDetail(reporterAccount.getAccountId(), reportedAccount.getAccountId(), requestForm.getReportContent(), report);
-
-        reportRepository.save(report);
-        reportDetailRepository.save(reportDetail);
-
-        ReportProcessingForm processingForm = new ReportProcessingForm(report.getReportId(), "APPROVE");
+        ReportProcessingForm processingForm = new ReportProcessingForm(reportDetail.getReport().getReportId(), "APPROVE");
 
         adminReportService.processingReport(processingForm, headers);
-
-        if (warningRepository.countByAccount(reportedAccount) >= 3) {
-            AccountRoleType accountRoleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
-            reportedAccount.setRoleType(accountRoleType);
-            accountRepository.save(reportedAccount);
-        }
     }
 
     @Override
