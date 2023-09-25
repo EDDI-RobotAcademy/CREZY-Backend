@@ -166,6 +166,8 @@ public class SongServiceImpl implements SongService{
             song.setTitle(requestForm.getTitle());
             song.setSinger(requestForm.getSinger());
             song.setLink(requestForm.getLink());
+            SongStatusType statusType = songStatusRepository.findByStatusType(OPEN).get();
+            song.setStatusType(statusType);
             songRepository.save(song);
             return true;
         }
