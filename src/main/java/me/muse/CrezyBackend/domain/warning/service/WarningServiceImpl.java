@@ -6,13 +6,14 @@ import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
 import me.muse.CrezyBackend.domain.account.repository.AccountRepository;
 import me.muse.CrezyBackend.domain.account.repository.AccountRoleTypeRepository;
+import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.ReportProcessingForm;
+import me.muse.CrezyBackend.domain.admin.reportManage.service.AdminReportService;
 import me.muse.CrezyBackend.domain.report.controller.form.ReportRegisterForm;
 import me.muse.CrezyBackend.domain.report.entity.*;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
-import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.controller.form.WarningResponseForm;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
@@ -36,10 +37,10 @@ public class WarningServiceImpl implements WarningService{
     final private RedisService redisService;
     final private ReportStatusTypeRepository reportStatusTypeRepository;
     final private ReportedCategoryTypeRepository reportedCategoryTypeRepository;
-    final private SongRepository songRepository;
     final private WarningRepository warningRepository;
     final private AccountRoleTypeRepository accountRoleTypeRepository;
     final private CheckAdmin checkAdmin;
+    final private AdminReportService adminReportService;
 
     @Override
     @Transactional
@@ -62,11 +63,13 @@ public class WarningServiceImpl implements WarningService{
 
         final Report report = new Report(categoryType, statusType);
         final ReportDetail reportDetail = new ReportDetail(reporterAccount.getAccountId(), reportedAccount.getAccountId(), requestForm.getReportContent(), report);
-        final Warning warning = new Warning(reportedAccount, report);
 
         reportRepository.save(report);
         reportDetailRepository.save(reportDetail);
-        warningRepository.save(warning);
+
+        ReportProcessingForm processingForm = new ReportProcessingForm(report.getReportId(), "APPROVE");
+
+        adminReportService.processingReport(processingForm, headers);
 
         if (warningRepository.countByAccount(reportedAccount) >= 3) {
             AccountRoleType accountRoleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
