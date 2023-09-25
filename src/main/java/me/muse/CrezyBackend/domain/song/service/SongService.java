@@ -1,5 +1,6 @@
 package me.muse.CrezyBackend.domain.song.service;
 
+import me.muse.CrezyBackend.domain.song.controller.form.SongOrderRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongRegisterRequestForm;
 import me.muse.CrezyBackend.domain.song.controller.form.SongModifyRequestForm;
 
@@ -17,4 +18,6 @@ public interface SongService {
     boolean deleteSongIds(List<Long> songlistId, HttpHeaders headers);
 
     boolean modify(SongModifyRequestForm requestForm, HttpHeaders headers);
+
+    void orderSong(SongOrderRequestForm requestForm, HttpHeaders headers);
 }

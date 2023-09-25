@@ -24,4 +24,9 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     List<Song> findByStatusTypeOrderByTitleDesc(SongStatusType songStatusType);
     @Query("SELECT s FROM Song s WHERE s.title LIKE %:keyword% OR s.singer LIKE %:keyword%")
     List<Song> findAllByTitleAndSinger(Pageable pageable, String keyword);
+
+    List<Song> findByPlaylist_PlaylistIdOrderBySongIndexAsc(Long playlistId);
+
+    @Query("SELECT MAX(s.songIndex) FROM Song s")
+    Long findMaxSongIndex();
 }
