@@ -236,15 +236,21 @@ public class PlaylistServiceImpl implements PlaylistService {
         for (Playlist playlist : playlists) {
             String thumbnailName = playlist.getThumbnailName();
             int likeCount = playlist.getLikePlaylist() != null ? playlist.getLikePlaylist().size() : 0;
-            int songCount = playlist.getSonglist() != null ? playlist.getSonglist().size() : 0;
+            List<Song> resultList = playlist.getSonglist();
 
-            if (thumbnailName == null && !playlist.getSonglist().isEmpty()) {
-                thumbnailName = playlist.getSonglist().get(0).getLink();
+            List<Song> openSongsList = resultList.stream().filter(song -> song.getStatusType() == null || song.getStatusType().getStatusType() != StatusType.BLOCK).distinct().collect(Collectors.toList());
+            if (openSongsList.size() != 0) {
+                int songCount = openSongsList.size();
+
+                // 썸네일을 등록하지 않았다면 유튜브 링크의 썸네일을 가져오도록
+                if (thumbnailName == null && !playlist.getSonglist().isEmpty()) {
+                    thumbnailName = playlist.getSonglist().get(0).getLink();
+                }
+                Profile profile = profileRepository.findByAccount(playlist.getAccount()).orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
+                PlaylistResponseForm responseForm = new PlaylistResponseForm(playlist.getPlaylistId(), playlist.getPlaylistName(), profile.getNickname(), likeCount, songCount, thumbnailName);
+
+                responseForms.add(responseForm);
             }
-            Profile profile = profileRepository.findByAccount(playlist.getAccount()).orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
-            PlaylistResponseForm responseForm = new PlaylistResponseForm(playlist.getPlaylistId(), playlist.getPlaylistName(), profile.getNickname(), likeCount, songCount, thumbnailName);
-
-            responseForms.add(responseForm);
         }
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), responseForms.size());
