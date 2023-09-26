@@ -49,4 +49,9 @@ public class AdminReportController {
         log.info("readSongReport()");
         return adminService.readSongReport(reportId,headers);
     }
+
+    @GetMapping("/count-report")
+    public ReportCountResponseForm countReport(@RequestHeader HttpHeaders headers){
+        return adminService.countReport(headers);
+    }
 }

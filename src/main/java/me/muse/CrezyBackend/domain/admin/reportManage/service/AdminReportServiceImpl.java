@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
+import static me.muse.CrezyBackend.domain.report.entity.ReportStatus.*;
 import static me.muse.CrezyBackend.domain.report.entity.ReportedCategory.*;
 
 @Service
@@ -304,5 +305,17 @@ public class AdminReportServiceImpl implements AdminReportService {
         }catch (IllegalArgumentException e){
             return new ReportReadSongResponseForm("삭제된 노래입니다.");
         }
+    }
+
+    @Override
+    public ReportCountResponseForm countReport(HttpHeaders headers) {
+        if (!checkAdmin.checkAdmin(headers)) return null;
+
+        int approveCount = reportRepository.countByReportStatusType_ReportStatus(APPROVE);
+        int returnCount = reportRepository.countByReportStatusType_ReportStatus(RETURN);
+        int holdonCount = reportRepository.countByReportStatusType_ReportStatus(HOLDON);
+        int totalCount = (int)reportRepository.count();
+
+        return new ReportCountResponseForm(approveCount, returnCount, holdonCount, totalCount);
     }
 }
