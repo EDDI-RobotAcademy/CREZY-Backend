@@ -22,9 +22,10 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     List<Song> findByCreateDate(LocalDate localDate);
     List<Song> findByStatusTypeOrderByTitleAsc(SongStatusType songStatusType);
     List<Song> findByStatusTypeOrderByTitleDesc(SongStatusType songStatusType);
-    @Query("SELECT s FROM Song s WHERE s.title LIKE %:keyword% OR s.singer LIKE %:keyword%")
-    List<Song> findAllByTitleAndSinger(String keyword);
-
+    @Query("SELECT s FROM Song s WHERE s.title LIKE %:keyword% OR s.singer LIKE %:keyword% ORDER BY s.title")
+    List<Song> findAllByTitleAndSingerOrderByAsc(String keyword);
+    @Query("SELECT s FROM Song s WHERE s.title LIKE %:keyword% OR s.singer LIKE %:keyword% ORDER BY s.title DESC")
+    List<Song> findAllByTitleAndSingerOrderByDesc(String keyword);
     List<Song> findByPlaylist_PlaylistIdOrderBySongIndexAsc(Long playlistId);
 
     @Query("SELECT MAX(s.songIndex) FROM Song s")
