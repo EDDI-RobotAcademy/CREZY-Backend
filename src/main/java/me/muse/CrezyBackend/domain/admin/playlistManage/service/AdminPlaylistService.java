@@ -22,5 +22,5 @@ public interface AdminPlaylistService {
 
     void deletePlaylist(HttpHeaders headers, Long playlistId);
 
-    Page<PlaylistResponseForm> searchPlaylist(HttpHeaders headers, PlaylistSearchRequestForm requestForm);
+    Page<AdminPlaylistSelectListForm> searchPlaylist(HttpHeaders headers, PlaylistSearchRequestForm requestForm);
 }

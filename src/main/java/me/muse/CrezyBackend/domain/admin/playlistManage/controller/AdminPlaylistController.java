@@ -57,7 +57,7 @@ public class AdminPlaylistController {
     }
 
     @PostMapping("/search-playlist")
-    public Page<PlaylistResponseForm> searchPlaylist(@RequestHeader HttpHeaders headers, @RequestBody PlaylistSearchRequestForm requestForm) {
+    public Page<AdminPlaylistSelectListForm> searchPlaylist(@RequestHeader HttpHeaders headers, @RequestBody PlaylistSearchRequestForm requestForm) {
         log.info("searchPlaylist()");
         return adminService.searchPlaylist(headers, requestForm);
     }
