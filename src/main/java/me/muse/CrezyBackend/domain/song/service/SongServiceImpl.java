@@ -193,7 +193,8 @@ public class SongServiceImpl implements SongService{
         }
         Long accountId = redisService.getValueByKey(authValues.get(0));
 
-        Playlist playlist = playlistRepository.findWithSongById(requestForm.getPlaylistId());
+        Playlist playlist = playlistRepository.findById(requestForm.getPlaylistId())
+                .orElseThrow(() -> new IllegalArgumentException("노래 없음"));
 
         if(!accountId.equals(playlist.getAccount().getAccountId())){
             return;
