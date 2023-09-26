@@ -9,6 +9,7 @@ import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
 import me.muse.CrezyBackend.domain.report.entity.ReportStatus;
 import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
+import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.report.service.ReportService;
 import me.muse.CrezyBackend.domain.warning.controller.form.WarningResponseForm;
@@ -31,6 +32,7 @@ public class WarningServiceImpl implements WarningService{
     final private CheckAdmin checkAdmin;
     final private AdminReportService adminReportService;
     final private ReportService reportService;
+    final private ReportRepository reportRepository;
 
     @Override
     @Transactional
@@ -57,6 +59,7 @@ public class WarningServiceImpl implements WarningService{
         ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.RETURN).get();
         report.setReportStatusType(statusType);
 
+        reportRepository.save(report);
         warningRepository.deleteById(warningId);
     }
 
