@@ -229,7 +229,7 @@ public class AdminSongServiceImpl implements AdminSongService{
         if (!checkAdmin.checkAdmin(headers)) return null;
 
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
-        List<Song> songList = songRepository.findAllByTitleAndSinger(pageable, requestForm.getKeyword());
+        List<Song> songList = songRepository.findAllByTitleAndSinger(requestForm.getKeyword());
 
         List<AdminSongListResponseForm> responseFormList = new ArrayList<>();
 
