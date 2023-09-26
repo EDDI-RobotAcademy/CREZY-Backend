@@ -248,12 +248,12 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
 
     @Override
     @Transactional
-    public Page<PlaylistResponseForm> searchPlaylist(HttpHeaders headers, PlaylistSearchRequestForm requestForm) {
+    public Page<AdminPlaylistSelectListForm> searchPlaylist(HttpHeaders headers, PlaylistSearchRequestForm requestForm) {
         if (!checkAdmin.checkAdmin(headers)) return null;
         List<Playlist> playlists = playlistRepository.findAllByPlaylistNameAndNickname(requestForm.getKeyword());
 
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
-        List<PlaylistResponseForm> responseForms = new ArrayList<>();
+        List<AdminPlaylistSelectListForm> responseForms = new ArrayList<>();
         for (Playlist playlist : playlists) {
             String thumbnailName = playlist.getThumbnailName();
             int likeCount = playlist.getLikePlaylist() != null ? playlist.getLikePlaylist().size() : 0;
@@ -263,7 +263,7 @@ public class AdminPlaylistServiceImpl implements AdminPlaylistService {
                 thumbnailName = playlist.getSonglist().get(0).getLink();
             }
             Profile profile = profileRepository.findByAccount(playlist.getAccount()).orElseThrow(() -> new IllegalArgumentException("프로필 없음"));
-            PlaylistResponseForm responseForm = new PlaylistResponseForm(playlist.getPlaylistId(), playlist.getPlaylistName(), profile.getNickname(), likeCount, songCount, thumbnailName);
+            AdminPlaylistSelectListForm responseForm = new AdminPlaylistSelectListForm(playlist.getPlaylistId(), playlist.getPlaylistName(), profile.getNickname(), likeCount, songCount, playlist.getCreateDate());
 
             responseForms.add(responseForm);
         }
