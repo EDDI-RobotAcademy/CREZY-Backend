@@ -227,9 +227,14 @@ public class AdminSongServiceImpl implements AdminSongService{
     @Transactional
     public Page<AdminSongListResponseForm> searchSong(HttpHeaders headers, AdminSongSearchRequestForm requestForm) {
         if (!checkAdmin.checkAdmin(headers)) return null;
+        List<Song> songList = new ArrayList<>();
 
         Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
-        List<Song> songList = songRepository.findAllByTitleAndSinger(requestForm.getKeyword());
+
+        switch (requestForm.getSortType()){
+            case "ASC" -> songList  = songRepository.findAllByTitleAndSingerOrderByAsc(requestForm.getKeyword());
+            case "DESC" -> songList = songRepository.findAllByTitleAndSingerOrderByDesc(requestForm.getKeyword());
+        }
 
         List<AdminSongListResponseForm> responseFormList = new ArrayList<>();
 

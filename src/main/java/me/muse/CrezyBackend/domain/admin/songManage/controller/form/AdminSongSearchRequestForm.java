@@ -8,4 +8,5 @@ import lombok.RequiredArgsConstructor;
 public class AdminSongSearchRequestForm {
     final private int page;
     final private String keyword;
+    final private String sortType;
 }
