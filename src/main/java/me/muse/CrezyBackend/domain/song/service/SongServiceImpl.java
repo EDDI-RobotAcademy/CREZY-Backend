@@ -67,6 +67,7 @@ public class SongServiceImpl implements SongService{
         }
 
         final Song song = new Song(requestForm.getTitle(), requestForm.getSinger(), requestForm.getLink(), requestForm.getLyrics(), playlist);
+        log.info(requestForm.getLink());
         if(requestForm.getLink().equals("") || requestForm.getLink() == null){
             String videoId = youtube.searchByKeyword(requestForm.getSinger() + " " + requestForm.getTitle());
             song.setLink("https://www.youtube.com/watch?v=" + videoId);
@@ -164,7 +165,7 @@ public class SongServiceImpl implements SongService{
 
     @Override
     @Transactional
-    public boolean modify(SongModifyRequestForm requestForm, HttpHeaders headers) {
+    public boolean modify(SongModifyRequestForm requestForm, HttpHeaders headers) throws GeneralSecurityException, IOException {
         List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
         if (authValues.isEmpty()) {
             return false;
@@ -175,7 +176,12 @@ public class SongServiceImpl implements SongService{
         if(song.getPlaylist().getAccount().getAccountId().equals(accountId)) {
             song.setTitle(requestForm.getTitle());
             song.setSinger(requestForm.getSinger());
-            song.setLink(requestForm.getLink());
+            if(requestForm.getLink() == null || requestForm.getLink().equals("")){
+                String videoId = youtube.searchByKeyword(requestForm.getSinger() + " " + requestForm.getTitle());
+                song.setLink("https://www.youtube.com/watch?v=" + videoId);
+            } else {
+                song.setLink(requestForm.getLink());
+            }
             SongStatusType statusType = songStatusRepository.findByStatusType(OPEN).get();
             song.setStatusType(statusType);
             songRepository.save(song);
