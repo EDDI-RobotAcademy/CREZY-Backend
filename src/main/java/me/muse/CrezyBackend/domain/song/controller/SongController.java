@@ -35,7 +35,7 @@ public class SongController {
         return songService.deleteSongIds(songlistId, headers);
     }
     @PostMapping("/modify") // 노래 수정
-    public boolean modifySong(@RequestBody SongModifyRequestForm requestForm, @RequestHeader HttpHeaders headers){
+    public boolean modifySong(@RequestBody SongModifyRequestForm requestForm, @RequestHeader HttpHeaders headers) throws GeneralSecurityException, IOException {
         log.info("modifySong() ");
         return songService.modify(requestForm, headers);
     }

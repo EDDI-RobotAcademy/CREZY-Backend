@@ -17,7 +17,7 @@ public interface SongService {
 
     boolean deleteSongIds(List<Long> songlistId, HttpHeaders headers);
 
-    boolean modify(SongModifyRequestForm requestForm, HttpHeaders headers);
+    boolean modify(SongModifyRequestForm requestForm, HttpHeaders headers) throws GeneralSecurityException, IOException;
 
     void orderSong(SongOrderRequestForm requestForm, HttpHeaders headers);
 }
