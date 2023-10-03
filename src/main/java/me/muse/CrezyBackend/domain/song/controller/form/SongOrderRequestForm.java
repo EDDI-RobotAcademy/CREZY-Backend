@@ -9,5 +9,5 @@ import java.util.List;
 @Getter
 public class SongOrderRequestForm {
     final private Long playlistId;
-    final private List<Long> songIndexList;
+    final private List<Integer> songIndexList;
 }

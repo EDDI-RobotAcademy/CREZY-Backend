@@ -209,10 +209,19 @@ public class SongServiceImpl implements SongService{
         List<Song> songList = songRepository.findByPlaylist_PlaylistIdOrderBySongIndexAsc(playlist.getPlaylistId());
         int count = 0;
 
-        for(Song song : songList){
-            song.setSongIndex(requestForm.getSongIndexList().get(count));
-            songRepository.save(song);
+//        for(Song song : songList){
+//            log.info("count: " + count);
+//            log.info("before: " + song.getSongIndex());
+//            song.setSongIndex(requestForm.getSongIndexList().get(count));
+//            songRepository.save(song);
+//            log.info("after: " + song.getSongIndex());
+//            count++;
+//        }
+        for(int index : requestForm.getSongIndexList()){
+            Song song = songList.get(index-1);
+            song.setSongIndex((long) count);
 
+            songRepository.save(song);
             count++;
         }
     }
