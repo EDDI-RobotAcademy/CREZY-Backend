@@ -20,6 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +38,7 @@ public class WarningServiceImpl implements WarningService{
 
     @Override
     @Transactional
-    public void registWarning(HttpHeaders headers, ReportRegisterForm requestForm) {
+    public void registWarning(HttpHeaders headers, ReportRegisterForm requestForm) throws GeneralSecurityException, IOException {
         if(!checkAdmin.checkAdmin(headers)) return;
 
         Long reportDetailId = reportService.registerReport(requestForm, headers);

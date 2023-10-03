@@ -4,12 +4,15 @@ import me.muse.CrezyBackend.domain.admin.songManage.controller.form.*;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 public interface AdminSongService {
     AdminSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId);
 
-    Boolean registerSongStatusBlock(Long songId, HttpHeaders headers);
+    Boolean registerSongStatusBlock(Long songId, HttpHeaders headers) throws GeneralSecurityException, IOException;
 
-    Boolean registerSongStatusOpen(Long songId, HttpHeaders headers);
+    Boolean registerSongStatusOpen(Long songId, HttpHeaders headers) throws GeneralSecurityException, IOException;
 
     Page<AdminSongListResponseForm> list(HttpHeaders headers, AdminSongListRequestForm requestForm);
 

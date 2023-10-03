@@ -36,8 +36,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
 import static me.muse.CrezyBackend.domain.report.entity.ReportStatus.*;
@@ -108,7 +111,7 @@ public class AdminReportServiceImpl implements AdminReportService {
     }
 
     @Override
-    public boolean processingReport(ReportProcessingForm processingForm, HttpHeaders headers) {
+    public boolean processingReport(ReportProcessingForm processingForm, HttpHeaders headers) throws GeneralSecurityException, IOException {
         if (!checkAdmin.checkAdmin(headers)) return false;
 
         ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.valueOf(processingForm.getReportStatus())).get();
@@ -183,6 +186,9 @@ public class AdminReportServiceImpl implements AdminReportService {
                 reportedAccount.setRoleType(accountRoleType);
                 accountRepository.save(reportedAccount);
             }
+        }else {
+            Optional<Warning> maybeWarning = warningRepository.findByReport_ReportId(report.getReportId());
+            maybeWarning.ifPresent(warning -> warningRepository.deleteById(warning.getWarningId()));
         }
 
         reportRepository.save(report);

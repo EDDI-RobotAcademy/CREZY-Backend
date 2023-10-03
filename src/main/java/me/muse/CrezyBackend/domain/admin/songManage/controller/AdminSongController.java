@@ -8,6 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 
 @Slf4j
 @RestController
@@ -17,12 +20,12 @@ public class AdminSongController {
     final private AdminSongService adminService;
 
     @GetMapping("/register-song-status-block")
-    public Boolean registerSongStatusBlock (@RequestParam("songId") Long songId, @RequestHeader HttpHeaders headers) {
+    public Boolean registerSongStatusBlock (@RequestParam("songId") Long songId, @RequestHeader HttpHeaders headers) throws GeneralSecurityException, IOException {
         return adminService.registerSongStatusBlock(songId, headers);
     }
 
     @GetMapping("/register-song-status-open")
-    public Boolean registerSongStatusOpen (@RequestParam("songId") Long songId, @RequestHeader HttpHeaders headers) {
+    public Boolean registerSongStatusOpen (@RequestParam("songId") Long songId, @RequestHeader HttpHeaders headers) throws GeneralSecurityException, IOException {
         return adminService.registerSongStatusOpen(songId, headers);
     }
 
