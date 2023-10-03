@@ -10,6 +10,7 @@ import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
 import me.muse.CrezyBackend.domain.song.entity.StatusType;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.song.repository.SongStatusRepository;
+import me.muse.CrezyBackend.utility.Youtube;
 import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
 import me.muse.CrezyBackend.utility.transformToDate.TransformToDate;
 import org.springframework.data.domain.*;
@@ -17,6 +18,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
@@ -35,6 +38,7 @@ public class AdminSongServiceImpl implements AdminSongService{
     final private ProfileRepository profileRepository;
     final private CheckAdmin checkAdmin;
     final private Integer weeks = 6;
+    final private Youtube youtube;
 
     @Override
     public AdminSongDetailReadResponseForm readSongDetail(HttpHeaders headers, Long songId) {
@@ -54,21 +58,21 @@ public class AdminSongServiceImpl implements AdminSongService{
     }
 
     @Override
-    public Boolean registerSongStatusBlock(Long songId, HttpHeaders headers) {
+    public Boolean registerSongStatusBlock(Long songId, HttpHeaders headers) throws GeneralSecurityException, IOException {
         if (!checkAdmin.checkAdmin(headers)) return null;
 
         changeSongStatus(songId, BLOCK);
         return true;
     }
     @Override
-    public Boolean registerSongStatusOpen(Long songId, HttpHeaders headers) {
+    public Boolean registerSongStatusOpen(Long songId, HttpHeaders headers) throws GeneralSecurityException, IOException {
         if (!checkAdmin.checkAdmin(headers)) return null;
 
         changeSongStatus(songId, OPEN);
         return true;
     }
 
-    private void changeSongStatus(Long songId, StatusType statusType) {
+    private void changeSongStatus(Long songId, StatusType statusType) throws GeneralSecurityException, IOException {
         Song song = songRepository.findById(songId)
                 .orElseThrow(() -> new IllegalArgumentException("노래가 존재하지 않습니다."));
 
@@ -76,7 +80,11 @@ public class AdminSongServiceImpl implements AdminSongService{
                 .orElseThrow(() -> new IllegalArgumentException("상태 타입을 찾을 수 없습니다."));
 
         if (statusType == StatusType.OPEN) {
-            song.setBlockedDate(null); 
+            song.setBlockedDate(null);
+            if(song.getLink()==null){
+                String videoId = youtube.searchByKeyword(song.getSinger() + " " + song.getTitle());
+                song.setLink("https://www.youtube.com/watch?v=" + videoId);
+            }
         } else {
             song.setBlockedDate(LocalDate.now().toString());
             song.setLink(null);

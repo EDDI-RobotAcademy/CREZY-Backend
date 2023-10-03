@@ -9,6 +9,8 @@ import me.muse.CrezyBackend.domain.warning.service.WarningService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 @Slf4j
@@ -19,7 +21,7 @@ public class WarningController {
     final private WarningService warningService;
 
     @PostMapping("regist-warning")
-    public void registWarning(@RequestHeader HttpHeaders headers, @RequestBody ReportRegisterForm requestForm){
+    public void registWarning(@RequestHeader HttpHeaders headers, @RequestBody ReportRegisterForm requestForm) throws GeneralSecurityException, IOException {
         warningService.registWarning(headers, requestForm);
     }
 

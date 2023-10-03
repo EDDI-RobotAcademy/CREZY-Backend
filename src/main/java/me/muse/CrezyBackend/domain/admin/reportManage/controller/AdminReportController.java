@@ -7,6 +7,8 @@ import me.muse.CrezyBackend.domain.admin.reportManage.service.AdminReportService
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 @Slf4j
@@ -25,7 +27,7 @@ public class AdminReportController {
         return adminService.getTotalPage();
     }
     @PostMapping("/processing")
-    public boolean approveReport(@RequestBody ReportProcessingForm processingForm, @RequestHeader HttpHeaders headers) {
+    public boolean approveReport(@RequestBody ReportProcessingForm processingForm, @RequestHeader HttpHeaders headers) throws GeneralSecurityException, IOException {
         log.info("approveReport()");
         return adminService.processingReport(processingForm, headers);
     }
