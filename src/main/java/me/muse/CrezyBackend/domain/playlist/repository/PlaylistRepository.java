@@ -50,7 +50,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
             "(SELECT pf.account.accountId FROM Profile pf WHERE pf.nickname LIKE %:keyword%) " +
             "OR p.playlistName LIKE %:keyword%)")
     List<Playlist> findAllByPlaylistNameAndNickname(String keyword);
-    @Query("SELECT p FROM Playlist p JOIN FETCH p.songlist")
+    @Query("SELECT p FROM Playlist p JOIN FETCH p.songlist ORDER BY p.playlistId DESC")
     List<Playlist> findAllWithPageForService();
 
     @Query("SELECT p FROM Playlist p JOIN FETCH p.songlist ORDER BY SIZE(p.likePlaylist) DESC")
