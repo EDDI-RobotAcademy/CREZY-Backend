@@ -304,7 +304,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         ReportStatusType reportStatus = reportStatusTypeRepository.findByReportStatus(ReportStatus.APPROVE).get();
         List<Report> reports = reportRepository.findByReportStatusType(reportStatus);
 
-        List<Profile> profiles = new ArrayList<>();
+        Set<Profile> profiles = new HashSet<>();
         List<ReportDetail> reportDetails = new ArrayList<>();
 
         for(Report report : reports) {
@@ -319,15 +319,11 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             profiles.add(profile);
         }
 
-        Map<Long, Integer> accountCounts = new HashMap<>();
-        for(Profile profile : profiles){
+        Map<Long, Integer> accountWarningCount = new HashMap<>();
+        for(Profile profile : profiles) {
             Long accountId = profile.getAccount().getAccountId();
-            if(accountCounts.containsKey(accountId)){
-                int count = accountCounts.get(accountId);
-                accountCounts.put(accountId, count+1);
-            }else{
-                accountCounts.put(accountId, 1);
-            }
+            int count = warningRepository.countByAccount(profile.getAccount());
+            accountWarningCount.put(accountId, count);
         }
 
         List<Profile> singleWarningCount = new ArrayList<>();
@@ -335,7 +331,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 
         for(Profile profile : profiles){
             Long accountId = profile.getAccount().getAccountId();
-            int count = accountCounts.get(accountId);
+            int count = accountWarningCount.get(accountId);
             if(count == 1){
                 singleWarningCount.add(profile);
             } else if (count == 2) {
