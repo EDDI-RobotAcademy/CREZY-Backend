@@ -218,7 +218,7 @@ public class SongServiceImpl implements SongService{
 //            count++;
 //        }
         for(int index : requestForm.getSongIndexList()){
-            Song song = songList.get(index-1);
+            Song song = songList.get(index);
             song.setSongIndex((long) count);
 
             songRepository.save(song);
