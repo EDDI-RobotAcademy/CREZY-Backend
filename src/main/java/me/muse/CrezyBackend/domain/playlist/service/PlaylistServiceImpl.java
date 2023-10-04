@@ -47,7 +47,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         Pageable pageable = null;
 
         if(requestForm.getSortType().equals("recent")){
-            pageable = PageRequest.of(requestForm.getPage() - 1, 10, Sort.by("createDate").descending());
+            pageable = PageRequest.of(requestForm.getPage() - 1, 10);
             playlists = playlistRepository.findAllWithPageForService();
         } else if (requestForm.getSortType().equals("trending")) {
             pageable = PageRequest.of(requestForm.getPage() - 1, 10);
