@@ -7,7 +7,6 @@ import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.List;
 
 public interface AdminReportService {
     Integer getTotalPage();

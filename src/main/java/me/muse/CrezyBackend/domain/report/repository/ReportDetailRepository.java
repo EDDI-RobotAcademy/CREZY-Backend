@@ -1,8 +1,8 @@
 package me.muse.CrezyBackend.domain.report.repository;
 
-import me.muse.CrezyBackend.domain.report.entity.Report;
 import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
-import org.springframework.data.domain.Pageable;
+import me.muse.CrezyBackend.domain.report.entity.ReportStatus;
+import me.muse.CrezyBackend.domain.report.entity.ReportedCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -22,14 +22,14 @@ public interface ReportDetailRepository extends JpaRepository<ReportDetail,Long>
             "JOIN FETCH rd.report r " +
             "WHERE r.reportStatusType.reportStatus = :statusType " +
             "ORDER BY rd.reportDetailId DESC")
-    List<ReportDetail> findByReportStatusType(String statusType);
+    List<ReportDetail> findByReportStatusType(ReportStatus statusType);
 
     @Query("SELECT rd " +
             "FROM ReportDetail rd " +
             "JOIN FETCH rd.report r " +
             "WHERE r.reportedCategoryType.reportedCategory = :categoryType " +
             "ORDER BY rd.reportDetailId DESC")
-    List<ReportDetail> findByReportedCategoryType(String categoryType);
+    List<ReportDetail> findByReportedCategoryType(ReportedCategory categoryType);
 
     @Query("SELECT rd " +
             "FROM ReportDetail rd " +
@@ -37,6 +37,6 @@ public interface ReportDetailRepository extends JpaRepository<ReportDetail,Long>
             "WHERE (r.reportStatusType.reportStatus = :statusType) " +
             "AND (r.reportedCategoryType.reportedCategory = :categoryType) " +
             "ORDER BY rd.reportDetailId DESC")
-    List<ReportDetail> findByReportStatusTypeAndReportedCategoryType(String statusType, String categoryType);
+    List<ReportDetail> findByReportStatusTypeAndReportedCategoryType(ReportStatus statusType, ReportedCategory categoryType);
 }
 
