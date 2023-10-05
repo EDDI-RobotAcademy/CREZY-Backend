@@ -28,6 +28,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     List<Song> findAllByTitleAndSingerOrderByDesc(String keyword);
     List<Song> findByPlaylist_PlaylistIdOrderBySongIndexAsc(Long playlistId);
 
-    @Query("SELECT MAX(s.songIndex) FROM Song s")
-    Long findMaxSongIndex();
+    @Query("SELECT MAX(s.songIndex) FROM Song s WHERE s.playlist = :playlist")
+    Long findMaxSongIndexByPlaylist(Playlist playlist);
 }

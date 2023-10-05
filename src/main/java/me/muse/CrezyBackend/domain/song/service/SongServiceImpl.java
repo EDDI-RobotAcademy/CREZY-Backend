@@ -78,7 +78,7 @@ public class SongServiceImpl implements SongService{
             song.setLyrics(lyrics);
         }
 
-        Long maxSongIndex = songRepository.findMaxSongIndex();
+        Long maxSongIndex = songRepository.findMaxSongIndexByPlaylist(playlist);
         if (maxSongIndex == null) {
             maxSongIndex = 0L;
         }
@@ -218,7 +218,7 @@ public class SongServiceImpl implements SongService{
 //            count++;
 //        }
         for(int index : requestForm.getSongIndexList()){
-            Song song = songList.get(index);
+            Song song = songList.get(index-1);
             song.setSongIndex((long) count);
 
             songRepository.save(song);
