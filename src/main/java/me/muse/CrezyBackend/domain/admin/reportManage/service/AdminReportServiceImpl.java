@@ -87,7 +87,7 @@ public class AdminReportServiceImpl implements AdminReportService {
         if(requestForm.getCategoryType().equals("TOTAL")){
             switch (requestForm.getStatusType()){
                 case "TOTAL" -> reportDetailList = reportDetailRepository.findAllWithPage();
-                case "APPROVED", "RETURNED", "HOLDON" -> {
+                case "APPROVE", "RETURN", "HOLDON" -> {
                         statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.valueOf(requestForm.getStatusType())).get().getReportStatus();
                         reportDetailList = reportDetailRepository.findByReportStatusType(statusType);
                 }
@@ -96,7 +96,7 @@ public class AdminReportServiceImpl implements AdminReportService {
             categoryType = reportedCategoryTypeRepository.findByReportedCategory(ReportedCategory.valueOf(requestForm.getCategoryType())).get().getReportedCategory();
             switch (requestForm.getStatusType()){
                 case "TOTAL" -> reportDetailList = reportDetailRepository.findByReportedCategoryType(categoryType);
-                case "APPROVED", "RETURNED", "HOLDON" ->{
+                case "APPROVE", "RETURN", "HOLDON" ->{
                     statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.valueOf(requestForm.getStatusType())).get().getReportStatus();
                     reportDetailList = reportDetailRepository.findByReportStatusTypeAndReportedCategoryType(statusType, categoryType);
                 }
