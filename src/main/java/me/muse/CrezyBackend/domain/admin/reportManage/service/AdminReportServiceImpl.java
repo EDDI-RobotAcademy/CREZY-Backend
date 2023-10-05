@@ -26,13 +26,14 @@ import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
-import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
-import me.muse.CrezyBackend.domain.song.entity.StatusType;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -81,17 +82,24 @@ public class AdminReportServiceImpl implements AdminReportService {
         Integer AccountReportCount = reportRepository.countByReportedCategoryType(ACCOUNT);
 
         List<ReportDetail> reportDetailList = new ArrayList<>();
-
+        ReportStatus statusType;
+        ReportedCategory categoryType;
         if(requestForm.getCategoryType().equals("TOTAL")){
             switch (requestForm.getStatusType()){
                 case "TOTAL" -> reportDetailList = reportDetailRepository.findAllWithPage();
-                case "APPROVED", "RETURNED", "HOLDON" -> reportDetailList = reportDetailRepository.findByReportStatusType(requestForm.getStatusType());
+                case "APPROVED", "RETURNED", "HOLDON" -> {
+                        statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.valueOf(requestForm.getStatusType())).get().getReportStatus();
+                        reportDetailList = reportDetailRepository.findByReportStatusType(statusType);
+                }
             }
         } else{
+            categoryType = reportedCategoryTypeRepository.findByReportedCategory(ReportedCategory.valueOf(requestForm.getCategoryType())).get().getReportedCategory();
             switch (requestForm.getStatusType()){
-                case "TOTAL" -> reportDetailList = reportDetailRepository.findByReportedCategoryType(requestForm.getCategoryType());
-                case "APPROVED", "RETURNED", "HOLDON" ->
-                        reportDetailList = reportDetailRepository.findByReportStatusTypeAndReportedCategoryType(requestForm.getStatusType(), requestForm.getCategoryType());
+                case "TOTAL" -> reportDetailList = reportDetailRepository.findByReportedCategoryType(categoryType);
+                case "APPROVED", "RETURNED", "HOLDON" ->{
+                    statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.valueOf(requestForm.getStatusType())).get().getReportStatus();
+                    reportDetailList = reportDetailRepository.findByReportStatusTypeAndReportedCategoryType(statusType, categoryType);
+                }
             }
         }
 
