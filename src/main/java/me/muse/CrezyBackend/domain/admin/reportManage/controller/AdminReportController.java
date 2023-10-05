@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/admin-report")
 public class AdminReportController {
     final private AdminReportService adminService;
-    @GetMapping(value = "/list")
+    @PostMapping(value = "/list")
     public Page<ReportResponseForm> reportList(@RequestBody ReportListRequestForm requestForm, @RequestHeader HttpHeaders headers) {
         log.info("reportList()");
         return adminService.list(requestForm, headers);
