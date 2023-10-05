@@ -41,7 +41,7 @@ public class WarningServiceImpl implements WarningService{
     public void registWarning(HttpHeaders headers, ReportRegisterForm requestForm) throws GeneralSecurityException, IOException {
         if(!checkAdmin.checkAdmin(headers)) return;
 
-        Long reportDetailId = reportService.registerReport(requestForm, headers);
+        Long reportDetailId = adminReportService.registerReport(requestForm, headers);
 
         final ReportDetail reportDetail = reportDetailRepository.findById(reportDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));

@@ -3,6 +3,7 @@ package me.muse.CrezyBackend.domain.admin.reportManage.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.muse.CrezyBackend.config.redis.service.RedisService;
 import me.muse.CrezyBackend.domain.Inquiry.repository.InquiryDetailRepository;
 import me.muse.CrezyBackend.domain.account.entity.Account;
 import me.muse.CrezyBackend.domain.account.entity.AccountRoleType;
@@ -18,13 +19,12 @@ import me.muse.CrezyBackend.domain.likePlaylist.entity.LikePlaylist;
 import me.muse.CrezyBackend.domain.likePlaylist.repository.LikePlaylistRepository;
 import me.muse.CrezyBackend.domain.playlist.entity.Playlist;
 import me.muse.CrezyBackend.domain.playlist.repository.PlaylistRepository;
-import me.muse.CrezyBackend.domain.report.entity.Report;
-import me.muse.CrezyBackend.domain.report.entity.ReportDetail;
-import me.muse.CrezyBackend.domain.report.entity.ReportStatus;
-import me.muse.CrezyBackend.domain.report.entity.ReportStatusType;
+import me.muse.CrezyBackend.domain.report.controller.form.ReportRegisterForm;
+import me.muse.CrezyBackend.domain.report.entity.*;
 import me.muse.CrezyBackend.domain.report.repository.ReportDetailRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
+import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static me.muse.CrezyBackend.domain.account.entity.RoleType.BLACKLIST;
@@ -65,6 +66,8 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private AdminSongService adminSongService;
     final private AdminPlaylistService adminPlaylistService;
     final private AdminAccountService adminAccountService;
+    final private RedisService redisService;
+    final private ReportedCategoryTypeRepository reportedCategoryTypeRepository;
 
     @Override
     public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
@@ -351,5 +354,36 @@ public class AdminReportServiceImpl implements AdminReportService {
         int totalCount = (int)reportRepository.count();
 
         return new ReportCountResponseForm(approveCount, returnCount, holdonCount, totalCount);
+    }
+    @Override
+    @Transactional
+    public long registerReport(ReportRegisterForm reportRegisterForm, HttpHeaders headers) {
+        List<String> authValues = Objects.requireNonNull(headers.get("authorization"));
+        if (authValues.isEmpty()) {
+            return -1;
+        }
+        Long accountId = redisService.getValueByKey(authValues.get(0));
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        Account reportedAccount = new Account();
+        ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.HOLDON).get();
+        ReportedCategoryType categoryType = reportedCategoryTypeRepository.findByReportedCategory(ReportedCategory.valueOf(reportRegisterForm.getReportedCategoryType())).get();
+        if(categoryType.getReportedCategory() == SONG){
+            Long playlistId = songRepository.findById(reportRegisterForm.getReportedId()).get().getPlaylist().getPlaylistId();
+            reportedAccount = accountRepository.findByPlaylist_playlistId(playlistId)
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        }
+        if(categoryType.getReportedCategory() == PLAYLIST){
+            reportedAccount = accountRepository.findByPlaylist_playlistId(reportRegisterForm.getReportedId())
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        }
+        if(categoryType.getReportedCategory() == ACCOUNT){
+            reportedAccount = accountRepository.findById(reportRegisterForm.getReportedId())
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        }
+        final Report report = new Report(categoryType, statusType);
+        final ReportDetail reportDetail = new ReportDetail(account.getAccountId(), reportedAccount.getAccountId(), reportRegisterForm.getReportedId(), reportRegisterForm.getReportContent(), report);
+
+        return reportDetailRepository.save(reportDetail).getReportDetailId();
     }
 }
