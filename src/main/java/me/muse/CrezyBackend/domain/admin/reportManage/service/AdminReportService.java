@@ -1,6 +1,7 @@
 package me.muse.CrezyBackend.domain.admin.reportManage.service;
 
 import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
+import me.muse.CrezyBackend.domain.report.controller.form.ReportRegisterForm;
 import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
@@ -17,4 +18,5 @@ public interface AdminReportService {
     ReportReadSongResponseForm readSongReport(Long reportId, HttpHeaders headers);
 
     ReportCountResponseForm countReport(HttpHeaders headers);
+    long registerReport(ReportRegisterForm reportRegisterForm, HttpHeaders headers);
 }
