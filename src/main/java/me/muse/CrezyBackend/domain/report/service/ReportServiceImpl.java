@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 
-import static me.muse.CrezyBackend.domain.report.entity.ReportedCategory.*;
+import static me.muse.CrezyBackend.domain.report.entity.ReportedCategory.SONG;
 
 @Service
 @RequiredArgsConstructor
@@ -39,20 +39,15 @@ public class ReportServiceImpl implements ReportService {
         Long accountId = redisService.getValueByKey(authValues.get(0));
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        Account reportedAccount = new Account();
+        Account reportedAccount;
         ReportStatusType statusType = reportStatusTypeRepository.findByReportStatus(ReportStatus.HOLDON).get();
         ReportedCategoryType categoryType = reportedCategoryTypeRepository.findByReportedCategory(ReportedCategory.valueOf(reportRegisterForm.getReportedCategoryType())).get();
         if(categoryType.getReportedCategory() == SONG){
             Long playlistId = songRepository.findById(reportRegisterForm.getReportedId()).get().getPlaylist().getPlaylistId();
             reportedAccount = accountRepository.findByPlaylist_playlistId(playlistId)
                     .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        }
-        if(categoryType.getReportedCategory() == PLAYLIST){
+        }else{
             reportedAccount = accountRepository.findByPlaylist_playlistId(reportRegisterForm.getReportedId())
-                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        }
-        if(categoryType.getReportedCategory() == ACCOUNT){
-            reportedAccount = accountRepository.findById(reportRegisterForm.getReportedId())
                     .orElseThrow(() -> new IllegalArgumentException("Account not found"));
         }
         final Report report = new Report(categoryType, statusType);
