@@ -78,9 +78,14 @@ public class AdminReportServiceImpl implements AdminReportService {
         Integer AccountReportCount = reportRepository.countByReportedCategoryType(ACCOUNT);
 
         List<ReportResponseForm> reportResponseForms = new ArrayList<>();
-
+        String reporterNickname;
         for (ReportDetail reportDetail : reportDetailList) {
-        String reporterNickname = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId()).get().getNickname();
+         Optional<Profile> reporterAccount = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId());
+         if(reporterAccount.isEmpty()){
+             reporterNickname = "탈퇴한 회원";
+         }else{
+             reporterNickname = reporterAccount.get().getNickname();
+         }
 
             ReportResponseForm responseForm = new ReportResponseForm(
                     reportDetail.getReport().getReportId(),
@@ -201,10 +206,14 @@ public class AdminReportServiceImpl implements AdminReportService {
 
         ReportDetail reportDetail = reportDetailRepository.findByReport_ReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
-        Account reporterAccount = accountRepository.findById(reportDetail.getReporterAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("ReporterAccount not found"));
-        Profile reporterProfile = profileRepository.findByAccount(reporterAccount)
-                .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+        Optional<Profile> maybeReporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId());
+        String reporterNickname;
+
+        if(maybeReporterProfile.isEmpty()){
+            reporterNickname = "탈퇴한 회원";
+        }else{
+            reporterNickname = maybeReporterProfile.get().getNickname();
+        }
         Account reportedAccount = accountRepository.findById(reportDetail.getReportedAccountId())
                 .orElseThrow(() -> new IllegalArgumentException("ReportedAccount not found"));
         Profile reportedProfile = profileRepository.findByAccount(reportedAccount)
@@ -212,7 +221,7 @@ public class AdminReportServiceImpl implements AdminReportService {
 
         Report report = reportDetail.getReport();
         ReportReadResponseForm responseForm = new ReportReadResponseForm(
-                report, reportDetail.getReportContent(), reporterProfile.getNickname(), reportedProfile.getNickname(),
+                report, reportDetail.getReportContent(), reporterNickname, reportedProfile.getNickname(),
                 reportDetail.getCreateReportDate());
         return responseForm;
     }
@@ -227,15 +236,21 @@ public class AdminReportServiceImpl implements AdminReportService {
                     .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
             Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
-            Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
-                    .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+            Optional<Profile> maybeReporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId());
+            String reporterNickname;
+
+            if(maybeReporterProfile.isEmpty()){
+                reporterNickname = "탈퇴한 회원";
+            }else{
+                reporterNickname = maybeReporterProfile.get().getNickname();
+            }
 
             int reportedCounts = reportDetailRepository.findAllByReportedAccountId(reportDetail.getReportedAccountId()).size();
             int warningCounts = warningRepository.countByAccount(reportedProfile.getAccount());
             int inquiryCounts = inquiryDetailRepository.findByProfile_Account_accountId(reportDetail.getReportedAccountId()).size();
 
             ReportReadAccountResponseForm responseForm = new ReportReadAccountResponseForm(
-                    reporterProfile.getNickname(),
+                    reporterNickname,
                     reportedProfile.getNickname(),
                     reportedProfile.getProfileImageName(),
                     reportDetail.getReport().getReportedCategoryType().getReportedCategory().toString(),
@@ -245,7 +260,7 @@ public class AdminReportServiceImpl implements AdminReportService {
                     reportedProfile.getAccount().getAccountId());
             return responseForm;
         } catch (IllegalArgumentException e){
-            return new ReportReadAccountResponseForm("삭제된 계정입니다.");
+            return new ReportReadAccountResponseForm("탈퇴한 회원입니다.");
         }
     }
 
@@ -258,8 +273,15 @@ public class AdminReportServiceImpl implements AdminReportService {
                     .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
             Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
-            Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
-                    .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+            Optional<Profile> maybeReporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId());
+            String reporterNickname;
+
+            if(maybeReporterProfile.isEmpty()){
+                reporterNickname = "탈퇴한 회원";
+            }else{
+                reporterNickname = maybeReporterProfile.get().getNickname();
+            }
+
             Playlist playlist = playlistRepository.findById(reportDetail.getReportedId())
                     .orElseThrow(() -> new IllegalArgumentException("Playlist not found"));
 
@@ -267,7 +289,7 @@ public class AdminReportServiceImpl implements AdminReportService {
             List<LikePlaylist> likePlaylists = likePlaylistRepository.findByPlaylist(playlist);
 
             ReportReadPlaylistResponseForm responseForm = new ReportReadPlaylistResponseForm(
-                    reporterProfile.getNickname(),
+                    reporterNickname,
                     reportedProfile.getNickname(),
                     playlist.getPlaylistName(),
                     playlist.getThumbnailName(),
@@ -291,14 +313,20 @@ public class AdminReportServiceImpl implements AdminReportService {
                     .orElseThrow(() -> new IllegalArgumentException("ReportDetail not found"));
             Profile reportedProfile = profileRepository.findByAccount_AccountId(reportDetail.getReportedAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("ReportedProfile not found"));
-            Profile reporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId())
-                    .orElseThrow(() -> new IllegalArgumentException("ReporterProfile not found"));
+            Optional<Profile> maybeReporterProfile = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId());
+            String reporterNickname;
+
+            if(maybeReporterProfile.isEmpty()){
+                reporterNickname = "탈퇴한 회원";
+            }else{
+                reporterNickname = maybeReporterProfile.get().getNickname();
+            }
 
             Song song = songRepository.findById(reportDetail.getReportedId())
                     .orElseThrow(() -> new IllegalArgumentException("Song not found"));
 
             ReportReadSongResponseForm responseForm = new ReportReadSongResponseForm(
-                    reporterProfile.getNickname(),
+                    reporterNickname,
                     reportedProfile.getNickname(),
                     song.getPlaylist().getPlaylistName(),
                     song.getTitle(),
