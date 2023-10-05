@@ -18,7 +18,7 @@ public interface ProfileRepository extends JpaRepository<Profile,Long> {
     Optional<Profile> findByNickname(String nickname);
     Optional<Profile> findByAccount(Account account);
     List<Profile> findByAccount_RoleType(AccountRoleType roleType);
-    @Query("SELECT p FROM Profile p JOIN FETCH p.account a WHERE a.roleType <> :roleType")
+    @Query("SELECT p FROM Profile p JOIN FETCH p.account a WHERE a.roleType <> :roleType ORDER BY a.createDate DESC")
     List<Profile> findByAccount_RoleTypeNotWithPage(AccountRoleType roleType);
     @Query("SELECT p FROM Profile p JOIN FETCH p.account a WHERE a.roleType = :roleType")
     List<Profile> findAllBlacklistWithPage(Pageable pageable, AccountRoleType roleType);

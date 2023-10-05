@@ -160,7 +160,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     @Override
     public Page<AdminAccountListForm> accountList(HttpHeaders headers, Integer page) {
         if (!checkAdmin.checkAdmin(headers)) return null;
-        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("account.createDate").descending());
+        Pageable pageable = PageRequest.of(page - 1, 10);
         AccountRoleType roleType = accountRoleTypeRepository.findByRoleType(ADMIN).get();
         List<Profile> profileList = profileRepository.findByAccount_RoleTypeNotWithPage(roleType);
 
