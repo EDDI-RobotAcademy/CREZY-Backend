@@ -28,12 +28,12 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @Query("SELECT p FROM Playlist p WHERE p.account = :account AND p.createDate = :createDate")
     List<Playlist> countByAccountAndCreateDate(Account account, LocalDate createDate);
     List<Playlist> findByCreateDate(LocalDate localDate);
-    @Query("SELECT p FROM Playlist p LEFT JOIN FETCH p.songlist")
+    @Query("SELECT p FROM Playlist p LEFT JOIN FETCH p.songlist ORDER BY p.createDate DESC")
     List<Playlist> findAllWithPage();
     @Query("SELECT p FROM Playlist p ORDER BY SIZE(p.likePlaylist) DESC")
     List<Playlist> findAllSortByLikePlaylist();
 
-    @Query("SELECT p FROM Playlist p WHERE p.songlist IS EMPTY")
+    @Query("SELECT p FROM Playlist p WHERE p.songlist IS EMPTY p.songlist ORDER BY p.playlistId DESC")
     List<Playlist> findAllBySongEmpty();
     List<Playlist> findPlaylistByAccount_AccountId(Long accountId);
 
