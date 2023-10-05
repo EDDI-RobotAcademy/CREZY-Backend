@@ -11,11 +11,32 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReportDetailRepository extends JpaRepository<ReportDetail,Long> {
-    @Query("SELECT rd FROM ReportDetail rd JOIN FETCH rd.report")
-    List<ReportDetail> findAllWithPage(Pageable pageable);
+    @Query("SELECT rd FROM ReportDetail rd JOIN FETCH rd.report ORDER BY rd.reportDetailId DESC")
+    List<ReportDetail> findAllWithPage();
     Optional<ReportDetail> findByReport_ReportId(Long reportId);
     List<ReportDetail> findAllByReportedAccountId(Long accountId);
 
     int countByCreateReportDate(LocalDate localDate);
+    @Query("SELECT rd " +
+            "FROM ReportDetail rd " +
+            "JOIN FETCH rd.report r " +
+            "WHERE r.reportStatusType.reportStatus = :statusType " +
+            "ORDER BY rd.reportDetailId DESC")
+    List<ReportDetail> findByReportStatusType(String statusType);
+
+    @Query("SELECT rd " +
+            "FROM ReportDetail rd " +
+            "JOIN FETCH rd.report r " +
+            "WHERE r.reportedCategoryType.reportedCategory = :categoryType " +
+            "ORDER BY rd.reportDetailId DESC")
+    List<ReportDetail> findByReportedCategoryType(String categoryType);
+
+    @Query("SELECT rd " +
+            "FROM ReportDetail rd " +
+            "JOIN FETCH rd.report r " +
+            "WHERE (r.reportStatusType.reportStatus = :statusType) " +
+            "AND (r.reportedCategoryType.reportedCategory = :categoryType) " +
+            "ORDER BY rd.reportDetailId DESC")
+    List<ReportDetail> findByReportStatusTypeAndReportedCategoryType(String statusType, String categoryType);
 }
 

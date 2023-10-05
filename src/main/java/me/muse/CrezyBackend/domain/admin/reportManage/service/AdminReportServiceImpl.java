@@ -26,13 +26,13 @@ import me.muse.CrezyBackend.domain.report.repository.ReportRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportStatusTypeRepository;
 import me.muse.CrezyBackend.domain.report.repository.ReportedCategoryTypeRepository;
 import me.muse.CrezyBackend.domain.song.entity.Song;
+import me.muse.CrezyBackend.domain.song.entity.SongStatusType;
+import me.muse.CrezyBackend.domain.song.entity.StatusType;
 import me.muse.CrezyBackend.domain.song.repository.SongRepository;
 import me.muse.CrezyBackend.domain.warning.entity.Warning;
 import me.muse.CrezyBackend.domain.warning.repository.WarningRepository;
 import me.muse.CrezyBackend.utility.checkAdmin.CheckAdmin;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -70,18 +70,34 @@ public class AdminReportServiceImpl implements AdminReportService {
     final private ReportedCategoryTypeRepository reportedCategoryTypeRepository;
 
     @Override
-    public List<ReportResponseForm> list(Integer page, HttpHeaders headers) {
+    public Page<ReportResponseForm> list(ReportListRequestForm requestForm, HttpHeaders headers) {
         if (!checkAdmin.checkAdmin(headers)) return null;
 
-        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by("reportDetailId").descending());
-        List<ReportDetail> reportDetailList = reportDetailRepository.findAllWithPage(pageable);
+        Pageable pageable = PageRequest.of(requestForm.getPage() - 1, 10);
+
 
         Integer SongReportCount = reportRepository.countByReportedCategoryType(SONG);
         Integer PlaylistReportCount = reportRepository.countByReportedCategoryType(PLAYLIST);
         Integer AccountReportCount = reportRepository.countByReportedCategoryType(ACCOUNT);
 
+        List<ReportDetail> reportDetailList = new ArrayList<>();
+
+        if(requestForm.getCategoryType().equals("TOTAL")){
+            switch (requestForm.getStatusType()){
+                case "TOTAL" -> reportDetailList = reportDetailRepository.findAllWithPage();
+                case "APPROVED", "RETURNED", "HOLDON" -> reportDetailList = reportDetailRepository.findByReportStatusType(requestForm.getStatusType());
+            }
+        } else{
+            switch (requestForm.getStatusType()){
+                case "TOTAL" -> reportDetailList = reportDetailRepository.findByReportedCategoryType(requestForm.getCategoryType());
+                case "APPROVED", "RETURNED", "HOLDON" ->
+                        reportDetailList = reportDetailRepository.findByReportStatusTypeAndReportedCategoryType(requestForm.getStatusType(), requestForm.getCategoryType());
+            }
+        }
+
         List<ReportResponseForm> reportResponseForms = new ArrayList<>();
         String reporterNickname;
+
         for (ReportDetail reportDetail : reportDetailList) {
          Optional<Profile> reporterAccount = profileRepository.findByAccount_AccountId(reportDetail.getReporterAccountId());
          if(reporterAccount.isEmpty()){
@@ -104,7 +120,15 @@ public class AdminReportServiceImpl implements AdminReportService {
 
             reportResponseForms.add(responseForm);
         }
-        return reportResponseForms;
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), reportResponseForms.size());
+
+        return new PageImpl<>(
+                reportResponseForms.subList(start, end),
+                pageable,
+                reportResponseForms.size()
+        );
     }
 
     @Override
