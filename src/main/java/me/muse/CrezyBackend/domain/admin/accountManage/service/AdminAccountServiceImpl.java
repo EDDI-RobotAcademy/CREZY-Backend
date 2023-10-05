@@ -478,12 +478,19 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         changeRoleType(accountId, NORMAL);
     }
 
+    @Transactional
     private void changeRoleType(Long accountId, RoleType roleType) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("account 없음"));
 
         AccountRoleType changeRoleType = accountRoleTypeRepository.findByRoleType(roleType).get();
         account.setRoleType(changeRoleType);
+        if(changeRoleType.getRoleType() == BLACKLIST){
+            List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(account);
+            for(Playlist playlist : playlists){
+                playlistRepository.deleteById(playlist.getPlaylistId());
+            }
+        }
         accountRepository.save(account);
     }
 
