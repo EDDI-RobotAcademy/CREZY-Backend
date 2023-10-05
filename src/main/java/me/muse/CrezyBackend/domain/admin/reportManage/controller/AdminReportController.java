@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.muse.CrezyBackend.domain.admin.reportManage.controller.form.*;
 import me.muse.CrezyBackend.domain.admin.reportManage.service.AdminReportService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +19,9 @@ import java.util.List;
 public class AdminReportController {
     final private AdminReportService adminService;
     @GetMapping(value = "/list")
-    public List<ReportResponseForm> reportList(@RequestParam("page") Integer page, @RequestHeader HttpHeaders headers) {
+    public Page<ReportResponseForm> reportList(@RequestBody ReportListRequestForm requestForm, @RequestHeader HttpHeaders headers) {
         log.info("reportList()");
-        return adminService.list(page, headers);
+        return adminService.list(requestForm, headers);
     }
     @GetMapping("/list/total-page")
     public Integer getTotalPage() {
