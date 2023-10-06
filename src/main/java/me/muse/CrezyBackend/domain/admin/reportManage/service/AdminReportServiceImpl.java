@@ -224,6 +224,12 @@ public class AdminReportServiceImpl implements AdminReportService {
             if (warningRepository.countByAccount(reportedAccount) >= 3) {
                 AccountRoleType accountRoleType = accountRoleTypeRepository.findByRoleType(BLACKLIST).get();
                 reportedAccount.setRoleType(accountRoleType);
+
+                List<Playlist> playlists = playlistRepository.findPlaylistIdByAccount(reportedAccount);
+                for(Playlist playlist : playlists){
+                    playlistRepository.deleteById(playlist.getPlaylistId());
+                }
+
                 accountRepository.save(reportedAccount);
             }
         }else {
